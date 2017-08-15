@@ -469,7 +469,7 @@ simulation_What=function(sim=50,b=beta_hat_aft,weight=given_weight,Time=T_aft,De
     at.time.t=list()
     std.at.time.t=vector()
     for(k in 1:n){
-      at.time.t[[k]]=data.frame(as.matrix(dataset_What_aft)[which(dataset_What_aft$t_i==k),])
+      at.time.t[[k]]=data.frame(as.matrix(dataset_What)[which(dataset_What$t_i==k),])
       std.at.time.t[k]=sd(sample(at.time.t[[k]]$What,n,replace=TRUE))
     }
     return(std.at.time.t)
@@ -524,10 +524,10 @@ kolmogorov=function(dataset_W,dataset_What){
   return(test_result)
 }
 
-n_vector=c(100,200,500,1000,2000)
+n_vector=c(100,200,500,1000)
 sim_vector=c(100,150,200,250)
 
-#n_vector=c(10,20,50,100,200)
+#n_vector=c(10,20,50,100)
 #sim_vector=c(10,15,20,25)
 
 result_aft.aft=list()
@@ -651,7 +651,7 @@ for(k in 1:length(n_vector)){
 
 table_fuction=function(result){
 hh=matrix(nrow=length(n_vector),ncol=length(sim_vector))
-rownames(hh)=c("n=100","n=200","n=500","n=1000","n=2000")
+rownames(hh)=c("n=100","n=200","n=500","n=1000")
 colnames(hh)=c("sim=100","sim=150","sim=200","sim=250")
 for(k in 1:length(n_vector)){
   for(j in 1:length(sim_vector)){
