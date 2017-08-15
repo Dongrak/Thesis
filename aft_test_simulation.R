@@ -469,8 +469,8 @@ simulation_What=function(sim=50,b=beta_hat_aft,weight=given_weight,Time=T_aft,De
     at.time.t=list()
     std.at.time.t=vector()
     for(k in 1:n){
-      at.time.t[[k]]=data.frame(as.matrix(dataset_What)[which(dataset_What$t_i==k),])
-      std.at.time.t[k]=sd(at.time.t[[k]]$What)
+      at.time.t[[k]]=data.frame(as.matrix(dataset_What_aft)[which(dataset_What_aft$t_i==k),])
+      std.at.time.t[k]=sd(sample(at.time.t[[k]]$What,n,replace=TRUE))
     }
     return(std.at.time.t)
   }
@@ -503,7 +503,7 @@ kolmogorov=function(dataset_W,dataset_What){
   max_W=max(abs(dataset_W$W))
   max_What=c()
   for(k in 1: sim){
-    max_What[k]=max(abs(as.matrix(dataset_What)[which(dataset_What$group==k),3]))
+    max_What[k]=max(abs(dataset_What[which(dataset_What$group==k),]$What))
   }
   n_W=length(which((max_What>max_W)==1))
   p_W=n_W/sim
@@ -512,7 +512,7 @@ kolmogorov=function(dataset_W,dataset_What){
   max_std_W=max(abs(dataset_W$std.W))
   max_std_What=c()
   for(k in 1: sim){
-    max_std_What[k]=max(abs(as.matrix(dataset_What)[which(dataset_What$group==k),4]))
+    max_std_What[k]=max(abs(dataset_What[which(dataset_What$group==k),]$std.What))
   }
   n_std.W=length(which((max_std_What>max_std_W)==1))
   p_std.W=n_std.W/sim
@@ -525,10 +525,10 @@ kolmogorov=function(dataset_W,dataset_What){
 }
 
 n_vector=c(100,200,500,1000,2000)
-sim_vector=c(200,500,1000,2000)
+sim_vector=c(100,150,200,250)
 
-#n_vector=c(10,20,30,40,50)
-#sim_vector=c(15,25,35,45,55)
+#n_vector=c(10,20,50,100,200)
+#sim_vector=c(10,15,20,25)
 
 result_aft.aft=list()
 result_aft.cox=list()
@@ -567,14 +567,14 @@ for(k in 1:length(n_vector)){
   T_cox=T_cox[order(T_cox)]
   
   #-------------------------------------------------------------
-  #--------------Estimate Beta_hat_aft by using Aftgee--------------
+  #------------Estimate Beta_hat_aft by using Aftgee------------
   #-------------------------------------------------------------
   aftsrr_beta_aft=aftsrr(Surv(T_aft,D_aft)~Z_aft,method="nonsm")
   beta_hat_aft=-unlist(summary(aftsrr_beta_aft))$coefficients1;beta_hat_aft
   std_hat_aft=unlist(summary(aftsrr_beta_aft))$coefficients2;std_hat_aft
   
   #-------------------------------------------------------------
-  #--------------Estimate Beta_hat_cox by using Aftgee--------------
+  #------------Estimate Beta_hat_cox by using Aftgee------------
   #-------------------------------------------------------------
   aftsrr_beta_cox=aftsrr(Surv(T_cox,D_cox)~Z_cox,method="nonsm")
   beta_hat_cox=-unlist(summary(aftsrr_beta_cox))$coefficients1;beta_hat_cox
@@ -582,11 +582,11 @@ for(k in 1:length(n_vector)){
   
   #dataset_What()
   dataset_What_aft=simulation_What(sim,beta_hat_aft,given_weight,T_aft,D_aft,Z_aft)
-  dataset_What_cox=simulation_What(sim,beta_hat_cox,given_weight,T_cox,D_aft,Z_cox)
+  dataset_What_cox=simulation_What(sim,beta_hat_cox,given_weight,T_cox,D_cox,Z_cox)
   
   #dataset_W()
   dataset_W_aft=simulation_W(beta_hat_aft,given_weight,T_aft,D_aft,Z_aft,dataset_What_aft)
-  dataset_W_cox=simulation_W(beta_hat_cox,given_weight,T_cox,D_aft,Z_cox,dataset_What_cox)
+  dataset_W_cox=simulation_W(beta_hat_cox,given_weight,T_cox,D_cox,Z_cox,dataset_What_cox)
   
   dataset_What50_aft=dataset_What_aft[1:(n*50),]
   dataset_What50_cox=dataset_What_cox[1:(n*50),]
@@ -597,20 +597,6 @@ for(k in 1:length(n_vector)){
     geom_line(data=dataset_What50_aft,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
     geom_line(data=dataset_W_aft,aes(x=t_i,y=W),colour="tomato")
   #Figure1_W_aft.aft
-  
-  # PLOT : W_cox vs What_aft
-  Figure1_W_cox.aft=
-    ggplot()+
-    geom_line(data=dataset_What50_aft,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
-    geom_line(data=dataset_W_cox,aes(x=t_i,y=W),colour="tomato")
-  #Figure1_W_cox.aft
-  
-  # PLOT : W_aft vs What_cox
-  Figure1_W_aft.cox=
-    ggplot()+
-    geom_line(data=dataset_What50_cox,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
-    geom_line(data=dataset_W_aft,aes(x=t_i,y=W),colour="tomato")
-  #Figure1_W_aft.cox
   
   # PLOT : W_cox vs What_cox
   Figure1_W_cox.cox=
@@ -626,20 +612,6 @@ for(k in 1:length(n_vector)){
     geom_line(data=dataset_W_aft,aes(x=t_i,y=std.W),colour="tomato")
   #Figure1_std.W_aft.aft
   
-  # PLOT : std.W_cox vs std.What_aft
-  Figure1_std.W_cox.aft=
-    ggplot()+
-    geom_line(data=dataset_What50_aft,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
-    geom_line(data=dataset_W_cox,aes(x=t_i,y=std.W),colour="tomato")
-  #Figure1_std.W_cox.aft
-  
-  # PLOT : std.W_aft vs std.What_cox
-  Figure1_std.W_aft.cox=
-    ggplot()+
-    geom_line(data=dataset_What50_cox,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
-    geom_line(data=dataset_W_aft,aes(x=t_i,y=std.W),colour="tomato")
-  #Figure1_std.W_aft.cox
-  
   # PLOT : W_cox vs What_cox
   Figure1_std.W_cox.cox=
     ggplot()+
@@ -647,45 +619,31 @@ for(k in 1:length(n_vector)){
     geom_line(data=dataset_W_cox,aes(x=t_i,y=std.W),colour="tomato")
   #Figure1_std.W_cox.cox
 
-  dataset_What200_aft=dataset_What_aft[1:(n*sim_vector[1]),]
-  dataset_What200_cox=dataset_What_cox[1:(n*sim_vector[1]),]
+  dataset_What1_aft=dataset_What_aft[1:(n*sim_vector[1]),]
+  dataset_What1_cox=dataset_What_cox[1:(n*sim_vector[1]),]
   
-  dataset_What500_aft=dataset_What_aft[1:(n*sim_vector[2]),]
-  dataset_What500_cox=dataset_What_cox[1:(n*sim_vector[2]),]
+  dataset_What2_aft=dataset_What_aft[1:(n*sim_vector[2]),]
+  dataset_What2_cox=dataset_What_cox[1:(n*sim_vector[2]),]
   
-  dataset_What1000_aft=dataset_What_aft[1:(n*sim_vector[3]),]
-  dataset_What1000_cox=dataset_What_cox[1:(n*sim_vector[3]),]
+  dataset_What3_aft=dataset_What_aft[1:(n*sim_vector[3]),]
+  dataset_What3_cox=dataset_What_cox[1:(n*sim_vector[3]),]
   
-  dataset_What2000_aft=dataset_What_aft[1:(n*sim_vector[4]),]
-  dataset_What2000_cox=dataset_What_cox[1:(n*sim_vector[4]),]
+  dataset_What4_aft=dataset_What_aft[1:(n*sim_vector[4]),]
+  dataset_What4_cox=dataset_What_cox[1:(n*sim_vector[4]),]
   
   result_aft.aft[[k]]=list(Figure1_W_aft.aft,Figure1_std.W_aft.aft,
                            dataset_W_aft,dataset_What_aft,
-                           kolmogorov(dataset_W_aft,dataset_What200_aft),
-                           kolmogorov(dataset_W_aft,dataset_What500_aft),
-                           kolmogorov(dataset_W_aft,dataset_What1000_aft),
-                           kolmogorov(dataset_W_aft,dataset_What2000_aft))
-  
-  result_aft.cox[[k]]=list(Figure1_W_aft.cox,Figure1_std.W_aft.cox,
-                           dataset_W_aft,dataset_What_cox,
-                           kolmogorov(dataset_W_aft,dataset_What200_cox),
-                           kolmogorov(dataset_W_aft,dataset_What500_cox),
-                           kolmogorov(dataset_W_aft,dataset_What1000_cox),
-                           kolmogorov(dataset_W_aft,dataset_What2000_cox))
-  
-  result_cox.aft[[k]]=list(Figure1_W_cox.aft,Figure1_std.W_cox.aft,
-                           dataset_W_cox,dataset_What_aft,
-                           kolmogorov(dataset_W_cox,dataset_What200_aft),
-                           kolmogorov(dataset_W_cox,dataset_What500_aft),
-                           kolmogorov(dataset_W_cox,dataset_What1000_aft),
-                           kolmogorov(dataset_W_cox,dataset_What2000_aft))
+                           kolmogorov(dataset_W_aft,dataset_What1_aft),
+                           kolmogorov(dataset_W_aft,dataset_What2_aft),
+                           kolmogorov(dataset_W_aft,dataset_What3_aft),
+                           kolmogorov(dataset_W_aft,dataset_What4_aft))
   
   result_cox.cox[[k]]=list(Figure1_W_cox.cox,Figure1_std.W_cox.cox,
                            dataset_W_cox,dataset_What_cox,
-                           kolmogorov(dataset_W_cox,dataset_What200_cox),
-                           kolmogorov(dataset_W_cox,dataset_What500_cox),
-                           kolmogorov(dataset_W_cox,dataset_What1000_cox),
-                           kolmogorov(dataset_W_cox,dataset_What2000_cox))
+                           kolmogorov(dataset_W_cox,dataset_What1_cox),
+                           kolmogorov(dataset_W_cox,dataset_What2_cox),
+                           kolmogorov(dataset_W_cox,dataset_What3_cox),
+                           kolmogorov(dataset_W_cox,dataset_What4_cox))
 }
 
 #n_vector=c(100,200,500,1000,2000)
@@ -694,7 +652,7 @@ for(k in 1:length(n_vector)){
 table_fuction=function(result){
 hh=matrix(nrow=length(n_vector),ncol=length(sim_vector))
 rownames(hh)=c("n=100","n=200","n=500","n=1000","n=2000")
-colnames(hh)=c("sim=200","sim=500","sim=1000","sim=2000")
+colnames(hh)=c("sim=100","sim=150","sim=200","sim=250")
 for(k in 1:length(n_vector)){
   for(j in 1:length(sim_vector)){
     n=n_vector[k]
@@ -714,11 +672,8 @@ return(hh)
 }
 
 table_aft.aft=table_fuction(result_aft.aft);table_aft.aft
-#table_aft.cox=table_fuction(result_aft.cox);table_aft.cox
-#table_cox.aft=table_fuction(result_cox.aft);table_cox.aft
 table_cox.cox=table_fuction(result_cox.cox);table_cox.cox
 
-result_aft.aft[[5]][2]
-#result_cox.aft[[1]][1]
-#result_aft.cox[[1]][1]
-result_cox.cox[[5]][2]
+#result_aft.aft[[5]][2]
+#result_cox.cox[[5]][2]
+

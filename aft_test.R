@@ -453,7 +453,7 @@ simulation_What=function(sim=50,b=beta_hat_aft,Time=T_aft,Delta=D_aft,Covari=Z_a
     std.at.time.t=vector()
     for(k in 1:n){
       at.time.t[[k]]=data.frame(as.matrix(dataset_What)[which(dataset_What$t_i==k),])
-      std.at.time.t[k]=sd(at.time.t[[k]]$What)
+      std.at.time.t[k]=sd(sample(at.time.t[[k]]$What,n,replace=TRUE))
     }
     return(std.at.time.t)
   }
