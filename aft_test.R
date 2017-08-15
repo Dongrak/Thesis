@@ -584,7 +584,30 @@ sim=200
 
 #-------------------------------------------------------------
 #-------------------------OMNIBUS TEST------------------------
-#-------------------------------------------------------------
+
+#-------------------------NONCENSORING------------------------
+dataset_What_aft_NC=simulation_What(sim,beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_tol)
+dataset_W_aft_NC=simulation_W(beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,dataset_What_aft)
+
+kol_typ_test_aft_NC=kolmogorov(dataset_W_aft_NC,dataset_What_aft_NC);kol_typ_test_aft_NC
+
+p_aft_NC=kol_typ_test_aft_NC[3,];p_aft_NC
+
+# PLOT : W_aft_NC vs What_aft_NC
+Figure1_W_aft_NC=
+  ggplot()+
+  geom_line(data=dataset_What_aft_NC,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
+  geom_line(data=dataset_W_aft_NC,aes(x=t_i,y=W),colour="tomato")
+Figure1_W_aft_NC
+
+# PLOT : std.W_aft_NC vs std.What_aft_NC
+Figure1_std.W_aft_NC=
+  ggplot()+
+  geom_line(data=dataset_What_aft_NC,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
+  geom_line(data=dataset_W_aft_NC,aes(x=t_i,y=std.W),colour="tomato")
+Figure1_std.W_aft_NC
+
+#--------------------------CENSORING--------------------------
 # dataset_What()
 dataset_What_aft=simulation_What(sim,beta_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_tol)
 dataset_What_cox=simulation_What(sim,beta_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_tol)
@@ -596,9 +619,8 @@ dataset_W_cox=simulation_W(beta_hat_cox,T_cox,D_cox,Z_cox,given_weight,dataset_W
 kol_typ_test_aft=kolmogorov(dataset_W_aft,dataset_What_aft);kol_typ_test_aft
 kol_typ_test_cox=kolmogorov(dataset_W_cox,dataset_What_cox);kol_typ_test_cox
 
-p_aft=kol_typ_test_aft[3,]
-p_cox=kol_typ_test_cox[3,]
-
+p_aft=kol_typ_test_aft[3,];p_aft
+p_cox=kol_typ_test_cox[3,];p_cox
 
 # dataset_What50_aft=dataset_What_aft[1:(n*50),]
 # dataset_What50_cox=dataset_What_cox[1:(n*50),]
