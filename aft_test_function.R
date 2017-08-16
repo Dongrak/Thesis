@@ -19,7 +19,7 @@ library(BB)
 #-------------------------------------------------------------
 #-----------------------COX DATA ANALYSIS---------------------
 #-------------------------------------------------------------
-W_t=function(b=beta_hat_cox,Time=T_cox,Delta=D_cox,Covari=Z_cox,weight=given_weight,test=given_test){
+W_t=function(b,Time,Delta,Covari,weight,test){
   #b=beta_hat_cox;weight=w_i;Time=T_cox;Delta=D_cox;Covari=Z_cox;
   
   n=length(Time)
@@ -88,7 +88,7 @@ W_t=function(b=beta_hat_cox,Time=T_cox,Delta=D_cox,Covari=Z_cox,weight=given_wei
 #-------------------------------------------------------------
 #-----------------------AFT DATA ANALYSIS---------------------
 #-------------------------------------------------------------
-What_t=function(b=beta_hat_aft,Time=T_aft,Delta=D_aft,Covari=Z_aft,weight=given_weight,tol=given_tol,test=given_test){
+What_t=function(b,Time,Delta,Covari,weight,tol,test){
   #b=beta_hat_aft;weight=given_weight;Time=T_aft;Delta=D_aft;Covari=Z_aft;tol=given_tol;
   
   n=length(Time)
@@ -435,12 +435,12 @@ What_t=function(b=beta_hat_aft,Time=T_aft,Delta=D_aft,Covari=Z_aft,weight=given_
 }
 #What_t()
 
-simulation_What=function(sim=50,b=beta_hat_aft,Time=T_aft,Delta=D_aft,Covari=Z_aft,weight=given_weight,tol=given_tol){
+simulation_What=function(sim,b,Time,Delta,Covari,weight,test,tol){
   
   dataset_What=data.frame()
   for(k in 1:sim){
     group=k
-    A=What_t(b,Time,Delta,Covari,weight,tol)
+    A=What_t(b,Time,Delta,Covari,weight,tol,test)
     AA=data.frame(group,t_i=1:n,What=A)
     dataset_What=rbind(dataset_What,AA)
     if(k%%100==0) {
@@ -448,7 +448,7 @@ simulation_What=function(sim=50,b=beta_hat_aft,Time=T_aft,Delta=D_aft,Covari=Z_a
     }
   }
   
-  bootstrap=function(){
+  bootstrap=function(dataset_What){
     at.time.t=list()
     std.at.time.t=vector()
     for(k in 1:n){
@@ -458,7 +458,7 @@ simulation_What=function(sim=50,b=beta_hat_aft,Time=T_aft,Delta=D_aft,Covari=Z_a
     return(std.at.time.t)
   }
   
-  mean.std.boot=bootstrap()
+  mean.std.boot=bootstrap(dataset_What)
   
   AAA=data.frame((dataset_What$What/mean.std.boot),mean.std.boot)
   dataset_What=cbind(dataset_What,AAA)
@@ -467,9 +467,9 @@ simulation_What=function(sim=50,b=beta_hat_aft,Time=T_aft,Delta=D_aft,Covari=Z_a
   return(dataset_What)
 }
 
-simulation_W=function(b=beta_hat_aft,Time=T_aft,Delta=D_aft,Covari=Z_aft,weight=given_weight,dataset_What){
+simulation_W=function(b,Time,Delta,Covari,weight,test,dataset_What){
   mean.std.boot=dataset_What$std.boot[1:n]
-  B=W_t(b,Time,Delta,Covari,weight)
+  B=W_t(b,Time,Delta,Covari,weight,test)
   dataset_W=data.frame(0,1:n,B)
   AAAA=data.frame((dataset_W[3]/mean.std.boot),mean.std.boot)
   dataset_W=cbind(dataset_W,AAAA)
@@ -584,10 +584,11 @@ sim=200
 
 #-------------------------------------------------------------
 #-------------------------OMNIBUS TEST------------------------
+#-------------------------------------------------------------
 
 #-------------------------NONCENSORING------------------------
-dataset_What_aft_NC=simulation_What(sim,beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_tol)
-dataset_W_aft_NC=simulation_W(beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,dataset_What_aft_NC)
+dataset_What_aft_NC=simulation_What(sim,beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,given_tol)
+dataset_W_aft_NC=simulation_W(beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,dataset_What_aft_NC)
 
 kol_typ_test_aft_NC=kolmogorov(dataset_W_aft_NC,dataset_What_aft_NC);kol_typ_test_aft_NC
 
@@ -609,12 +610,12 @@ Figure1_std.W_aft_NC
 
 #--------------------------CENSORING--------------------------
 # dataset_What()
-dataset_What_aft=simulation_What(sim,beta_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_tol)
-dataset_What_cox=simulation_What(sim,beta_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_tol)
+dataset_What_aft=simulation_What(sim,beta_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol)
+dataset_What_cox=simulation_What(sim,beta_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,given_tol)
 
 # dataset_W()
-dataset_W_aft=simulation_W(beta_hat_aft,T_aft,D_aft,Z_aft,given_weight,dataset_What_aft)
-dataset_W_cox=simulation_W(beta_hat_cox,T_cox,D_cox,Z_cox,given_weight,dataset_What_cox)
+dataset_W_aft=simulation_W(beta_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,dataset_What_aft)
+dataset_W_cox=simulation_W(beta_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,dataset_What_cox)
 
 kol_typ_test_aft=kolmogorov(dataset_W_aft,dataset_What_aft);kol_typ_test_aft
 kol_typ_test_cox=kolmogorov(dataset_W_cox,dataset_What_cox);kol_typ_test_cox
@@ -626,41 +627,41 @@ p_cox=kol_typ_test_cox[3,];p_cox
 # dataset_What50_cox=dataset_What_cox[1:(n*50),]
 
 # PLOT : W_aft vs What_aft
-Figure1_W_aft.aft=
+Figure1_W_aft=
   ggplot()+
   geom_line(data=dataset_What_aft,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
   geom_line(data=dataset_W_aft,aes(x=t_i,y=W),colour="tomato")
-Figure1_W_aft.aft
+Figure1_W_aft
 
 # PLOT : W_cox vs What_cox
-Figure1_W_cox.cox=
+Figure1_W_cox=
   ggplot()+
   geom_line(data=dataset_What_cox,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
   geom_line(data=dataset_W_cox,aes(x=t_i,y=W),colour="tomato")
-Figure1_W_cox.cox
+Figure1_W_cox
 
 # PLOT : std.W_aft vs std.What_aft
-Figure1_std.W_aft.aft=
+Figure1_std.W_aft=
   ggplot()+
   geom_line(data=dataset_What_aft,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
   geom_line(data=dataset_W_aft,aes(x=t_i,y=std.W),colour="tomato")
 Figure1_std.W_aft.aft
 
 # PLOT : W_cox vs What_cox
-Figure1_std.W_cox.cox=
+Figure1_std.W_cox=
   ggplot()+
   geom_line(data=dataset_What_cox,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
   geom_line(data=dataset_W_cox,aes(x=t_i,y=std.W),colour="tomato")
-Figure1_std.W_cox.cox
+Figure1_std.W_cox
 
 #-------------------------------------------------------------
 #----------------------FUNCTION FORM TEST---------------------
 #-------------------------------------------------------------
 # dataset_W()
-dataset_What_aft_f=simulation_What(sim,beta_hat_aft_f,T_aft_f,D_aft_f,Z_aft_f,given_weight,given_tol)
+dataset_What_aft_f=simulation_What(sim,beta_hat_aft_f,T_aft_f,D_aft_f,Z_aft_f,given_weight,given_test,given_tol)
 
 # dataset_What()
-dataset_W_aft_f=simulation_W(beta_hat_aft_f,T_aft_f,D_aft_f,Z_aft_f,given_weight,dataset_What_aft_f)
+dataset_W_aft_f=simulation_W(beta_hat_aft_f,T_aft_f,D_aft_f,Z_aft_f,given_weight,given_test,dataset_What_aft_f)
 
 dataset_W_aft_f_order=dataset_W_aft_f$W[order(Z_aft_f)]
 Z_aft_f_order=Z_aft_f[order(Z_aft_f)]
