@@ -89,7 +89,7 @@ W_t=function(b,Time,Delta,Covari,weight,test){
 #-----------------------AFT DATA ANALYSIS---------------------
 #-------------------------------------------------------------
 What_t=function(b,Time,Delta,Covari,weight,tol,test){
-  #b=beta_hat_aft;weight=given_weight;Time=T_aft;Delta=D_aft;Covari=Z_aft;tol=given_tol;
+  #b=beta_hat_aft;weight=given_weight;Time=T_aft;Delta=D_aft;Covari=Z_aft;tol=given_tol;test=given_test;
   
   n=length(Time)
   
@@ -510,7 +510,7 @@ kolmogorov=function(dataset_W,dataset_What){
 #-------------------------------------------------------------
 #------------------------DATA GENERATE------------------------
 #-------------------------------------------------------------
-n=200
+n=20
 id=c(1:n) # identification
 beta_0=1 # beta_0
 gamma_0=0.1 # gamma_0
@@ -685,5 +685,19 @@ par(new=TRUE)
 plot(Z_aft_order,dataset_std.W_aft_order,col="black",ylim=c(-1.5,2.5),type="l")
 
 
+#######################simulation&bootstarpping code need to be chainged
+dataset_What=data.frame(What_t(b,Time,Delta,Covari,weight,tol,test))
+columnnames[1]=paste("What",1)
+for(k in 2:sim){
+  
+  dataset_What=cbind(dataset_What,What_t(b,Time,Delta,Covari,weight,tol,test))
+  columnnames[k]=paste("What",k)
+  colnames(dataset_What)=columnnames
+  
+  if(k%%100==0) {
+    cat("Simulation",k,"\n")
+  }
+}
 
+sd(sample(dataset_What[1,],sim,replace=TRUE))
 
