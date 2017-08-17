@@ -20,7 +20,7 @@ library(BB)
 #-----------------------COX DATA ANALYSIS---------------------
 #-------------------------------------------------------------
 W_t=function(b,Time,Delta,Covari,weight,test){
-  #b=beta_hat_cox;weight=w_i;Time=T_cox;Delta=D_cox;Covari=Z_cox;
+  #b=beta_hat_cox;Time=T_cox;Delta=D_cox;Covari=Z_cox;weight=w_i
   
   n=length(Time)
   
@@ -79,7 +79,7 @@ W_t=function(b,Time,Delta,Covari,weight,test){
   W_t=n^(-0.5)*(Reduce('+',mapply('*',Mhat_i_s_t.beta,w_i,SIMPLIFY = FALSE)))
   #W_t
   
-  if (test=="omni"){return(W_t)}
+  if (test=="omni"){return(W_t[order(Time)])}
   if (test=="ftn.form"){return(W_t[order(Covari)])}
   
 }
@@ -89,7 +89,7 @@ W_t=function(b,Time,Delta,Covari,weight,test){
 #-----------------------AFT DATA ANALYSIS---------------------
 #-------------------------------------------------------------
 What_t=function(b,Time,Delta,Covari,weight,tol,test){
-  #b=beta_hat_aft;weight=given_weight;Time=T_aft;Delta=D_aft;Covari=Z_aft;tol=given_tol;test=given_test;
+  #b=beta_hat_aft;Time=T_aft;Delta=D_aft;Covari=Z_aft;tol=given_tol;test=given_test;weight=given_weight
   
   n=length(Time)
   
@@ -148,11 +148,13 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
   dN_i_s_t.beta=lapply(N_i_s_t.beta,function(x){diff(c(0,x))})
   #dN_i_s_t.beta
   
-  #Q_i_t=S_0_s_t.beta/n # Gehan's weight
-  Q_i_t=1
+  #Q_t=S_0_s_t.beta/n # Gehan's weight
+  Q_t=1
   
-  U_t.beta=Reduce('+',lapply(mapply('*',dN_i_s_t.beta,
-                                    Q_i_t*(Covari-E_s_t.beta), SIMPLIFY = FALSE),cumsum))
+  ABC=lapply(Covari,'-',E_s_t.beta)
+  DEF=lapply(ABC,"*",Q_t)
+  GEH=mapply("*",dN_i_s_t.beta,DEF, SIMPLIFY = FALSE)
+  U_t.beta=Reduce('+',lapply(GEH,cumsum))
   #U_t.beta
   
   S_w_s_t.beta=Reduce('+',mapply(
@@ -216,11 +218,12 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
   dGhat_0_t=diff(c(0,Ghat_0_t))
   #dGhat_0_t
   
+  #######################################################################################바꾸기 
   ghat_0_t=(ksmooth(Time_g0,dGhat_0_t,"normal",
                     bandwidth = 1.06*sd(dGhat_0_t)*n^(-0.2),x.points=Time_g0)$y)
   #ghat_0_t
   
-  fhat_Y_t=ghat_0_t*Time*(sum(w_i*Covari)/n)
+  fhat_Y_t=ghat_0_t*Time[order(Time_g0)]*(sum(w_i[order(Time_g0)]*Covari[order(Time_g0)])/n)
   #fhat_Y_t
   
   b_f0=b
@@ -268,14 +271,14 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
                    bandwidth = 1.06*sd(dFhat_0_e_f0)*n^(-0.2),x.points=Time_f0)$y
   #fhat_0_t
   
-  fhat_N_t=fhat_0_t*Time*(sum(Delta*w_i*Covari)/n)
+  fhat_N_t=fhat_0_t*Time[order(Time_f0)]*(sum(Delta[order(Time_f0)]*w_i[order(Time_f0)]*Covari[order(Time_f0)])/n)
   #fhat_N_t
   
   #-----------------------------------------------------------
   #--------Find Beta_hat_star by using optimize function------
   #-----------------------------------------------------------
   U_beta=function(beta_U=b,Time_U=Time,Delta_U=Delta,Covari_U=Covari){
-    #beta_U=b;Time_U=Time;Delta_U=Delta;Covari_U=Covari;Q_i_t_U=Q_i_t;
+    #beta_U=b;Time_U=Time;Delta_U=Delta;Covari_U=Covari;Q_t_U=Q_t;
     
     e_i_beta_U=log(Time_U)+Covari_U*beta_U
     Time_U=Time_U[order(e_i_beta_U)]
@@ -283,7 +286,7 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
     Delta_U=Delta_U[order(e_i_beta_U)]
     e_i_beta_U=e_i_beta_U[order(e_i_beta_U)]
     
-    N_i_s_t.beta_U=list()
+    N_i_s_t.beta_U=list() # NULL # 리스트 #그냥 비어이쓴ㄴ 것 말고 ㄴ
     for(j in 1:n){
       N_i_s_t.beta_U[[j]]=(e_i_beta_U>=e_i_beta_U[j])*Delta_U[j]
     }
@@ -327,14 +330,17 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
     dN_i_s_t.beta_U=lapply(N_i_s_t.beta_U,function(x){diff(c(0,x))})
     #dN_i_s_t.beta_U
     
-    Q_i_t_U=S_0_s_t.beta_U/n # Gehan's weight
-    #Q_i_t=1
+    Q_t_U=S_0_s_t.beta_U/n # Gehan's weight
+    #Q_t_U=1
     
-    U_t.beta_U=Reduce('+',lapply(mapply('*',dN_i_s_t.beta_U,
-                                        Q_i_t_U*(Covari_U-E_s_t.beta_U),SIMPLIFY = FALSE),cumsum))
-    #U_t.beta_U
+    ABC_U=lapply(Covari_U,'-',E_s_t.beta_U)
+    DEF_U=lapply(ABC_U,"*",Q_t_U)
+    GEH_U=mapply("*",dN_i_s_t.beta_U,DEF_U, SIMPLIFY = FALSE)
+    U_t.beta_U=Reduce('+',lapply(GEH_U,cumsum))
+    U_t.beta_U_order=U_t.beta_U[order(Time_U)]
+    #U_t.beta_U_order
     
-    U_inf.beta_U=U_t.beta_U[n]
+    U_inf.beta_U=U_t.beta_U_order[n]
     #U_inf.beta_U
     
     return(U_inf.beta_U)
@@ -348,15 +354,20 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
     G_i=rnorm(n)
     #G_i
     
-    U_w_G_t.beta=Reduce('+',mapply('*',lapply(mapply('*',dMhat_i_s_t.beta,
-                                                     Q_i_t*(w_i-E_w_s_t.beta),SIMPLIFY = FALSE),cumsum),G_i,SIMPLIFY = FALSE))
-    #U_w_G_t.beta
+    ABC_w=lapply(w_i,'-',E_w_s_t.beta)
+    DEF_w=lapply(ABC_w,"*",Q_t)
+    GEH_w=mapply("*",dMhat_i_s_t.beta,DEF_w, SIMPLIFY = FALSE)
+    IJK_w=lapply(GEH_w,"*",G_i)
+    U_w_G_t.beta=Reduce('+',lapply(IJK_w,cumsum))
+
+    ABC_G=lapply(Covari,'-',E_s_t.beta)
+    DEF_G=lapply(ABC_G,"*",Q_t)
+    GEH_G=mapply("*",dMhat_i_s_t.beta,DEF_G, SIMPLIFY = FALSE)
+    IJK_G=lapply(GEH_G,"*",G_i)
+    U_G_t.beta=Reduce('+',lapply(IJK_G,cumsum))
+    U_G_t.beta_order=U_G_t.beta[order(Time)]
     
-    U_G_t.beta=Reduce('+',mapply('*',lapply(mapply('*',dMhat_i_s_t.beta,
-                                                   Q_i_t*(Covari-E_s_t.beta),SIMPLIFY = FALSE),cumsum),G_i,SIMPLIFY = FALSE))
-    #U_G_t.beta
-    
-    U_G_t.inf.beta=U_G_t.beta[n]
+    U_G_t.inf.beta=U_G_t.beta_order[n]
     #U_G_t.inf.beta
     
     beta_hat_s_list=optimize(function(beta){abs(U_beta(beta)-U_G_t.inf.beta)},
@@ -420,7 +431,7 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
   
   What_t=AA-BB-CC
   #What_t
-  
+
   #return(G_i)
   #return(beta_hat_s_list)
   #return(AA)
@@ -429,7 +440,7 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
   #return(What_t)
   #return(list(What_t=What_t,beta_hat_s=beta_hat_s))
   
-  if (test=="omni"){return(What_t)}
+  if (test=="omni"){return(What_t[order(Time)])}
   if (test=="ftn.form"){return(What_t[order(Covari)])}
   
 }
@@ -510,7 +521,7 @@ kolmogorov=function(dataset_W,dataset_What){
 #-------------------------------------------------------------
 #------------------------DATA GENERATE------------------------
 #-------------------------------------------------------------
-n=20
+n=200
 id=c(1:n) # identification
 beta_0=1 # beta_0
 gamma_0=0.1 # gamma_0
@@ -567,7 +578,7 @@ std_hat_cox=unlist(summary(aftsrr_beta_cox))$coefficients2;std_hat_cox
 #-------------------------------------------------------------
 #------------------------WEIGHT&TOLERANCE---------------------
 #-------------------------------------------------------------
-given_tol=0.1
+given_tol=100
 
 given_weight="c"
 #(weight=="a"){w_i=Covari*(Covari<=median(Covari))}
@@ -585,28 +596,6 @@ sim=200
 #-------------------------------------------------------------
 #-------------------------OMNIBUS TEST------------------------
 #-------------------------------------------------------------
-
-#-------------------------NONCENSORING------------------------
-dataset_What_aft_NC=simulation_What(sim,beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,given_tol)
-dataset_W_aft_NC=simulation_W(beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,dataset_What_aft_NC)
-
-kol_typ_test_aft_NC=kolmogorov(dataset_W_aft_NC,dataset_What_aft_NC);kol_typ_test_aft_NC
-
-p_aft_NC=kol_typ_test_aft_NC[3,];p_aft_NC
-
-# PLOT : W_aft_NC vs What_aft_NC
-Figure1_W_aft_NC=
-  ggplot()+
-  geom_line(data=dataset_What_aft_NC,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
-  geom_line(data=dataset_W_aft_NC,aes(x=t_i,y=W),colour="tomato")
-Figure1_W_aft_NC
-
-# PLOT : std.W_aft_NC vs std.What_aft_NC
-Figure1_std.W_aft_NC=
-  ggplot()+
-  geom_line(data=dataset_What_aft_NC,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
-  geom_line(data=dataset_W_aft_NC,aes(x=t_i,y=std.W),colour="tomato")
-Figure1_std.W_aft_NC
 
 #--------------------------CENSORING--------------------------
 # dataset_What()
@@ -653,6 +642,28 @@ Figure1_std.W_cox=
   geom_line(data=dataset_What_cox,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
   geom_line(data=dataset_W_cox,aes(x=t_i,y=std.W),colour="tomato")
 Figure1_std.W_cox
+
+#-------------------------NONCENSORING------------------------
+dataset_What_aft_NC=simulation_What(sim,beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,given_tol)
+dataset_W_aft_NC=simulation_W(beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,dataset_What_aft_NC)
+
+kol_typ_test_aft_NC=kolmogorov(dataset_W_aft_NC,dataset_What_aft_NC);kol_typ_test_aft_NC
+
+p_aft_NC=kol_typ_test_aft_NC[3,];p_aft_NC
+
+# PLOT : W_aft_NC vs What_aft_NC
+Figure1_W_aft_NC=
+  ggplot()+
+  geom_line(data=dataset_What_aft_NC,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
+  geom_line(data=dataset_W_aft_NC,aes(x=t_i,y=W),colour="tomato")
+Figure1_W_aft_NC
+
+# PLOT : std.W_aft_NC vs std.What_aft_NC
+Figure1_std.W_aft_NC=
+  ggplot()+
+  geom_line(data=dataset_What_aft_NC,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
+  geom_line(data=dataset_W_aft_NC,aes(x=t_i,y=std.W),colour="tomato")
+Figure1_std.W_aft_NC
 
 #-------------------------------------------------------------
 #----------------------FUNCTION FORM TEST---------------------

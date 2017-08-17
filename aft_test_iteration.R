@@ -1,7 +1,7 @@
 alpha=0.9
-beta=0.6
+beta=0.55
 
-iteration=1000
+iteration=1
 
 result=list()
 result_aft=list()
@@ -99,9 +99,11 @@ for(k in 1:iteration){
   p_cox=kol_typ_test_cox[3,]
   
   P_result_exact=rbind(p_aft,p_cox)
-  P_result_alpha_beta=rbind((p_aft>=alpha)*1,(p_cox<=beta)*1)
+  
+  P_result_alpha_beta=rbind((p_aft>=alpha)*1,(p_cox>beta)*1)
   rownames(P_result_alpha_beta)=c("p_aft_alpha","p_cox_beta")
-  P_result_binary=rbind((p_aft==1)*1,(p_cox==0)*1)
+  
+  P_result_binary=rbind((p_aft==1)*1,(p_cox>0)*1)
   rownames(P_result_binary)=c("p_aft_1","p_cox_0")
   
   result_aft[[k]]=list(#Figure1_W_aft.aft,Figure1_std.W_aft.aft,
