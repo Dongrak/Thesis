@@ -88,7 +88,12 @@ iteration_function=function(iteration,n,path,alpha,weight,test,tol){
   }
   return(result)
 }
-iteration_result=iteration_function(iteration,n,path,alpha,given_weight,given_test,given_tol)
+iteration_result2=iteration_function(250,n,path,alpha,given_weight,given_test,given_tol)
+
+iteration_result # iteration 150
+iteration_result1 # iteration 200
+
+
 
 
 result_n_exact=0
@@ -106,4 +111,6 @@ for(k in 1:iteration){
   print(result[[k]][[3]][[1]])
   #print(result[[k]][[3]][[2]])
 }
+
+
 

@@ -392,28 +392,22 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
 sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
   # path=path;b=beta_hat_aft;weight=given_weight;Time=T_aft;Delta=D_aft;Covari=Z_aft;test=given_test;tol=given_tol;
   
-  result=list(NA)
-  for(k in 1:path){
-    sample_path=What_t(b,std,Time,Delta,Covari,weight,test,tol)
-    
-    if (k==1){
-      dataset_What=data.frame(sample_path)
-      columnnames=paste("path",k,sep="")
-    }
-    if (k>1){
-      dataset_What=cbind(dataset_What,sample_path)
-      columnnames=c(columnnames,paste("path",k,sep=""))
-    }
-    
-    colnames(dataset_What)=columnnames
-    
+  #------------------------SAMPLE PATH------------------------
+  dataset_What=matrix(What_t(b,std,Time,Delta,Covari,weight,test,tol))
+  for(k in 2:path){
+    dataset_What=cbind(dataset_What,What_t(b,std,Time,Delta,Covari,weight,test,tol))
     if(k%%100==0) {
       cat("Sample Path",k,"\n")
     }
   }
+  colnames(dataset_What)=paste0(rep("path"),1:path)
+  rownames(dataset_What)=c(1:n)
   # dataset_What
   
-  std.boot=apply(dataset_What,1,sd)
+  #------------------------SAMPLE PATH------------------------
+  #------------------------SAMPLE PATH------------------------
+  
+  std.boot=as.vector(apply(dataset_What,1,sd))
   # std.boot
   
   dataset_std.What=dataset_What/std.boot
@@ -421,25 +415,37 @@ sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
   
   dataset_W=W_t(b,Time,Delta,Covari,weight,test)
   # dataset_W
-
-  dataset_std.What=dataset_What/std.boot
-  # dataset_std.What
     
   dataset_std.W=dataset_W/std.boot
   # dataset_std.W
   
-  max_path_What=apply(abs(dataset_What),2,max)
+  #------------------------SAMPLE PATH------------------------
+  #------------------------SAMPLE PATH------------------------
+  max_path_What=as.vector(apply(abs(dataset_What),2,max))
   # max_path_What
   
-  max_path_W=max(dataset_W)
+  max_path_W=max(abs(dataset_W))
   # max_path_W
   
-  std.max_path_What=apply(abs(dataset_std.What),2,max)
+  std.max_path_What=as.vector(apply(abs(dataset_std.What),2,max))
   # std.max_path_What
   
-  std.max_path_W=max(dataset_std.W)
+  std.max_path_W=max(abs(dataset_std.W))
   # std.max_path_W
   
+  #-----------------------------------------------------------
+  #  p  : the ratio of (What>=W)*1
+  # H_0 : the data follow the assumption of the aft model.
+  #
+  # if p>0.95, cannot reject the null hypothesis. i.e. accept it 
+  # if p<0.95, reject the null hypothesis.
+  #
+  # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
+  # 0.96이면 당연히 accetp
+  # 0.04이면 당연히 reject
+  # 0.5이면 ??? reject인 거 같음 => 위에 if 절이 맞는 것 같다.
+  #-----------------------------------------------------------
+  #------------------------SAMPLE PATH------------------------
   p_value=length(which((max_path_What>max_path_W)*1==1))/path
   # p_value
   
