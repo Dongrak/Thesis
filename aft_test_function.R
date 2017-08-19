@@ -370,7 +370,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   
   AA=(1/sqrt(n))*U_w_G_t.beta;AA
   BB=sqrt(n)*(fhat_N_t+cumsum(fhat_Y_t*dAhat_0_t.beta))*(b-beta_hat_s);BB
-  CC=(1/sqrt(n))*cumsum(S_w_s_t.beta*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s[order_resid])));CC
+  CC=(1/sqrt(n))*cumsum(S_w_s_t.beta*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s)));CC
   
   What_t=AA-BB-CC
   #What_t
@@ -494,7 +494,7 @@ plotting=function(result,standardization){
     }
     #dataset_std.What
     
-    dataset_std.W=data.frame(group,t_i=1:n,std.W=result_aft$dataset_std.W)
+    dataset_std.W=data.frame(group,t_i=1:n,std.W=result$dataset_std.W)
     #dataset_std.W
     
     Figure1_std.W=
@@ -584,7 +584,7 @@ given_test="omni"
 #-------------------------------------------------------------
 #-------------------------OMNIBUS TEST------------------------
 #-------------------------------------------------------------
-system.time(sample_path(path,beta_hat_aft,std_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol))
+#system.time(sample_path(path,beta_hat_aft,std_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol))
 #--------------------------CENSORING--------------------------
 result_aft=sample_path(path,beta_hat_aft,std_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol)
 result_cox=sample_path(path,beta_hat_cox,std_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,given_tol)
