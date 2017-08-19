@@ -88,29 +88,22 @@ iteration_function=function(iteration,n,path,alpha,weight,test,tol){
   }
   return(result)
 }
-iteration_result2=iteration_function(250,n,path,alpha,given_weight,given_test,given_tol)
+iteration_result3=iteration_function(iteration,n,path,alpha,given_weight,given_test,given_tol)
 
-iteration_result # iteration 150
-iteration_result1 # iteration 200
+#iteration_result # iteration 150
+#iteration_result1 # iteration 200
 
+iteration_result_2=c(iteration_result,iteration_result1)
 
+length(iteration_result_2)
 
-
-result_n_exact=0
-result_n_alpha_beta=0
-
-for(k in 1:iteration){
-  result_n_exact=result_n_exact+result_p[[k]][[1]]
-  result_n_alpha_beta=result_n_alpha_beta+result_p[[k]][[2]]
+prob.table=function(iter_result){
+  iter=length(iter_result)
+  sum.prob.list=list(0)
+  for(k in 1:iter){
+    sum.prob.list=mapply("+",sum.prob.list,iter_result[[k]][[3]])
+  }
+  mean.prob.list=sum.prob.list/iter
+  return(mean.prob.list)
 }
-
-P_result_exact=result_n_exact/iteration;P_result_exact
-P_result_alpha_beta=result_n_alpha_beta/iteration;P_result_alpha_beta
-
-for(k in 1:iteration){
-  print(result[[k]][[3]][[1]])
-  #print(result[[k]][[3]][[2]])
-}
-
-
-
+prob.table(iteration_result_2)
