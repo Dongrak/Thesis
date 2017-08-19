@@ -419,8 +419,7 @@ sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
   dataset_std.W=dataset_W/std.boot
   # dataset_std.W
   
-  #------------------------SAMPLE PATH------------------------
-  #------------------------SAMPLE PATH------------------------
+  #-----------------------MAXIMUM VALUE-----------------------
   max_path_What=as.vector(apply(abs(dataset_What),2,max))
   # max_path_What
   
@@ -445,7 +444,8 @@ sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
   # 0.04이면 당연히 reject
   # 0.45이면 reject <= W가 45번이나 튀어나간거다!
   #-----------------------------------------------------------
-  #------------------------SAMPLE PATH------------------------
+  
+  #--------------------------P VALUE--------------------------
   p_value=length(which((max_path_What>max_path_W)*1==1))/path
   # p_value
   

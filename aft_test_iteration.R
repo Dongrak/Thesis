@@ -70,6 +70,20 @@ iteration_function=function(iteration,n,path,alpha,weight,test,tol){
   # result_cox
   result_cox=sample_path(path,beta_hat_cox,std_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,given_tol)
   
+  #-----------------------------------------------------------
+  #  p  : the ratio of (What>=W)*1
+  # H_0 : the data follow the assumption of the aft model.
+  #
+  # if p>0.95, cannot reject the null hypothesis. i.e. accept it 
+  # if p<0.95, reject the null hypothesis.
+  #
+  # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
+  # 0.96이면 당연히 accetp
+  # 0.04이면 당연히 reject
+  # 0.45이면 reject <= W가 45번이나 튀어나간거다!
+  # p_alpha는 acceptance rate을 구하는 것이다! 
+  #-----------------------------------------------------------
+  
   p_exact=rbind(c(result_aft$p_value,result_aft$std.p_value),
                 c(result_cox$p_value,result_cox$std.p_value))
   colnames(p_exact)=c("W","std.W")
@@ -88,22 +102,27 @@ iteration_function=function(iteration,n,path,alpha,weight,test,tol){
   }
   return(result)
 }
-iteration_result3=iteration_function(iteration,n,path,alpha,given_weight,given_test,given_tol)
+iteration_result=iteration_function(iteration,n,path,alpha,given_weight,given_test,given_tol)
 
-#iteration_result # iteration 150
+#iteration_result2 # iteration 150
 #iteration_result1 # iteration 200
 
-iteration_result_2=c(iteration_result,iteration_result1)
-
-length(iteration_result_2)
+iteration_result3=c(iteration_result1,iteration_result2)
 
 prob.table=function(iter_result){
   iter=length(iter_result)
-  sum.prob.list=list(0)
+  
+  p_exact_set=list(NA)
+  p_alpha_set=list(NA)
+  
   for(k in 1:iter){
-    sum.prob.list=mapply("+",sum.prob.list,iter_result[[k]][[3]])
+    p_exact_set[[k]]=iter_result[[k]][[3]][[1]]
+    p_alpha_set[[k]]=iter_result[[k]][[3]][[2]]
   }
-  mean.prob.list=sum.prob.list/iter
-  return(mean.prob.list)
+  
+  p_exact=Reduce("+",p_exact_set)/iter
+  p_alpha=Reduce("+",p_alpha_set)/iter
+  
+  return(list(p_exact,p_alpha))
 }
-prob.table(iteration_result_2)
+prob.table(iteration_result3)
