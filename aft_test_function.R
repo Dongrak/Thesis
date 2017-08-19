@@ -370,7 +370,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   
   AA=(1/sqrt(n))*U_w_G_t.beta;AA
   BB=sqrt(n)*(fhat_N_t+cumsum(fhat_Y_t*dAhat_0_t.beta))*(b-beta_hat_s);BB
-  CC=(1/sqrt(n))*cumsum(S_w_s_t.beta*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s)));CC
+  CC=(1/sqrt(n))*cumsum(S_w_s_t.beta*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s[order_resid])));CC
   
   What_t=AA-BB-CC
   #What_t
