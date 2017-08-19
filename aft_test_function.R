@@ -3,6 +3,8 @@
 #-------------------------------------------------------------
 rm(list=ls())
 
+memory.limit(16*2^20)
+
 options(max.print=999999)
 options(error=NULL)
 
@@ -25,23 +27,26 @@ W_t=function(b,Time,Delta,Covari,weight,test){
   n=length(Time)
   
   e_i_beta=log(Time)+Covari*b
-  Time=Time[order(e_i_beta)]
-  Covari=Covari[order(e_i_beta)]
-  Delta=Delta[order(e_i_beta)]
-  e_i_beta=e_i_beta[order(e_i_beta)]
+  
+  order_resid=order(e_i_beta)
+  
+  Time=Time[order_resid]
+  Covari=Covari[order_resid]
+  Delta=Delta[order_resid]
+  e_i_beta=e_i_beta[order_resid]
   
   if (weight=="a"){w_i=Covari*(Covari<=median(Covari))}
   if (weight=="b"){w_i=Covari}
   if (weight=="c"){w_i=1*(Covari<=median(Covari))}
   if (weight=="d"){w_i=1}
   
-  N_i_s_t.beta=list()
+  N_i_s_t.beta=list(NA)
   for(j in 1:n){
     N_i_s_t.beta[[j]]=(e_i_beta>=e_i_beta[j])*Delta[j]
   }
   #N_i_s_t.beta
   
-  Y_i_s_t.beta=list()
+  Y_i_s_t.beta=list(NA)
   for(j in 1:n){
     Y_i_s_t.beta[[j]]=(e_i_beta<=e_i_beta[j])*1
   }
@@ -79,7 +84,7 @@ W_t=function(b,Time,Delta,Covari,weight,test){
   W_t=n^(-0.5)*(Reduce('+',mapply('*',Mhat_i_s_t.beta,w_i,SIMPLIFY = FALSE)))
   #W_t
   
-  if (test=="omni"){return(W_t)}
+  if (test=="omni"){return(W_t[order(Time)])}
   if (test=="ftn.form"){return(W_t[order(Covari)])}
   
 }
@@ -88,29 +93,32 @@ W_t=function(b,Time,Delta,Covari,weight,test){
 #-------------------------------------------------------------
 #-----------------------AFT DATA ANALYSIS---------------------
 #-------------------------------------------------------------
-What_t=function(b,Time,Delta,Covari,weight,tol,test){
-  #b=beta_hat_aft;weight=given_weight;Time=T_aft;Delta=D_aft;Covari=Z_aft;tol=given_tol;test=given_test;
-  
+What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
+  #b=beta_hat_aft;weight=given_weight;Time=T_aft;Delta=D_aft;Covari=Z_aft;test=given_test;tol=given_tol;
+
   n=length(Time)
   
   e_i_beta=log(Time)+Covari*b
-  Time=Time[order(e_i_beta)]
-  Covari=Covari[order(e_i_beta)]
-  Delta=Delta[order(e_i_beta)]
-  e_i_beta=e_i_beta[order(e_i_beta)]
+  
+  order_resid=order(e_i_beta)
+  
+  Time=Time[order_resid]
+  Covari=Covari[order_resid]
+  Delta=Delta[order_resid]
+  e_i_beta=e_i_beta[order_resid]
   
   if (weight=="a"){w_i=Covari*(Covari<=median(Covari))}
   if (weight=="b"){w_i=Covari}
   if (weight=="c"){w_i=1*(Covari<=median(Covari))}
   if (weight=="d"){w_i=1}
   
-  N_i_s_t.beta=list()
+  N_i_s_t.beta=list(NA)
   for(j in 1:n){
     N_i_s_t.beta[[j]]=(e_i_beta>=e_i_beta[j])*Delta[j]
   }
   #N_i_s_t.beta
   
-  Y_i_s_t.beta=list()
+  Y_i_s_t.beta=list(NA)
   for(j in 1:n){
     Y_i_s_t.beta[[j]]=(e_i_beta<=e_i_beta[j])*1
   }
@@ -148,11 +156,11 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
   dN_i_s_t.beta=lapply(N_i_s_t.beta,function(x){diff(c(0,x))})
   #dN_i_s_t.beta
   
-  #Q_i_t=S_0_s_t.beta/n # Gehan's weight
-  Q_i_t=1
+  Q_t=1 #Q_t=S_0_s_t.beta/n # Gehan's weight
+  #Q_t
   
-  U_t.beta=Reduce('+',lapply(mapply('*',dN_i_s_t.beta,
-                                    Q_i_t*(Covari-E_s_t.beta), SIMPLIFY = FALSE),cumsum))
+  U_t.beta=Reduce('+',lapply(mapply("*",dN_i_s_t.beta,lapply(
+    lapply(Covari,'-',E_s_t.beta),"*",Q_t), SIMPLIFY = FALSE),cumsum))
   #U_t.beta
   
   S_w_s_t.beta=Reduce('+',mapply(
@@ -168,114 +176,49 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
   #-----------------------------------------------------------
   #----------------------kernel Smoothing---------------------
   #-----------------------------------------------------------
-  b_g0=b
   
-  e_i_beta_g0=log(Time)+Covari*b_g0
-  Time_g0=Time[order(e_i_beta_g0)]
-  Covari_g0=Covari[order(e_i_beta_g0)]
-  Delta_g0=Delta[order(e_i_beta_g0)]
-  e_i_beta_g0=e_i_beta_g0[order(e_i_beta_g0)]
-  
-  N_i_s_t.beta_g0=list()
-  for(j in 1:n){
-    N_i_s_t.beta_g0[[j]]=(e_i_beta_g0>=e_i_beta_g0[j])*Delta_g0[j]
-  }
-  #N_i_s_t.beta_g0
-  
-  Y_i_s_t.beta_g0=list()
-  for(j in 1:n){
-    Y_i_s_t.beta_g0[[j]]=(e_i_beta_g0<=e_i_beta_g0[j])*1
-  }
-  #Y_i_s_t.beta_g0
-  
-  N_d_s_t.beta_g0=Reduce('+',N_i_s_t.beta_g0)
-  #N_d_s_t.beta_g0
-  
-  S_0_s_t.beta_g0=Reduce('+',Y_i_s_t.beta_g0)
-  #S_0_s_t.beta_g0
-  
-  S_1_s_t.beta_g0=Reduce('+',mapply(
-    "*", Y_i_s_t.beta_g0, Covari_g0, SIMPLIFY = FALSE))
-  #S_1_s_t.beta_g0
-  
-  E_s_t.beta_g0=S_1_s_t.beta_g0/S_0_s_t.beta_g0
-  #E_s_t.beta_g0
-  
-  J_t.beta_g0=(S_0_s_t.beta_g0>0)*1
-  #J_t.beta_g0
-  
-  dN_d_s_t.beta_g0=diff(c(0,N_d_s_t.beta_g0))
-  #dN_d_s_t.beta_g0
-  
-  Ahat_0_t.beta_g0=cumsum((J_t.beta_g0/S_0_s_t.beta_g0)*dN_d_s_t.beta_g0)
-  #Ahat_0_t.beta_g0
-  
-  Ghat_0_t=1-exp(-Ahat_0_t.beta_g0)
+  #-----------------------------g0----------------------------
+  Ghat_0_t=1-exp(-Ahat_0_t.beta)
   #Ghat_0_t
   
   dGhat_0_t=diff(c(0,Ghat_0_t))
   #dGhat_0_t
   
-  ghat_0_t=(ksmooth(Time_g0,dGhat_0_t,"normal",
-                    bandwidth = 1.06*sd(dGhat_0_t)*n^(-0.2),x.points=Time_g0)$y)
+  ghat_0_t=(ksmooth(e_i_beta,dGhat_0_t,"normal",
+                    bandwidth = 1.06*sd(dGhat_0_t)*n^(-0.2),x.points=e_i_beta)$y)
   #ghat_0_t
   
-  fhat_Y_t=ghat_0_t*Time*(sum(w_i*Covari)/n)
+  fhat_Y_t=Reduce('+',lapply(w_i*Covari,'*',ghat_0_t*Time))/n
   #fhat_Y_t
   
-  b_f0=b
+  #-----------------------------f0----------------------------
+  KM_e=cumprod(1-Delta/S_0_s_t.beta)
+  #KM_e
   
-  e_i_beta_f0=log(Time)+Covari*b_f0
-  Time_f0=Time[order(e_i_beta_f0)]
-  Covari_f0=Covari[order(e_i_beta_f0)]
-  Delta_f0=Delta[order(e_i_beta_f0)]
-  e_i_beta_f0=e_i_beta_f0[order(e_i_beta_f0)]
+  Fhat_0_e=1-KM_e
+  #Fhat_0_e
   
-  N_i_e_f0=list()
-  for(j in 1:n){
-    N_i_e_f0[[j]]=(e_i_beta_f0>=e_i_beta_f0[j])*Delta_f0[j]
-  }
-  #N_i_e_f0
+  dFhat_0_e=diff(c(0,Fhat_0_e))
+  #dFhat_0_e
   
-  Y_i_e_f0=list()
-  for(j in 1:n){
-    Y_i_e_f0[[j]]=(e_i_beta_f0<=e_i_beta_f0[j])*1
-  }
-  #Y_i_e_f0
+  Condi.Ehat=(cumsum(e_i_beta*dFhat_0_e))/(1-Fhat_0_e)
+  #Condi.Ehat
   
-  N_d_e_f0=Reduce('+',N_i_e_f0)
-  #N_d_e_f0
+  rhat_i=Delta*e_i_beta+(1-Delta)*Condi.Ehat
+  #rhat_i
   
-  Y_d_e_f0=Reduce('+',Y_i_e_f0)
-  #Y_d_e_f0
-  
-  KM_e_f0=cumprod(1-Delta_f0/Y_d_e_f0)
-  #KM_e_f0
-  
-  Fhat_0_e_f0=1-KM_e_f0
-  #Fhat_0_e_f0
-  
-  dFhat_0_e_f0=diff(c(0,Fhat_0_e_f0))
-  #dFhat_0_e_f0
-  
-  Condi.Ehat_f0=(cumsum(e_i_beta_f0*dFhat_0_e_f0))/(1-Fhat_0_e_f0)
-  #Condi.Ehat_f0
-  
-  rhat_i_f0=Delta_f0*e_i_beta_f0+(1-Delta_f0)*Condi.Ehat_f0
-  #rhat_i_f0
-  
-  fhat_0_t=ksmooth(Time_f0,dFhat_0_e_f0,"normal",
-                   bandwidth = 1.06*sd(dFhat_0_e_f0)*n^(-0.2),x.points=Time_f0)$y
+  fhat_0_t=ksmooth(e_i_beta,dFhat_0_e,"normal",
+                   bandwidth = 1.06*sd(dFhat_0_e)*n^(-0.2),x.points=e_i_beta)$y
   #fhat_0_t
-  
-  fhat_N_t=fhat_0_t*Time*(sum(Delta*w_i*Covari)/n)
+
+  fhat_N_t=Reduce('+',lapply(Delta*w_i*Covari,'*',fhat_0_t*Time))/n
   #fhat_N_t
   
   #-----------------------------------------------------------
   #--------Find Beta_hat_star by using optimize function------
   #-----------------------------------------------------------
   U_beta=function(beta_U=b,Time_U=Time,Delta_U=Delta,Covari_U=Covari){
-    #beta_U=b;Time_U=Time;Delta_U=Delta;Covari_U=Covari;Q_i_t_U=Q_i_t;
+    #beta_U=b;Time_U=Time;Delta_U=Delta;Covari_U=Covari;Q_t_U=Q_t;
     
     e_i_beta_U=log(Time_U)+Covari_U*beta_U
     Time_U=Time_U[order(e_i_beta_U)]
@@ -283,13 +226,13 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
     Delta_U=Delta_U[order(e_i_beta_U)]
     e_i_beta_U=e_i_beta_U[order(e_i_beta_U)]
     
-    N_i_s_t.beta_U=list()
+    N_i_s_t.beta_U=list(NA)
     for(j in 1:n){
       N_i_s_t.beta_U[[j]]=(e_i_beta_U>=e_i_beta_U[j])*Delta_U[j]
     }
     #N_i_s_t.beta_U
     
-    Y_i_s_t.beta_U=list()
+    Y_i_s_t.beta_U=list(NA)
     for(j in 1:n){
       Y_i_s_t.beta_U[[j]]=(e_i_beta_U<=e_i_beta_U[j])*1
     }
@@ -327,16 +270,19 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
     dN_i_s_t.beta_U=lapply(N_i_s_t.beta_U,function(x){diff(c(0,x))})
     #dN_i_s_t.beta_U
     
-    Q_i_t_U=S_0_s_t.beta_U/n # Gehan's weight
-    #Q_i_t=1
+    Q_t_U=S_0_s_t.beta_U/n # Gehan's weight
+    #Q_t_U
     
-    U_t.beta_U=Reduce('+',lapply(mapply('*',dN_i_s_t.beta_U,
-                                        Q_i_t_U*(Covari_U-E_s_t.beta_U),SIMPLIFY = FALSE),cumsum))
+    U_t.beta_U=Reduce('+',lapply(mapply("*",dN_i_s_t.beta_U,lapply(
+      lapply(Covari_U,'-',E_s_t.beta_U),"*",Q_t_U), SIMPLIFY = FALSE),cumsum))
     #U_t.beta_U
     
-    U_inf.beta_U=U_t.beta_U[n]
-    #U_inf.beta_U
+    U_t.beta_U_order=U_t.beta_U[order(Time_U)]
+    #U_t.beta_U_order
     
+    U_inf.beta_U=U_t.beta_U_order[n]
+    #U_inf.beta_U
+   
     return(U_inf.beta_U)
   }
   #U_beta()
@@ -348,19 +294,24 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
     G_i=rnorm(n)
     #G_i
     
-    U_w_G_t.beta=Reduce('+',mapply('*',lapply(mapply('*',dMhat_i_s_t.beta,
-                                                     Q_i_t*(w_i-E_w_s_t.beta),SIMPLIFY = FALSE),cumsum),G_i,SIMPLIFY = FALSE))
+    U_w_G_t.beta=Reduce('+',lapply(lapply(mapply(
+      "*",dMhat_i_s_t.beta,lapply(lapply(w_i,'-',E_w_s_t.beta),"*",Q_t)
+      , SIMPLIFY = FALSE),"*",G_i),cumsum))
     #U_w_G_t.beta
     
-    U_G_t.beta=Reduce('+',mapply('*',lapply(mapply('*',dMhat_i_s_t.beta,
-                                                   Q_i_t*(Covari-E_s_t.beta),SIMPLIFY = FALSE),cumsum),G_i,SIMPLIFY = FALSE))
+    U_G_t.beta=Reduce('+',lapply(lapply(mapply(
+      "*",dMhat_i_s_t.beta,lapply(lapply(Covari,'-',E_s_t.beta),"*",Q_t)
+      , SIMPLIFY = FALSE),"*",G_i),cumsum))
     #U_G_t.beta
     
-    U_G_t.inf.beta=U_G_t.beta[n]
+    U_G_t.beta_order=U_G_t.beta[order(Time)]
+    #U_G_t.beta_order
+    
+    U_G_t.inf.beta=U_G_t.beta_order[n]
     #U_G_t.inf.beta
     
     beta_hat_s_list=optimize(function(beta){abs(U_beta(beta)-U_G_t.inf.beta)},
-                             c(b-std_hat_aft,b+std_hat_aft),
+                             c(b-std,b+std),
                              tol = 1e-16)
     #beta_hat_s_list
     
@@ -372,18 +323,21 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
   #beta_hat_s
   
   e_i_beta_s=log(Time)+Covari*beta_hat_s
-  Time_s=Time[order(e_i_beta_s)]
-  Covari_s=Covari[order(e_i_beta_s)]
-  Delta_s=Delta[order(e_i_beta_s)]
-  e_i_beta_s=e_i_beta_s[order(e_i_beta_s)]
   
-  N_i_s_t.beta_s=list()
+  order_resid_s=order(e_i_beta_s)
+  
+  Time_s=Time[order_resid_s]
+  Covari_s=Covari[order_resid_s]
+  Delta_s=Delta[order_resid_s]
+  e_i_beta_s=e_i_beta_s[order_resid_s]
+  
+  N_i_s_t.beta_s=list(NA)
   for(j in 1:n){
     N_i_s_t.beta_s[[j]]=(e_i_beta_s>=e_i_beta_s[j])*Delta_s[j]
   }
   #N_i_s_t.beta_s
   
-  Y_i_s_t.beta_s=list()
+  Y_i_s_t.beta_s=list(NA)
   for(j in 1:n){
     Y_i_s_t.beta_s[[j]]=(e_i_beta_s<=e_i_beta_s[j])*1
   }
@@ -429,88 +383,129 @@ What_t=function(b,Time,Delta,Covari,weight,tol,test){
   #return(What_t)
   #return(list(What_t=What_t,beta_hat_s=beta_hat_s))
   
-  if (test=="omni"){return(What_t)}
+  if (test=="omni"){return(What_t[order(Time)])}
   if (test=="ftn.form"){return(What_t[order(Covari)])}
   
 }
 #What_t()
 
-simulation_What=function(sim,b,Time,Delta,Covari,weight,test,tol){
+sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
+  # path=path;b=beta_hat_aft;weight=given_weight;Time=T_aft;Delta=D_aft;Covari=Z_aft;test=given_test;tol=given_tol;
   
-  dataset_What=data.frame()
-  for(k in 1:sim){
-    group=k
-    A=What_t(b,Time,Delta,Covari,weight,tol,test)
-    AA=data.frame(group,t_i=1:n,What=A)
-    dataset_What=rbind(dataset_What,AA)
+  result=list(NA)
+  for(k in 1:path){
+    sample_path=What_t(b,std,Time,Delta,Covari,weight,test,tol)
+    
+    if (k==1){
+      dataset_What=data.frame(sample_path)
+      columnnames=paste("path",k,sep="")
+    }
+    if (k>1){
+      dataset_What=cbind(dataset_What,sample_path)
+      columnnames=c(columnnames,paste("path",k,sep=""))
+    }
+    
+    colnames(dataset_What)=columnnames
+    
     if(k%%100==0) {
-      cat("Simulation",k,"\n")
+      cat("Sample Path",k,"\n")
     }
   }
+  # dataset_What
   
-  bootstrap=function(dataset_What){
-    at.time.t=list()
-    std.at.time.t=vector()
-    for(k in 1:n){
-      at.time.t[[k]]=data.frame(as.matrix(dataset_What)[which(dataset_What$t_i==k),])
-      std.at.time.t[k]=sd(sample(at.time.t[[k]]$What,n,replace=TRUE))
+  std.boot=apply(dataset_What,1,sd)
+  # std.boot
+  
+  dataset_std.What=dataset_What/std.boot
+  # dataset_std.What
+  
+  dataset_W=W_t(b,Time,Delta,Covari,weight,test)
+  # dataset_W
+
+  dataset_std.What=dataset_What/std.boot
+  # dataset_std.What
+    
+  dataset_std.W=dataset_W/std.boot
+  # dataset_std.W
+  
+  max_path_What=apply(abs(dataset_What),2,max)
+  # max_path_What
+  
+  max_path_W=max(dataset_W)
+  # max_path_W
+  
+  std.max_path_What=apply(abs(dataset_std.What),2,max)
+  # std.max_path_What
+  
+  std.max_path_W=max(dataset_std.W)
+  # std.max_path_W
+  
+  p_value=length(which((max_path_What>max_path_W)*1==1))/path
+  # p_value
+  
+  std.p_value=length(which((std.max_path_What>std.max_path_W)*1==1))/path
+  # std.p_value
+  
+  result=list(dataset_What=dataset_What,dataset_std.What=dataset_std.What,
+              dataset_W=dataset_W,dataset_std.W=dataset_std.W,
+              std.boot=std.boot,p_value=p_value,std.p_value=std.p_value)
+  # result
+  
+  return(result)
+}
+#sample_path
+
+plotting=function(result,standardization){
+  
+  if (standardization==0) {
+    dataset_What=data.frame()
+    for (i in 1:path){
+      group=i
+      A=result$dataset_What[,i]
+      AA=data.frame(group,t_i=1:n,What=A)
+      dataset_What=rbind(dataset_What,AA)
     }
-    return(std.at.time.t)
+    #dataset_What
+    
+    dataset_W=data.frame(group,t_i=1:n,W=result$dataset_W)
+    #dataset_W
+    
+    Figure1_W=
+      ggplot()+
+      geom_line(data=dataset_What,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
+      geom_line(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
+    #Figure1_W
+    
+    return(Figure1_W)
   }
-  
-  mean.std.boot=bootstrap(dataset_What)
-  
-  AAA=data.frame((dataset_What$What/mean.std.boot),mean.std.boot)
-  dataset_What=cbind(dataset_What,AAA)
-  colnames(dataset_What)=c("group","t_i","What","std.What","std.boot")
-  
-  return(dataset_What)
-}
-
-simulation_W=function(b,Time,Delta,Covari,weight,test,dataset_What){
-  mean.std.boot=dataset_What$std.boot[1:n]
-  B=W_t(b,Time,Delta,Covari,weight,test)
-  dataset_W=data.frame(0,1:n,B)
-  AAAA=data.frame((dataset_W[3]/mean.std.boot),mean.std.boot)
-  dataset_W=cbind(dataset_W,AAAA)
-  colnames(dataset_W)=c("group","t_i","W","std.W","std.boot")
-  return(dataset_W)
-}
-
-# KOLMOGOROV TYPE SUPREMUM TEST
-kolmogorov=function(dataset_W,dataset_What){
-  
-  sim=length(dataset_What[,1])/length(dataset_W[,1])
-  
-  # kolmogorov type supremum test for W
-  max_W=max(abs(dataset_W$W))
-  max_What=c()
-  for(k in 1: sim){
-    max_What[k]=max(abs(dataset_What[which(dataset_What$group==k),]$What))
+  if (standardization==1) {
+    dataset_std.What=data.frame()
+    for (i in 1:path){
+      group=i
+      A=result$dataset_std.What[,i]
+      AA=data.frame(group,t_i=1:n,std.What=A)
+      dataset_std.What=rbind(dataset_std.What,AA)
+    }
+    #dataset_std.What
+    
+    dataset_std.W=data.frame(group,t_i=1:n,std.W=result_aft$dataset_std.W)
+    #dataset_std.W
+    
+    Figure1_std.W=
+      ggplot()+
+      geom_line(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
+      geom_line(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
+    return(Figure1_std.W)
   }
-  n_W=length(which((max_What>max_W)==1))
-  p_W=n_W/sim
-  
-  # kolmogorov type supremum test for std.W
-  max_std_W=max(abs(dataset_W$std.W))
-  max_std_What=c()
-  for(k in 1: sim){
-    max_std_What[k]=max(abs(dataset_What[which(dataset_What$group==k),]$std.What))
-  }
-  n_std.W=length(which((max_std_What>max_std_W)==1))
-  p_std.W=n_std.W/sim
-  
-  # kolmogorov type supremum test result
-  test_result=rbind(c(sim,sim),c(n_W,n_std.W),c(p_W,p_std.W))
-  colnames(test_result)=c("W","std.W")
-  rownames(test_result)=c("sim","n","p")
-  return(test_result)
 }
+#plotting
 
 #-------------------------------------------------------------
 #------------------------DATA GENERATE------------------------
 #-------------------------------------------------------------
-n=20
+path=200
+
+n=200
 id=c(1:n) # identification
 beta_0=1 # beta_0
 gamma_0=0.1 # gamma_0
@@ -580,15 +575,45 @@ given_test="omni"
 # test="ftn.form"
 # test="....???"
 
-sim=200
-
 #-------------------------------------------------------------
 #-------------------------OMNIBUS TEST------------------------
 #-------------------------------------------------------------
+system.time(sample_path(path,beta_hat_aft,std_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol))
+#--------------------------CENSORING--------------------------
+result_aft=sample_path(path,beta_hat_aft,std_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol)
+result_cox=sample_path(path,beta_hat_cox,std_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,given_tol)
+
+result_aft$p_value
+result_aft$std.p_value
+
+result_cox$p_value
+result_cox$std.p_value
+
+# PLOT : W_aft vs What_aft
+Figure1_W_aft=plotting(result_aft,0);Figure1_W_aft
+
+# PLOT : std.W_aft vs std.What_aft
+Figure1_std.W_aft=plotting(result_aft,1);Figure1_std.W_aft
+
+# PLOT : W_cox vs What_cox
+Figure1_W_cox=plotting(result_cox,0);Figure1_W_cox
+
+# PLOT : W_cox vs What_cox
+Figure1_std.W_cox=plotting(result_cox,1);Figure1_std.W_cox
+
+
+
+############################고쳐야함 
+
+
+
+
+
+
 
 #-------------------------NONCENSORING------------------------
-dataset_What_aft_NC=simulation_What(sim,beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,given_tol)
-dataset_W_aft_NC=simulation_W(beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,dataset_What_aft_NC)
+dataset_What_aft_NC=sample_path_What(path,beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,given_tol)
+dataset_W_aft_NC=sample_path_W(beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,dataset_What_aft_NC)
 
 kol_typ_test_aft_NC=kolmogorov(dataset_W_aft_NC,dataset_What_aft_NC);kol_typ_test_aft_NC
 
@@ -608,60 +633,14 @@ Figure1_std.W_aft_NC=
   geom_line(data=dataset_W_aft_NC,aes(x=t_i,y=std.W),colour="tomato")
 Figure1_std.W_aft_NC
 
-#--------------------------CENSORING--------------------------
-# dataset_What()
-dataset_What_aft=simulation_What(sim,beta_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol)
-dataset_What_cox=simulation_What(sim,beta_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,given_tol)
-
-# dataset_W()
-dataset_W_aft=simulation_W(beta_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,dataset_What_aft)
-dataset_W_cox=simulation_W(beta_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,dataset_What_cox)
-
-kol_typ_test_aft=kolmogorov(dataset_W_aft,dataset_What_aft);kol_typ_test_aft
-kol_typ_test_cox=kolmogorov(dataset_W_cox,dataset_What_cox);kol_typ_test_cox
-
-p_aft=kol_typ_test_aft[3,];p_aft
-p_cox=kol_typ_test_cox[3,];p_cox
-
-# dataset_What50_aft=dataset_What_aft[1:(n*50),]
-# dataset_What50_cox=dataset_What_cox[1:(n*50),]
-
-# PLOT : W_aft vs What_aft
-Figure1_W_aft=
-  ggplot()+
-  geom_line(data=dataset_What_aft,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
-  geom_line(data=dataset_W_aft,aes(x=t_i,y=W),colour="tomato")
-Figure1_W_aft
-
-# PLOT : W_cox vs What_cox
-Figure1_W_cox=
-  ggplot()+
-  geom_line(data=dataset_What_cox,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
-  geom_line(data=dataset_W_cox,aes(x=t_i,y=W),colour="tomato")
-Figure1_W_cox
-
-# PLOT : std.W_aft vs std.What_aft
-Figure1_std.W_aft=
-  ggplot()+
-  geom_line(data=dataset_What_aft,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
-  geom_line(data=dataset_W_aft,aes(x=t_i,y=std.W),colour="tomato")
-Figure1_std.W_aft
-
-# PLOT : W_cox vs What_cox
-Figure1_std.W_cox=
-  ggplot()+
-  geom_line(data=dataset_What_cox,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
-  geom_line(data=dataset_W_cox,aes(x=t_i,y=std.W),colour="tomato")
-Figure1_std.W_cox
-
 #-------------------------------------------------------------
 #----------------------FUNCTION FORM TEST---------------------
 #-------------------------------------------------------------
 # dataset_W()
-dataset_What_aft_f=simulation_What(sim,beta_hat_aft_f,T_aft_f,D_aft_f,Z_aft_f,given_weight,given_test,given_tol)
+dataset_What_aft_f=sample_path_What(path,beta_hat_aft_f,T_aft_f,D_aft_f,Z_aft_f,given_weight,given_test,given_tol)
 
 # dataset_What()
-dataset_W_aft_f=simulation_W(beta_hat_aft_f,T_aft_f,D_aft_f,Z_aft_f,given_weight,given_test,dataset_What_aft_f)
+dataset_W_aft_f=sample_path_W(beta_hat_aft_f,T_aft_f,D_aft_f,Z_aft_f,given_weight,given_test,dataset_What_aft_f)
 
 dataset_W_aft_f_order=dataset_W_aft_f$W[order(Z_aft_f)]
 Z_aft_f_order=Z_aft_f[order(Z_aft_f)]
@@ -683,21 +662,3 @@ Z_aft_order=Z_aft[order(Z_aft)]
 plot(Z_aft_f_order,dataset_std.W_aft_f_order,col="red",ylim=c(-1.5,2.5),type="l")
 par(new=TRUE)
 plot(Z_aft_order,dataset_std.W_aft_order,col="black",ylim=c(-1.5,2.5),type="l")
-
-
-#######################simulation&bootstarpping code need to be chainged
-dataset_What=data.frame(What_t(b,Time,Delta,Covari,weight,tol,test))
-columnnames[1]=paste("What",1)
-for(k in 2:sim){
-  
-  dataset_What=cbind(dataset_What,What_t(b,Time,Delta,Covari,weight,tol,test))
-  columnnames[k]=paste("What",k)
-  colnames(dataset_What)=columnnames
-  
-  if(k%%100==0) {
-    cat("Simulation",k,"\n")
-  }
-}
-
-sd(sample(dataset_What[1,],sim,replace=TRUE))
-

@@ -1,14 +1,15 @@
 n_vector=c(100,200,500,1000)
-sim_vector=c(100,150,200,250)
 
 #n_vector=c(10,20,50,100)
 #sim_vector=c(10,15,20,25)
 
-result_aft=list()
-result_cox=list()
-
 for(k in 1:length(n_vector)){
   cat("n_vector : ",k,"\n")
+}
+
+table_function=function(n_vector){
+  result_aft=list()
+  result_cox=list()
   
   n=n_vector[k]
   sim=max(sim_vector)
@@ -52,71 +53,22 @@ for(k in 1:length(n_vector)){
   beta_hat_cox=-unlist(summary(aftsrr_beta_cox))$coefficients1;beta_hat_cox
   std_hat_cox=unlist(summary(aftsrr_beta_cox))$coefficients2;std_hat_cox
   
-  # dataset_What()
-  dataset_What_aft=simulation_What(sim,beta_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol)
-  dataset_What_cox=simulation_What(sim,beta_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,given_tol)
+  #-------------------------------------------------------------
+  #-------------------------------------------------------------
+  #-------------------------------------------------------------
   
-  # dataset_W()
-  dataset_W_aft=simulation_W(beta_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,dataset_What_aft)
-  dataset_W_cox=simulation_W(beta_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,dataset_What_cox)
+  # result_aft
+  result_aft=smaple_path(path,beta_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol)
   
-  dataset_What50_aft=dataset_What_aft[1:(n*50),]
-  dataset_What50_cox=dataset_What_cox[1:(n*50),]
+  # result_cox
+  result_cox=smaple_path(path,beta_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,given_tol)
   
-  # PLOT : W_aft vs What_aft
-  Figure1_W_aft=
-    ggplot()+
-    geom_line(data=dataset_What50_aft,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
-    geom_line(data=dataset_W_aft,aes(x=t_i,y=W),colour="tomato")
-  #Figure1_W_aft
+  result_p=rbind(c(result_aft$p_value,result_aft$std.p_value),
+                 c(result_cox$p_value,result_cox$std.p_value))
   
-  # PLOT : W_cox vs What_cox
-  Figure1_W_cox=
-    ggplot()+
-    geom_line(data=dataset_What50_cox,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
-    geom_line(data=dataset_W_cox,aes(x=t_i,y=W),colour="tomato")
-  #Figure1_W_cox
   
-  # PLOT : std.W_aft vs std.What_aft
-  Figure1_std.W_aft=
-    ggplot()+
-    geom_line(data=dataset_What50_aft,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
-    geom_line(data=dataset_W_aft,aes(x=t_i,y=std.W),colour="tomato")
-  #Figure1_std.W_aft
-  
-  # PLOT : W_cox vs What_cox
-  Figure1_std.W_cox=
-    ggplot()+
-    geom_line(data=dataset_What50_cox,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
-    geom_line(data=dataset_W_cox,aes(x=t_i,y=std.W),colour="tomato")
-  #Figure1_std.W_cox
-
-  dataset_What1_aft=dataset_What_aft[1:(n*sim_vector[1]),]
-  dataset_What1_cox=dataset_What_cox[1:(n*sim_vector[1]),]
-  
-  dataset_What2_aft=dataset_What_aft[1:(n*sim_vector[2]),]
-  dataset_What2_cox=dataset_What_cox[1:(n*sim_vector[2]),]
-  
-  dataset_What3_aft=dataset_What_aft[1:(n*sim_vector[3]),]
-  dataset_What3_cox=dataset_What_cox[1:(n*sim_vector[3]),]
-  
-  dataset_What4_aft=dataset_What_aft[1:(n*sim_vector[4]),]
-  dataset_What4_cox=dataset_What_cox[1:(n*sim_vector[4]),]
-  
-  result_aft[[k]]=list(Figure1_W_aft,Figure1_std.W_aft,
-                           dataset_W_aft,dataset_What_aft,
-                           kolmogorov(dataset_W_aft,dataset_What1_aft),
-                           kolmogorov(dataset_W_aft,dataset_What2_aft),
-                           kolmogorov(dataset_W_aft,dataset_What3_aft),
-                           kolmogorov(dataset_W_aft,dataset_What4_aft))
-  
-  result_cox[[k]]=list(Figure1_W_cox,Figure1_std.W_cox,
-                           dataset_W_cox,dataset_What_cox,
-                           kolmogorov(dataset_W_cox,dataset_What1_cox),
-                           kolmogorov(dataset_W_cox,dataset_What2_cox),
-                           kolmogorov(dataset_W_cox,dataset_What3_cox),
-                           kolmogorov(dataset_W_cox,dataset_What4_cox))
 }
+
 
 #n_vector=c(100,200,500,1000,2000)
 #sim_vector=c(200,500,1000,2000)
