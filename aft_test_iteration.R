@@ -1,4 +1,4 @@
-iteration=1
+iteration=500
 n=200
 path=200
 alpha=0.95
@@ -102,12 +102,7 @@ iteration_function=function(iteration,n,path,alpha,weight,test,tol){
   }
   return(result)
 }
-iteration_result=iteration_function(iteration,n,path,alpha,given_weight,given_test,given_tol)
-
-#iteration_result2 # iteration 150
-#iteration_result1 # iteration 200
-
-iteration_result3=c(iteration_result1,iteration_result2)
+iteration_result1=iteration_function(iteration,n,path,alpha,given_weight,given_test,given_tol)
 
 prob.table=function(iter_result){
   iter=length(iter_result)
@@ -125,4 +120,11 @@ prob.table=function(iter_result){
   
   return(list(p_exact,p_alpha))
 }
-prob.table(iteration_result3)
+prob.table(iteration_result1)
+
+#iteration_result2 # iteration 150
+#iteration_result1 # iteration 200
+
+#iteration_result3=c(iteration_result1,iteration_result2)
+
+#prob.table(iteration_result3)
