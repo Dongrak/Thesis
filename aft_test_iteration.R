@@ -80,7 +80,7 @@ iteration_function=function(iteration,n,path,alpha,weight,test,tol){
   # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
   # 0.96이면 당연히 accetp
   # 0.04이면 당연히 reject
-  # 0.45이면 reject <= W가 45번이나 튀어나간거다!
+  # 0.45이면 reject <= W가 55번이나 튀어나간거다!
   # p_alpha는 acceptance rate을 구하는 것이다! 
   #-----------------------------------------------------------
   
@@ -102,7 +102,9 @@ iteration_function=function(iteration,n,path,alpha,weight,test,tol){
   }
   return(result)
 }
+date()
 iteration_result1=iteration_function(iteration,n,path,alpha,given_weight,given_test,given_tol)
+date()
 
 prob.table=function(iter_result){
   iter=length(iter_result)
