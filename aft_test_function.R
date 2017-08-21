@@ -368,7 +368,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   dAhat_0_t.beta_s=diff(c(0,Ahat_0_t.beta_s))
   #dAhat_0_t.beta_s
   
-  order_Time=[order(Time)]
+  order_Time=order(Time)
   #order_Covari=[order(Covari)]  
   
   AA=(1/sqrt(n))*U_w_G_t.beta[order_Time]
