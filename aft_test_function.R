@@ -307,10 +307,10 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
     U_G_t.beta_order=U_G_t.beta[order(Time)]
     #U_G_t.beta_order
     
-    U_G_t.inf.beta=U_G_t.beta_order[n]
+    U_G_inf.beta=U_G_t.beta_order[n]
     #U_G_t.inf.beta
     
-    beta_hat_s_list=optimize(function(beta){abs(U_beta(beta)-U_G_t.inf.beta)},
+    beta_hat_s_list=optimize(function(beta){abs(U_beta(beta)-U_G_inf.beta)},
                              c(b-std,b+std),
                              tol = 1e-16)
     #beta_hat_s_list
@@ -368,9 +368,12 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   dAhat_0_t.beta_s=diff(c(0,Ahat_0_t.beta_s))
   #dAhat_0_t.beta_s
   
-  AA=(1/sqrt(n))*U_w_G_t.beta;AA
-  BB=sqrt(n)*(fhat_N_t+cumsum(fhat_Y_t*dAhat_0_t.beta))*(b-beta_hat_s);BB
-  CC=(1/sqrt(n))*cumsum(S_w_s_t.beta*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s)));CC
+  order_Time=[order(Time)]
+  #order_Covari=[order(Covari)]  
+  
+  AA=(1/sqrt(n))*U_w_G_t.beta[order_Time]
+  BB=sqrt(n)*(fhat_N_t[order_Time]+cumsum(fhat_Y_t[order_Time]*dAhat_0_t.beta))*(b-beta_hat_s)
+  CC=(1/sqrt(n))*cumsum(S_w_s_t.beta[order_Time]*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s)))
   
   What_t=AA-BB-CC
   #What_t
@@ -383,8 +386,8 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   #return(What_t)
   #return(list(What_t=What_t,beta_hat_s=beta_hat_s))
   
-  if (test=="omni"){return(What_t[order(Time)])}
-  if (test=="ftn.form"){return(What_t[order(Covari)])}
+  if (test=="omni"){return(What_t)}
+  if (test=="ftn.form"){return(What_t)}
   
 }
 #What_t()
