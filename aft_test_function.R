@@ -369,13 +369,15 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   #dAhat_0_t.beta_s
   
   order_Time=order(Time)
-  #order_Covari=[order(Covari)]  
+  #order_Time
   
-  AA=(1/sqrt(n))*U_w_G_t.beta[order_Time]
-  BB=sqrt(n)*(fhat_N_t[order_Time]+cumsum(fhat_Y_t[order_Time]*dAhat_0_t.beta))*(b-beta_hat_s)
-  CC=(1/sqrt(n))*cumsum(S_w_s_t.beta[order_Time]*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s)))
+  #order_Covari=order(Covari)
   
-  What_t=AA-BB-CC
+  FT=(1/sqrt(n))*U_w_G_t.beta[order_Time]
+  ST=sqrt(n)*(fhat_N_t[order_Time]+cumsum(fhat_Y_t[order_Time]*dAhat_0_t.beta))*(b-beta_hat_s)
+  TT=(1/sqrt(n))*cumsum(S_w_s_t.beta[order_Time]*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s)))
+  
+  What_t=FT-ST-TT
   #What_t
   
   #return(G_i)
