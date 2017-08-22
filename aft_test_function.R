@@ -221,10 +221,13 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
     #beta_U=b;Time_U=Time;Delta_U=Delta;Covari_U=Covari;Q_t_U=Q_t;
     
     e_i_beta_U=log(Time_U)+Covari_U*beta_U
-    Time_U=Time_U[order(e_i_beta_U)]
-    Covari_U=Covari_U[order(e_i_beta_U)]
-    Delta_U=Delta_U[order(e_i_beta_U)]
-    e_i_beta_U=e_i_beta_U[order(e_i_beta_U)]
+    
+    order_resid_U=order(e_i_beta_U)
+    
+    Time_U=Time_U[order_resid_U]
+    Covari_U=Covari_U[order_resid_U]
+    Delta_U=Delta_U[order_resid_U]
+    e_i_beta_U=e_i_beta_U[order_resid_U]
     
     N_i_s_t.beta_U=list(NA)
     for(j in 1:n){
@@ -294,14 +297,14 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
     G_i=rnorm(n)
     #G_i
     
-    U_w_G_t.beta=Reduce('+',lapply(lapply(mapply(
+    U_w_G_t.beta=Reduce('+',lapply(mapply("*",mapply(
       "*",dMhat_i_s_t.beta,lapply(lapply(w_i,'-',E_w_s_t.beta),"*",Q_t)
-      , SIMPLIFY = FALSE),"*",G_i),cumsum))
+      , SIMPLIFY = FALSE),G_i,SIMPLIFY = FALSE),cumsum))
     #U_w_G_t.beta
     
-    U_G_t.beta=Reduce('+',lapply(lapply(mapply(
+    U_G_t.beta=Reduce('+',lapply(mapply("*",mapply(
       "*",dMhat_i_s_t.beta,lapply(lapply(Covari,'-',E_s_t.beta),"*",Q_t)
-      , SIMPLIFY = FALSE),"*",G_i),cumsum))
+      , SIMPLIFY = FALSE),G_i,SIMPLIFY = FALSE),cumsum))
     #U_G_t.beta
     
     U_G_t.beta_order=U_G_t.beta[order(Time)]
@@ -373,11 +376,11 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   
   #order_Covari=order(Covari)
   
-  FT=(1/sqrt(n))*U_w_G_t.beta[order_Time]
-  ST=sqrt(n)*(fhat_N_t[order_Time]+cumsum(fhat_Y_t[order_Time]*dAhat_0_t.beta))*(b-beta_hat_s)
-  TT=(1/sqrt(n))*cumsum(S_w_s_t.beta[order_Time]*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s)))
+  F.T.=(1/sqrt(n))*U_w_G_t.beta[order_Time]
+  S.T.=sqrt(n)*(fhat_N_t[order_Time]+cumsum(fhat_Y_t[order_Time]*dAhat_0_t.beta))*(b-beta_hat_s)
+  T.T.=(1/sqrt(n))*cumsum(S_w_s_t.beta[order_Time]*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s)))
   
-  What_t=FT-ST-TT
+  What_t=F.T.-S.T.-T.T.
   #What_t
   
   #return(G_i)
