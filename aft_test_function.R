@@ -273,7 +273,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
     dN_i_s_t.beta_U=lapply(N_i_s_t.beta_U,function(x){diff(c(0,x))})
     #dN_i_s_t.beta_U
     
-    Q_t_U=S_0_s_t.beta_U/n # Gehan's weight
+    Q_t_U=1 #Q_t_U=S_0_s_t.beta_U/n # Gehan's weight
     #Q_t_U
     
     U_t.beta_U=Reduce('+',lapply(mapply("*",dN_i_s_t.beta_U,lapply(
