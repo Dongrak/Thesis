@@ -274,14 +274,9 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
     
     dN_i_s_t.beta_U=lapply(N_i_s_t.beta_U,function(x){diff(c(0,x))})
     #dN_i_s_t.beta_U
-    
-<<<<<<< HEAD
+
     Q_t_U=S_0_s_t.beta_U/n # Gehan's weight
     #Q_t_U Q_t_U=1 #
-=======
-    Q_t_U=1 #Q_t_U=S_0_s_t.beta_U/n # Gehan's weight
-    #Q_t_U
->>>>>>> a3ccba13e654a02fdde2c4a1e6326568d14a8c88
     
     U_t.beta_U=Reduce('+',lapply(mapply("*",dN_i_s_t.beta_U,lapply(
       lapply(Covari_U,'-',E_s_t.beta_U),"*",Q_t_U), SIMPLIFY = FALSE),cumsum))
