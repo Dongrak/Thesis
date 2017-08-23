@@ -1,4 +1,4 @@
-iteration=500
+iteration=1
 n=200
 path=200
 alpha=0.95
@@ -18,6 +18,7 @@ given_tol=0.1
 # given_tol
 
 iteration_function=function(iteration,n,path,alpha,weight,test,tol){
+  #iteration=iteration;n=n;path=path;alpha=alpha;weight=given_weight;test=given_test;tol=given_tol;
   
   result=list(NA)
   

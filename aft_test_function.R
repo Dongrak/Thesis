@@ -22,7 +22,8 @@ library(BB)
 #-----------------------COX DATA ANALYSIS---------------------
 #-------------------------------------------------------------
 W_t=function(b,Time,Delta,Covari,weight,test){
-  #b=beta_hat_cox;weight=w_i;Time=T_cox;Delta=D_cox;Covari=Z_cox;
+  #b=beta_hat_cox;Time=T_cox;Delta=D_cox;Covari=Z_cox;weight=given_weight;test=given_test;
+  #b=beta_hat_aft;Time=T_aft;Delta=D_aft;Covari=Z_aft;weight=given_weight;test=given_test;
   
   n=length(Time)
   
@@ -81,7 +82,7 @@ W_t=function(b,Time,Delta,Covari,weight,test){
     Y_i_s_t.beta,"*",dAhat_0_t.beta),cumsum), SIMPLIFY = FALSE)
   #Mhat_i_s_t.beta
   
-  W_t=n^(-0.5)*(Reduce('+',mapply('*',Mhat_i_s_t.beta,w_i,SIMPLIFY = FALSE)))
+  W_t=(Reduce('+',mapply('*',Mhat_i_s_t.beta,w_i,SIMPLIFY = FALSE)))/sqrt(n)
   #W_t
   
   if (test=="omni"){return(W_t[order(Time)])}
@@ -94,7 +95,8 @@ W_t=function(b,Time,Delta,Covari,weight,test){
 #-----------------------AFT DATA ANALYSIS---------------------
 #-------------------------------------------------------------
 What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
-  #b=beta_hat_aft;weight=given_weight;Time=T_aft;Delta=D_aft;Covari=Z_aft;test=given_test;tol=given_tol;
+  #b=beta_hat_cox;std=std_hat_cox;Time=T_cox;Delta=D_cox;Covari=Z_cox;weight=given_weight;test=given_test;tol=given_tol;
+  #b=beta_hat_aft;std=std_hat_aft;Time=T_aft;Delta=D_aft;Covari=Z_aft;weight=given_weight;test=given_test;tol=given_tol;
 
   n=length(Time)
   
@@ -156,8 +158,8 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   dN_i_s_t.beta=lapply(N_i_s_t.beta,function(x){diff(c(0,x))})
   #dN_i_s_t.beta
   
-  Q_t=1 #Q_t=S_0_s_t.beta/n # Gehan's weight
-  #Q_t
+  Q_t=S_0_s_t.beta/n # Gehan's weight
+  #Q_t Q_t=1 #
   
   U_t.beta=Reduce('+',lapply(mapply("*",dN_i_s_t.beta,lapply(
     lapply(Covari,'-',E_s_t.beta),"*",Q_t), SIMPLIFY = FALSE),cumsum))
@@ -218,7 +220,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   #--------Find Beta_hat_star by using optimize function------
   #-----------------------------------------------------------
   U_beta=function(beta_U=b,Time_U=Time,Delta_U=Delta,Covari_U=Covari){
-    #beta_U=b;Time_U=Time;Delta_U=Delta;Covari_U=Covari;Q_t_U=Q_t;
+    #beta_U=b;Time_U=Time;Delta_U=Delta;Covari_U=Covari;
     
     e_i_beta_U=log(Time_U)+Covari_U*beta_U
     
@@ -247,8 +249,8 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
     S_0_s_t.beta_U=Reduce('+',Y_i_s_t.beta_U)
     #S_0_s_t.beta_U
     
-    S_1_s_t.beta_U=Reduce('+',mapply("*",
-                                     Y_i_s_t.beta_U, Covari_U, SIMPLIFY = FALSE))
+    S_1_s_t.beta_U=Reduce('+',mapply(
+      "*",Y_i_s_t.beta_U, Covari_U, SIMPLIFY = FALSE))
     #S_1_s_t.beta_U
     
     E_s_t.beta_U=S_1_s_t.beta_U/S_0_s_t.beta_U
@@ -274,16 +276,16 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
     #dN_i_s_t.beta_U
     
     Q_t_U=S_0_s_t.beta_U/n # Gehan's weight
-    #Q_t_U
+    #Q_t_U Q_t_U=1 #
     
     U_t.beta_U=Reduce('+',lapply(mapply("*",dN_i_s_t.beta_U,lapply(
       lapply(Covari_U,'-',E_s_t.beta_U),"*",Q_t_U), SIMPLIFY = FALSE),cumsum))
     #U_t.beta_U
     
-    U_t.beta_U_order=U_t.beta_U[order(Time_U)]
+    #U_t.beta_U_order=U_t.beta_U[order(Time_U)]
     #U_t.beta_U_order
     
-    U_inf.beta_U=U_t.beta_U_order[n]
+    U_inf.beta_U=U_t.beta_U[n]
     #U_inf.beta_U
    
     return(U_inf.beta_U)
@@ -307,13 +309,13 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
       , SIMPLIFY = FALSE),G_i,SIMPLIFY = FALSE),cumsum))
     #U_G_t.beta
     
-    U_G_t.beta_order=U_G_t.beta[order(Time)]
+    #U_G_t.beta_order=U_G_t.beta[order(Time)]
     #U_G_t.beta_order
     
-    U_G_inf.beta=U_G_t.beta_order[n]
+    U_G_inf.beta=U_G_t.beta[n]
     #U_G_t.inf.beta
     
-    beta_hat_s_list=optimize(function(beta){abs(U_beta(beta)-U_G_inf.beta)},
+    beta_hat_s_list=optimize(function(beta){abs(U_beta(beta_U=beta)-U_G_inf.beta)},
                              c(b-std,b+std),
                              tol = 1e-16)
     #beta_hat_s_list
@@ -374,11 +376,14 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   order_Time=order(Time)
   #order_Time
   
+  order_Time_s=order(Time_s)
+  #order_Time_s
+  
   #order_Covari=order(Covari)
   
-  F.T.=(1/sqrt(n))*U_w_G_t.beta[order_Time]
-  S.T.=sqrt(n)*(fhat_N_t[order_Time]+cumsum(fhat_Y_t[order_Time]*dAhat_0_t.beta))*(b-beta_hat_s)
-  T.T.=(1/sqrt(n))*cumsum(S_w_s_t.beta[order_Time]*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s)))
+  F.T.=(1/sqrt(n))*U_w_G_t.beta
+  S.T.=sqrt(n)*(fhat_N_t+cumsum(fhat_Y_t*dAhat_0_t.beta))*(b-beta_hat_s)
+  T.T.=(1/sqrt(n))*cumsum(S_w_s_t.beta*diff(c(0,Ahat_0_t.beta-Ahat_0_t.beta_s)))
   
   What_t=F.T.-S.T.-T.T.
   #What_t
@@ -391,15 +396,16 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   #return(What_t)
   #return(list(What_t=What_t,beta_hat_s=beta_hat_s))
   
-  if (test=="omni"){return(What_t)}
+  if (test=="omni"){return(What_t[order_Time])}
   if (test=="ftn.form"){return(What_t)}
   
 }
 #What_t()
 
 sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
-  # path=path;b=beta_hat_aft;weight=given_weight;Time=T_aft;Delta=D_aft;Covari=Z_aft;test=given_test;tol=given_tol;
-  
+  #path=path;b=beta_hat_cox;std=std_hat_cox;Time=T_cox;Delta=D_cox;Covari=Z_cox;weight=given_weight;test=given_test;tol=given_tol;
+  #path=path;b=beta_hat_aft;std=std_hat_aft;Time=T_aft;Delta=D_aft;Covari=Z_aft;weight=given_weight;test=given_test;tol=given_tol;
+ 
   #------------------------SAMPLE PATH------------------------
   dataset_What=matrix(What_t(b,std,Time,Delta,Covari,weight,test,tol))
   for(k in 2:path){
@@ -411,10 +417,8 @@ sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
   colnames(dataset_What)=paste0(rep("path"),1:path)
   rownames(dataset_What)=c(1:n)
   # dataset_What
-  
-  #------------------------SAMPLE PATH------------------------
-  #------------------------SAMPLE PATH------------------------
-  
+
+  #------------------------BOOTSTRAPPING----------------------
   std.boot=as.vector(apply(dataset_What,1,sd))
   # std.boot
   
@@ -434,11 +438,11 @@ sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
   max_path_W=max(abs(dataset_W))
   # max_path_W
   
-  std.max_path_What=as.vector(apply(abs(dataset_std.What),2,max))
-  # std.max_path_What
+  max_path_std.What=as.vector(apply(abs(dataset_std.What),2,max))
+  # max_path_std.What
   
-  std.max_path_W=max(abs(dataset_std.W))
-  # std.max_path_W
+  max_path_std.W=max(abs(dataset_std.W))
+  # max_path_std.W
   
   #-----------------------------------------------------------
   #  p  : the ratio of (What>=W)*1
@@ -457,12 +461,12 @@ sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
   p_value=length(which((max_path_What>max_path_W)*1==1))/path
   # p_value
   
-  std.p_value=length(which((std.max_path_What>std.max_path_W)*1==1))/path
-  # std.p_value
+  std_p_value=length(which((max_path_std.What>max_path_std.W)*1==1))/path
+  # std_p_value
   
   result=list(dataset_What=dataset_What,dataset_std.What=dataset_std.What,
               dataset_W=dataset_W,dataset_std.W=dataset_std.W,
-              std.boot=std.boot,p_value=p_value,std.p_value=std.p_value)
+              std.boot=std.boot,p_value=p_value,std_p_value=std_p_value)
   # result
   
   return(result)
@@ -576,7 +580,7 @@ std_hat_cox=unlist(summary(aftsrr_beta_cox))$coefficients2;std_hat_cox
 #-------------------------------------------------------------
 #------------------------WEIGHT&TOLERANCE---------------------
 #-------------------------------------------------------------
-given_tol=0.1
+given_tol=100
 
 given_weight="c"
 #(weight=="a"){w_i=Covari*(Covari<=median(Covari))}
@@ -598,10 +602,10 @@ result_aft=sample_path(path,beta_hat_aft,std_hat_aft,T_aft,D_aft,Z_aft,given_wei
 result_cox=sample_path(path,beta_hat_cox,std_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,given_tol)
 
 result_aft$p_value
-result_aft$std.p_value
+result_aft$std_p_value
 
 result_cox$p_value
-result_cox$std.p_value
+result_cox$std_p_value
 
 # PLOT : W_aft vs What_aft
 Figure1_W_aft=plotting(result_aft,0);Figure1_W_aft
