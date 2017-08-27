@@ -194,7 +194,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   #fhat_Y_t
   
   #-----------------------------f0----------------------------
-  KM_e=cumprod(Delta/S_0_s_t.beta)
+  KM_e=cumprod(1-(Delta/S_0_s_t.beta))
   #KM_e
   
   Fhat_0_e=1-KM_e
@@ -209,7 +209,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   rhat_i=Delta*e_i_beta+(1-Delta)*Condi.Ehat
   #rhat_i
   
-  fhat_0_t=ksmooth(e_i_beta,dFhat_0_e,"normal",
+  fhat_0_t=ksmooth(rhat_i,dFhat_0_e,"normal",
                    bandwidth = 1.06*sd(dFhat_0_e)*n^(-0.2),x.points=e_i_beta)$y
   #fhat_0_t
 
