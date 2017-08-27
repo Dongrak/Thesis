@@ -194,7 +194,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   #fhat_Y_t
   
   #-----------------------------f0----------------------------
-  KM_e=cumprod(1-Delta/S_0_s_t.beta)
+  KM_e=cumprod(Delta/S_0_s_t.beta)
   #KM_e
   
   Fhat_0_e=1-KM_e
