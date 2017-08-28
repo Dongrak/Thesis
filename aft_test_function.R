@@ -85,7 +85,10 @@ W_t=function(b,Time,Delta,Covari,weight,test){
   W_t=(Reduce('+',mapply('*',Mhat_i_s_t.beta,w_i,SIMPLIFY = FALSE)))/sqrt(n)
   #W_t
   
-  if (test=="omni"){return(W_t[order(Time)])}
+  order_Time=order(Time)
+  #order_Time
+  
+  if (test=="omni"){return(W_t[order_Time])}
   if (test=="ftn.form"){return(W_t[order(Covari)])}
   
 }
@@ -164,7 +167,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   U_t.beta=Reduce('+',lapply(mapply("*",dN_i_s_t.beta,lapply(
     lapply(Covari,'-',E_s_t.beta),"*",Q_t), SIMPLIFY = FALSE),cumsum))
   #U_t.beta
-  
+
   S_w_s_t.beta=Reduce('+',mapply(
     "*", Y_i_s_t.beta,w_i, SIMPLIFY = FALSE))
   #S_w_s_t.beta
@@ -320,7 +323,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
     #U_G_t.inf.beta
     
     beta_hat_s_list=optimize(function(beta){abs(U_beta(beta_U=beta)-U_G_inf.beta)},
-                             c(b-std,b+std),
+                             c(b-5*std,b+5*std),
                              tol = 1e-16)
     #beta_hat_s_list
     
@@ -376,7 +379,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   
   dAhat_0_t.beta_s=diff(c(0,Ahat_0_t.beta_s))
   #dAhat_0_t.beta_s
-  
+
   order_Time=order(Time)
   #order_Time
   
@@ -400,7 +403,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   #return(What_t)
   #return(list(What_t=What_t,beta_hat_s=beta_hat_s))
   
-  if (test=="omni"){return(What_t[order_Time])}
+  if (test=="omni"){return(What_t)}
   if (test=="ftn.form"){return(What_t)}
   
 }
@@ -457,13 +460,14 @@ sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
   #  p  : the ratio of (What>=W)*1
   # H_0 : the data follow the assumption of the aft model.
   #
-  # if p>0.95, cannot reject the null hypothesis. i.e. accept it 
-  # if p<0.95, reject the null hypothesis.
+  # if p>0.05, cannot reject the null hypothesis. i.e. accept it 
+  # if p=<0.05, reject the null hypothesis.
   #
   # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
   # 0.96이면 당연히 accetp
   # 0.04이면 당연히 reject
-  # 0.45이면 reject <= W가 55번이나 튀어나간거다!
+  # 0.45이면 accetp <= W가 55번이나 튀어나간거다!
+  # p_alpha는 acceptance rate을 구하는 것이다! 
   #-----------------------------------------------------------
   
   #--------------------------P VALUE--------------------------
@@ -530,8 +534,6 @@ plotting=function(result,standardization){
 #-------------------------------------------------------------
 #------------------------DATA GENERATE------------------------
 #-------------------------------------------------------------
-path=200
-
 n=200
 id=c(1:n) # identification
 beta_0=1 # beta_0
@@ -589,7 +591,9 @@ std_hat_cox=unlist(summary(aftsrr_beta_cox))$coefficients2;std_hat_cox
 #-------------------------------------------------------------
 #------------------------WEIGHT&TOLERANCE---------------------
 #-------------------------------------------------------------
-given_tol=100
+path=200
+
+given_tol=0.1
 
 given_weight="c"
 #(weight=="a"){w_i=Covari*(Covari<=median(Covari))}

@@ -1,7 +1,7 @@
 iteration=1
 n=200
 path=200
-alpha=0.95
+alpha=0.05
 
 given_weight="c"
 #(weight=="a"){w_i=Covari*(Covari<=median(Covari))}
@@ -75,18 +75,18 @@ iteration_function=function(iteration,n,path,alpha,weight,test,tol){
   #  p  : the ratio of (What>=W)*1
   # H_0 : the data follow the assumption of the aft model.
   #
-  # if p>0.95, cannot reject the null hypothesis. i.e. accept it 
-  # if p<0.95, reject the null hypothesis.
+  # if p>0.05, cannot reject the null hypothesis. i.e. accept it 
+  # if p=<0.05, reject the null hypothesis.
   #
   # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
   # 0.96이면 당연히 accetp
   # 0.04이면 당연히 reject
-  # 0.45이면 reject <= W가 55번이나 튀어나간거다!
+  # 0.45이면 accetp <= W가 55번이나 튀어나간거다!
   # p_alpha는 acceptance rate을 구하는 것이다! 
   #-----------------------------------------------------------
   
-  p_exact=rbind(c(result_aft$p_value,result_aft$std.p_value),
-                c(result_cox$p_value,result_cox$std.p_value))
+  p_exact=rbind(c(result_aft$p_value,result_aft$std_p_value),
+                c(result_cox$p_value,result_cox$std_p_value))
   colnames(p_exact)=c("W","std.W")
   rownames(p_exact)=c("p_aft_exact","p_cox_exact")
   #p_exact
