@@ -431,6 +431,11 @@ sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
   dataset_std.W=dataset_W/std.boot
   # dataset_std.W
   
+  # sample path coding -> type 1 error 문제가 생김 
+  # 각 sample path에서 maximum을 뽑는게 아니라, 
+  # 각 sample path를 기준으로 p를 뽑았을 때 
+  # alpha를 기준으로 넘냐 안 넘냐를 계산해야함. 
+  
   #-----------------------MAXIMUM VALUE-----------------------
   max_path_What=as.vector(apply(abs(dataset_What),2,max))
   # max_path_What
