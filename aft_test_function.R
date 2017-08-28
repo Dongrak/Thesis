@@ -207,10 +207,14 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   #Condi.Ehat
   
   rhat_i=Delta*e_i_beta+(1-Delta)*Condi.Ehat
+  rhat_i[is.nan(rhat_i)]=0
   #rhat_i
   
-  fhat_0_t=ksmooth(rhat_i,dFhat_0_e,"normal",
-                   bandwidth = 1.06*sd(dFhat_0_e)*n^(-0.2),x.points=e_i_beta)$y
+  den.f=ksmooth(rhat_i,dFhat_0_e,"normal",
+                bandwidth = 1.06*sd(dFhat_0_e)*n^(-0.2),x.points=rhat_i)
+  #den.f
+  
+  fhat_0_t=predict(loess(den.f$y~den.f$x),e_i_beta)
   #fhat_0_t
 
   fhat_N_t=Reduce('+',lapply(Delta*w_i*Covari,'*',fhat_0_t*Time))/n
