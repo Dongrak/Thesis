@@ -403,7 +403,7 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   #return(What_t)
   #return(list(What_t=What_t,beta_hat_s=beta_hat_s))
   
-  if (test=="omni"){return(What_t)}
+  if (test=="omni"){return(What_t[order_Time])}
   if (test=="ftn.form"){return(What_t)}
   
 }
