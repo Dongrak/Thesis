@@ -466,7 +466,7 @@ sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
   # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
   # 0.96이면 당연히 accetp
   # 0.04이면 당연히 reject
-  # 0.45이면 accetp <= W가 55번이나 튀어나간거다!
+  # 0.45이면 accetp
   # p_alpha는 acceptance rate을 구하는 것이다! 
   #-----------------------------------------------------------
   
@@ -534,7 +534,7 @@ plotting=function(result,standardization){
 #-------------------------------------------------------------
 #------------------------DATA GENERATE------------------------
 #-------------------------------------------------------------
-n=200
+n=1000
 id=c(1:n) # identification
 beta_0=1 # beta_0
 gamma_0=0.1 # gamma_0
