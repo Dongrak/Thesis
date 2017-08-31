@@ -481,11 +481,11 @@ sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
 }
 #sample_path
 
-plotting=function(result,standardization){
+plotting=function(result,standardization,n.path){
   
   if (standardization==0) {
     dataset_What=data.frame()
-    for (i in 1:path){
+    for (i in 1:n.path){
       group=i
       A=result$dataset_What[,i]
       AA=data.frame(group,t_i=1:n,What=A)
@@ -498,15 +498,15 @@ plotting=function(result,standardization){
     
     Figure1_W=
       ggplot()+
-      geom_line(data=dataset_What,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
-      geom_line(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
+      geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
+      geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
     #Figure1_W
     
     return(Figure1_W)
   }
   if (standardization==1) {
     dataset_std.What=data.frame()
-    for (i in 1:path){
+    for (i in 1:n.path){
       group=i
       A=result$dataset_std.What[,i]
       AA=data.frame(group,t_i=1:n,std.What=A)
@@ -519,8 +519,8 @@ plotting=function(result,standardization){
     
     Figure1_std.W=
       ggplot()+
-      geom_line(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
-      geom_line(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
+      geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
+      geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
     return(Figure1_std.W)
   }
 }
@@ -529,7 +529,7 @@ plotting=function(result,standardization){
 #-------------------------------------------------------------
 #------------------------DATA GENERATE------------------------
 #-------------------------------------------------------------
-n=1000
+n=100
 id=c(1:n) # identification
 beta_0=1 # beta_0
 gamma_0=0.1 # gamma_0
@@ -616,21 +616,20 @@ result_cox$p_value
 result_cox$std_p_value
 
 # PLOT : W_aft vs What_aft
-Figure1_W_aft=plotting(result_aft,0);Figure1_W_aft
+Figure1_W_aft=plotting(result_aft,0,50);Figure1_W_aft
 
 # PLOT : std.W_aft vs std.What_aft
-Figure1_std.W_aft=plotting(result_aft,1);Figure1_std.W_aft
+Figure1_std.W_aft=plotting(result_aft,1,50);Figure1_std.W_aft
 
 # PLOT : W_cox vs What_cox
-Figure1_W_cox=plotting(result_cox,0);Figure1_W_cox
+Figure1_W_cox=plotting(result_cox,0,50);Figure1_W_cox
 
 # PLOT : W_cox vs What_cox
-Figure1_std.W_cox=plotting(result_cox,1);Figure1_std.W_cox
+Figure1_std.W_cox=plotting(result_cox,1,50);Figure1_std.W_cox
 
 
 
 ############################고쳐야함 
-
 
 
 

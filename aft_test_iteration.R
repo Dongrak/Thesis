@@ -1,4 +1,4 @@
-iteration=1
+iteration=500
 n=1000
 path=200
 alpha=0.05
