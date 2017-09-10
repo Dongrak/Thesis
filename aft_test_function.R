@@ -19,7 +19,7 @@ library(aftgee)
 library(BB)
 
 #-------------------------------------------------------------
-#-----------------------COX DATA ANALYSIS---------------------
+#-----------------------TEST STATISTICS-----------------------
 #-------------------------------------------------------------
 W_t=function(b,Time,Delta,Covari,weight,test){
   #b=beta_hat_cox;Time=T_cox;Delta=D_cox;Covari=Z_cox;weight=given_weight;test=given_test;
@@ -95,7 +95,7 @@ W_t=function(b,Time,Delta,Covari,weight,test){
 #W_t()
 
 #-------------------------------------------------------------
-#-----------------------AFT DATA ANALYSIS---------------------
+#-------------------------SAMPLE PATH-------------------------
 #-------------------------------------------------------------
 What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
   #b=beta_hat_cox;std=std_hat_cox;Time=T_cox;Delta=D_cox;Covari=Z_cox;weight=given_weight;test=given_test;tol=given_tol;
@@ -529,7 +529,7 @@ plotting=function(result,standardization,n.path){
 #-------------------------------------------------------------
 #------------------------DATA GENERATE------------------------
 #-------------------------------------------------------------
-n=100
+n=1000
 id=c(1:n) # identification
 beta_0=1 # beta_0
 gamma_0=0.1 # gamma_0
@@ -597,9 +597,9 @@ given_weight="c"
 #(weight=="d"){w_i=1}
 
 given_test="omni"
-# test="link.ftn"
-# test="ftn.form"
-# test="....???"
+# given_test=="link.ftn"
+# given_test=="ftn.form"
+# given_test=="....???"
 
 #-------------------------------------------------------------
 #-------------------------OMNIBUS TEST------------------------
