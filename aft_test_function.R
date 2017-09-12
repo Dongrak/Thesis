@@ -1,29 +1,9 @@
 #-------------------------------------------------------------
-#---------------------------SETTING---------------------------
-#-------------------------------------------------------------
-rm(list=ls());gc();
-
-memory.limit(16*2^20)
-
-options(max.print=999999)
-options(error=NULL)
-
-#install.packages("ggplot2")
-#install.packages("survival")
-#install.packages("aftgee")
-#install.packages("BB")
-
-library(ggplot2)
-library(survival)
-library(aftgee)
-library(BB)
-
-#-------------------------------------------------------------
 #-----------------------TEST STATISTICS-----------------------
 #-------------------------------------------------------------
 W_t=function(b,Time,Delta,Covari,weight,test){
-  #b=beta_hat_cox;Time=T_cox;Delta=D_cox;Covari=Z_cox;weight=given_weight;test=given_test;
-  #b=beta_hat_aft;Time=T_aft;Delta=D_aft;Covari=Z_aft;weight=given_weight;test=given_test;
+  #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;weight=given_weight;test=given_test;
+  #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;weight=given_weight;test=given_test;
   
   n=length(Time)
   
@@ -98,9 +78,9 @@ W_t=function(b,Time,Delta,Covari,weight,test){
 #-------------------------SAMPLE PATH-------------------------
 #-------------------------------------------------------------
 What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
-  #b=beta_hat_cox;std=std_hat_cox;Time=T_cox;Delta=D_cox;Covari=Z_cox;weight=given_weight;test=given_test;tol=given_tol;
-  #b=beta_hat_aft;std=std_hat_aft;Time=T_aft;Delta=D_aft;Covari=Z_aft;weight=given_weight;test=given_test;tol=given_tol;
-
+  #b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;weight=given_weight;test=given_test;tol=given_tol;
+  #b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;weight=given_weight;test=given_test;tol=given_tol;
+  
   n=length(Time)
   
   e_i_beta=log(Time)+Covari*b
@@ -289,9 +269,6 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
       lapply(Covari_U,'-',E_s_t.beta_U),"*",Q_t_U), SIMPLIFY = FALSE),cumsum))
     #U_t.beta_U
     
-    #U_t.beta_U_order=U_t.beta_U[order(Time_U)]
-    #U_t.beta_U_order
-    
     U_inf.beta_U=U_t.beta_U[n]
     #U_inf.beta_U
    
@@ -315,19 +292,16 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
       "*",dMhat_i_s_t.beta,lapply(lapply(Covari,'-',E_s_t.beta),"*",Q_t)
       , SIMPLIFY = FALSE),G_i,SIMPLIFY = FALSE),cumsum))
     #U_G_t.beta
-    
-    #U_G_t.beta_order=U_G_t.beta[order(Time)]
-    #U_G_t.beta_order
-    
+
     U_G_inf.beta=U_G_t.beta[n]
     #U_G_t.inf.beta
     
     beta_hat_s_list=optimize(function(beta){abs(U_beta(beta_U=beta)-U_G_inf.beta)},
                              c(b-5*std,b+5*std),
-                             tol = 1e-16)
+                             tol = 1e-16);beta_hat_s_list
     #beta_hat_s_list
     
-    tolerance=beta_hat_s_list$objective
+    tolerance=beta_hat_s_list$objective;tolerance
     #tolerance
   }
   
@@ -410,8 +384,8 @@ What_t=function(b,std,Time,Delta,Covari,weight,test,tol){
 #What_t()
 
 sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
-  #path=path;b=beta_hat_cox;std=std_hat_cox;Time=T_cox;Delta=D_cox;Covari=Z_cox;weight=given_weight;test=given_test;tol=given_tol;
-  #path=path;b=beta_hat_aft;std=std_hat_aft;Time=T_aft;Delta=D_aft;Covari=Z_aft;weight=given_weight;test=given_test;tol=given_tol;
+  #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;weight=given_weight;test=given_test;tol=given_tol;
+  #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;weight=given_weight;test=given_test;tol=given_tol;
  
   #------------------------SAMPLE PATH------------------------
   dataset_What=matrix(What_t(b,std,Time,Delta,Covari,weight,test,tol))
@@ -434,7 +408,7 @@ sample_path=function(path,b,std,Time,Delta,Covari,weight,test,tol){
   
   dataset_W=W_t(b,Time,Delta,Covari,weight,test)
   # dataset_W
-    
+  
   dataset_std.W=dataset_W/std.boot
   # dataset_std.W
   
@@ -527,163 +501,25 @@ plotting=function(result,standardization,n.path){
 #plotting
 
 #-------------------------------------------------------------
-#------------------------DATA GENERATE------------------------
-#-------------------------------------------------------------
-n=1000
-id=c(1:n) # identification
-beta_0=1 # beta_0
-gamma_0=0.1 # gamma_0
-Z=rnorm(n,3,1) # covariate
-
-#-----------------------AFT DATA GENERATE---------------------
-T_s_aft=exp(-beta_0*Z)*qlnorm(runif(n),5,1) # lognormal baseline hazard
-C_aft=exp(-beta_0*Z)*qlnorm(runif(n),6.5,1) # censoring time for aft model
-T_aft=C_aft*(T_s_aft>C_aft)+T_s_aft*(T_s_aft<=C_aft) # observed time for aft model
-D_aft=0*(T_s_aft>C_aft)+1*(T_s_aft<=C_aft) # delta
-D_aft=D_aft[order(T_aft)]
-Z_aft=Z[order(T_aft)]
-T_aft=T_aft[order(T_aft)]
-
-#-------------AFT DATA GENERATE (FUNCTIONAL FORM)-------------
-T_s_aft_f=exp(-beta_0*Z-gamma_0*Z^2)*qlnorm(runif(n),5,1) # lognormal baseline hazard
-C_aft_f=exp(-beta_0*Z-gamma_0*Z^2)*qlnorm(runif(n),6.5,1) # censoring time for aft model
-T_aft_f=C_aft_f*(T_s_aft_f>C_aft_f)+T_s_aft_f*(T_s_aft_f<=C_aft_f) # observed time for aft model
-D_aft_f=0*(T_s_aft_f>C_aft_f)+1*(T_s_aft_f<=C_aft_f) # delta
-D_aft_f=D_aft_f[order(T_aft_f)]
-Z_aft_f=Z[order(T_aft_f)]
-T_aft_f=T_aft_f[order(T_aft_f)]
-
-#-----------------------COX DATA GENERATE---------------------
-T_s_cox=qlnorm((1-runif(n))^(1/exp(beta_0*Z)),5,1,lower.tail = FALSE) # lognormal baseline hazard
-C_cox=qlnorm((1-runif(n))^(1/exp(beta_0*Z)),5.7,1,lower.tail = FALSE) # censoring time for cox model
-T_cox=C_cox*(T_s_cox > C_cox)+T_s_cox*(T_s_cox<=C_cox) # observed time for cox model
-D_cox=0*(T_s_cox > C_cox)+1*(T_s_cox<=C_cox) # delta
-D_cox=D_cox[order(T_cox)]
-Z_cox=Z[order(T_cox)]
-T_cox=T_cox[order(T_cox)]
-
-#-------------------------------------------------------------
-#------------Estimate Beta_hat_aft by using Aftgee------------
-#-------------------------------------------------------------
-aftsrr_beta_aft=aftsrr(Surv(T_aft,D_aft)~Z_aft,method="nonsm")
-beta_hat_aft=-unlist(summary(aftsrr_beta_aft))$coefficients1;beta_hat_aft
-std_hat_aft=unlist(summary(aftsrr_beta_aft))$coefficients2;std_hat_aft
-
-#-------------------------------------------------------------
-#-----------Estimate Beta_hat_aft_f by using Aftgee-----------
-#-------------------------------------------------------------
-aftsrr_beta_aft_f=aftsrr(Surv(T_aft_f,D_aft_f)~Z_aft_f,method="nonsm")
-beta_hat_aft_f=-unlist(summary(aftsrr_beta_aft_f))$coefficients1;beta_hat_aft_f
-std_hat_aft_f=unlist(summary(aftsrr_beta_aft_f))$coefficients2;std_hat_aft_f
-
-#-------------------------------------------------------------
-#------------Estimate Beta_hat_cox by using Aftgee------------
-#-------------------------------------------------------------
-aftsrr_beta_cox=aftsrr(Surv(T_cox,D_cox)~Z_cox,method="nonsm")
-beta_hat_cox=-unlist(summary(aftsrr_beta_cox))$coefficients1;beta_hat_cox
-std_hat_cox=unlist(summary(aftsrr_beta_cox))$coefficients2;std_hat_cox
-
-#-------------------------------------------------------------
-#------------------------WEIGHT&TOLERANCE---------------------
-#-------------------------------------------------------------
-path=200
-
-given_tol=0.1
-
-given_weight="c"
-#(weight=="a"){w_i=Covari*(Covari<=median(Covari))}
-#(weight=="b"){w_i=Covari}  
-#(weight=="c"){w_i=1*(Covari<=median(Covari))}
-#(weight=="d"){w_i=1}
-
-given_test="omni"
-# given_test=="link.ftn"
-# given_test=="ftn.form"
-# given_test=="....???"
-
-#-------------------------------------------------------------
 #-------------------------OMNIBUS TEST------------------------
 #-------------------------------------------------------------
-#system.time(sample_path(path,beta_hat_aft,std_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol))
+#system.time(sample_path(path,beta_hat_wb,std_hat_wb,T_wb,D_wb,Z_wb,given_weight,given_test,given_tol))
 #--------------------------CENSORING--------------------------
-result_aft=sample_path(path,beta_hat_aft,std_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol)
-result_cox=sample_path(path,beta_hat_cox,std_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,given_tol)
+result_wb=sample_path(path,beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,given_weight,given_test,given_tol)
+# Probability_wb
+result_wb$p_value
+result_wb$std_p_value
+# PLOT : W_wb vs What_wb
+Figure1_W_wb=plotting(result_wb,0,50);Figure1_W_wb
+# PLOT : std.W_wb vs std.What_wb
+Figure1_std.W_wb=plotting(result_wb,1,50);Figure1_std.W_wb
 
-result_aft$p_value
-result_aft$std_p_value
+result_gg=sample_path(path,beta_hat_gg,std_hat_gg,X_gg,D_gg,Z_gg,given_weight,given_test,given_tol)
+# Probability_gg
+result_gg$p_value
+result_gg$std_p_value
+# PLOT : W_gg vs What_gg
+Figure1_W_gg=plotting(result_gg,0,50);Figure1_W_gg
+# PLOT : W_gg vs What_gg
+Figure1_std.W_gg=plotting(result_gg,1,50);Figure1_std.W_gg
 
-result_cox$p_value
-result_cox$std_p_value
-
-# PLOT : W_aft vs What_aft
-Figure1_W_aft=plotting(result_aft,0,50);Figure1_W_aft
-
-# PLOT : std.W_aft vs std.What_aft
-Figure1_std.W_aft=plotting(result_aft,1,50);Figure1_std.W_aft
-
-# PLOT : W_cox vs What_cox
-Figure1_W_cox=plotting(result_cox,0,50);Figure1_W_cox
-
-# PLOT : W_cox vs What_cox
-Figure1_std.W_cox=plotting(result_cox,1,50);Figure1_std.W_cox
-
-
-
-############################고쳐야함 
-
-
-
-
-
-
-#-------------------------NONCENSORING------------------------
-dataset_What_aft_NC=sample_path_What(path,beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,given_tol)
-dataset_W_aft_NC=sample_path_W(beta_hat_aft,T_s_aft,rep(1,n),Z_aft,given_weight,given_test,dataset_What_aft_NC)
-
-kol_typ_test_aft_NC=kolmogorov(dataset_W_aft_NC,dataset_What_aft_NC);kol_typ_test_aft_NC
-
-p_aft_NC=kol_typ_test_aft_NC[3,];p_aft_NC
-
-# PLOT : W_aft_NC vs What_aft_NC
-Figure1_W_aft_NC=
-  ggplot()+
-  geom_line(data=dataset_What_aft_NC,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
-  geom_line(data=dataset_W_aft_NC,aes(x=t_i,y=W),colour="tomato")
-Figure1_W_aft_NC
-
-# PLOT : std.W_aft_NC vs std.What_aft_NC
-Figure1_std.W_aft_NC=
-  ggplot()+
-  geom_line(data=dataset_What_aft_NC,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
-  geom_line(data=dataset_W_aft_NC,aes(x=t_i,y=std.W),colour="tomato")
-Figure1_std.W_aft_NC
-
-#-------------------------------------------------------------
-#----------------------FUNCTION FORM TEST---------------------
-#-------------------------------------------------------------
-# dataset_W()
-dataset_What_aft_f=sample_path_What(path,beta_hat_aft_f,T_aft_f,D_aft_f,Z_aft_f,given_weight,given_test,given_tol)
-
-# dataset_What()
-dataset_W_aft_f=sample_path_W(beta_hat_aft_f,T_aft_f,D_aft_f,Z_aft_f,given_weight,given_test,dataset_What_aft_f)
-
-dataset_W_aft_f_order=dataset_W_aft_f$W[order(Z_aft_f)]
-Z_aft_f_order=Z_aft_f[order(Z_aft_f)]
-
-dataset_W_aft_order=dataset_W_aft$W[order(Z_aft)]
-Z_aft_order=Z_aft[order(Z_aft)]
-
-plot(Z_aft_f_order,dataset_W_aft_f_order,col="red",ylim = c(-0.5,0.5),type="l")
-par(new=TRUE)
-plot(Z_aft_order,dataset_W_aft_order,col="black",ylim = c(-0.5,0.5),type="l")
-
-
-dataset_std.W_aft_f_order=dataset_W_aft_f$std.W[order(Z_aft_f)]
-Z_aft_f_order=Z_aft_f[order(Z_aft_f)]
-
-dataset_std.W_aft_order=dataset_W_aft$std.W[order(Z_aft)]
-Z_aft_order=Z_aft[order(Z_aft)]
-
-plot(Z_aft_f_order,dataset_std.W_aft_f_order,col="red",ylim=c(-1.5,2.5),type="l")
-par(new=TRUE)
-plot(Z_aft_order,dataset_std.W_aft_order,col="black",ylim=c(-1.5,2.5),type="l")

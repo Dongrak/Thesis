@@ -1,5 +1,23 @@
-iteration=400
-n=1000
+#-------------------------------------------------------------
+#---------------------------SETTING---------------------------
+#-------------------------------------------------------------
+#rm(list=ls());gc();
+
+memory.limit(16*2^20)
+
+options(max.print=999999)
+options(error=NULL)
+
+#install.packages("ggplot2")
+#install.packages("survival")
+#install.packages("aftgee")
+
+library(ggplot2)
+library(survival)
+library(aftgee)
+
+iteration=200
+n=200
 path=200
 alpha=0.05
 
@@ -29,47 +47,88 @@ iteration_function=function(iteration,n,path,alpha,weight,test,tol){
   # -------------------------------------------------------------
   # ------------------------DATA GENERATE------------------------
   # -------------------------------------------------------------
-  id=c(1:n) # identification
-  beta_0=1 # beta_0
-  Z=rnorm(n,3,1) # covariate
+  n=200
+  beta_0=1
+  gamma_0=0.1
+  Z=matrix(rnorm(n,3,1),nrow=n)
   
-  # -----------------------AFT DATA GENERATE---------------------
-  T_s_aft=exp(-beta_0*Z)*qlnorm(runif(n),5,1) # lognormal baseline hazard
-  C_aft=exp(-beta_0*Z)*qlnorm(runif(n),6.5,1) # censoring time for aft model
-  T_aft=C_aft*(T_s_aft>C_aft)+T_s_aft*(T_s_aft<=C_aft) # observed time for aft model
-  D_aft=0*(T_s_aft>C_aft)+1*(T_s_aft<=C_aft) # delta
-  D_aft=D_aft[order(T_aft)]
-  Z_aft=Z[order(T_aft)]
-  T_aft=T_aft[order(T_aft)]
+  #---------------------WEIBULL DISTRIBUTION--------------------
+  # T ~ Generalized Gamma(alpha=1,beta,sigma) i.e. Weibull ~ (beta,sigma)
+  # alpha : shape // beta : scale // sigma : rate parameter of generaized gamma
+  alpha_wb_T=1;alpha_wb_C=1     # alpha must be one when weibull
+  beta_wb_T=5;beta_wb_C=6.5       #
+  sigma_wb_T=5;sigma_wb_C=5     #
   
-  # -----------------------COX DATA GENERATE---------------------
-  T_s_cox=qlnorm((1-runif(n))^(1/exp(beta_0*Z)),5,1,lower.tail = FALSE) # lognormal baseline hazard
-  C_cox=qlnorm((1-runif(n))^(1/exp(beta_0*Z)),5.7,1,lower.tail = FALSE) # censoring time for cox model
-  T_cox=C_cox*(T_s_cox > C_cox)+T_s_cox*(T_s_cox<=C_cox) # observed time for cox model
-  D_cox=0*(T_s_cox > C_cox)+1*(T_s_cox <= C_cox) # delta
-  D_cox=D_cox[order(T_cox)]
-  Z_cox=Z[order(T_cox)]
-  T_cox=T_cox[order(T_cox)]
+  V_wb_T=log(beta_wb_T)+log(qgamma(runif(n),alpha_wb_T,1))/sigma_wb_T
+  V_wb_C=log(beta_wb_C)+log(qgamma(runif(n),alpha_wb_C,1))/sigma_wb_C
+  T_wb=exp(-Z%*%beta_0+V_wb_T)
+  C_wb=exp(-Z%*%beta_0+V_wb_C)
+  X_wb=C_wb*(T_wb>C_wb)+T_wb*(T_wb<=C_wb) # observed failure time
+  D_wb=0*(T_wb>C_wb)+1*(T_wb<=C_wb)       # delta 0:censored & 1:observed
   
-  # -------------------------------------------------------------
-  # ------------Estimate Beta_hat_aft by using Aftgee------------
-  # -------------------------------------------------------------
-  aftsrr_beta_aft=aftsrr(Surv(T_aft,D_aft)~Z_aft,method="nonsm")
-  beta_hat_aft=-unlist(summary(aftsrr_beta_aft))$coefficients1;beta_hat_aft
-  std_hat_aft=unlist(summary(aftsrr_beta_aft))$coefficients2;std_hat_aft
+  D_wb=D_wb[order(X_wb)]
+  Z_wb=Z[order(X_wb)]
+  X_wb=X_wb[order(X_wb)]
+  #length(which(D_wb==0))/n
   
-  # -------------------------------------------------------------
-  # ------------Estimate Beta_hat_cox by using Aftgee------------
-  # -------------------------------------------------------------
-  aftsrr_beta_cox=aftsrr(Surv(T_cox,D_cox)~Z_cox,method="nonsm")
-  beta_hat_cox=-unlist(summary(aftsrr_beta_cox))$coefficients1;beta_hat_cox
-  std_hat_cox=unlist(summary(aftsrr_beta_cox))$coefficients2;std_hat_cox
+  #---------------GNERALIZED GUMBELL DISTRIBUTION---------------
+  # T ~ Generalized Gamma(alpha,beta,sigma) if. V ~ Generalized Gumbell(beta,sigma)
+  # alpha : shape // beta : scale // sigma : rate parameter of generaized gamma
+  alpha_gg_T=100;alpha_gg_C=100    # alpha must be greater than one whne not weibull
+  beta_gg_T=5;beta_gg_C=5.1       # gamma distribution
+  sigma_gg_T=5;sigma_gg_C=5        #
   
-  # result_aft
-  result_aft=sample_path(path,beta_hat_aft,std_hat_aft,T_aft,D_aft,Z_aft,given_weight,given_test,given_tol)
+  V_gg_T=log(beta_gg_T)+log(qgamma(runif(n),alpha_gg_T,1))/sigma_gg_T
+  V_gg_C=log(beta_gg_C)+log(qgamma(runif(n),alpha_gg_C,1))/sigma_gg_C
+  T_gg=exp(-Z%*%beta_0+V_gg_T)
+  C_gg=exp(-Z%*%beta_0+V_gg_C)
+  X_gg=C_gg*(T_gg>C_gg)+T_gg*(T_gg<=C_gg) # observed failure time
+  D_gg=0*(T_gg>C_gg)+1*(T_gg<=C_gg)       # delta 0:censored & 1:observed
   
-  # result_cox
-  result_cox=sample_path(path,beta_hat_cox,std_hat_cox,T_cox,D_cox,Z_cox,given_weight,given_test,given_tol)
+  D_gg=D_gg[order(X_gg)]
+  Z_gg=Z[order(X_gg)]
+  X_gg=X_gg[order(X_gg)]
+  #length(which(D_gg==0))/n
+  
+  #------------WEIBULL DISTRIBUTION(FUNCTIONAL FORM)------------
+  Z_f=matrix(c(Z,Z^2), nrow = n, ncol = 2)
+  beta_f=c(beta_0,gamma_0)
+  
+  alpha_wb_f_T=1;alpha_wb_f_C=1     # alpha must be one when weibull
+  beta_wb_f_T=10;beta_wb_f_C=12     #
+  sigma_wb_f_T=10;sigma_wb_f_C=12   #
+  
+  V_wb_f_T=log(beta_wb_f_T)+log(qgamma(runif(n),alpha_wb_f_T,1))/sigma_wb_f_T
+  V_wb_f_C=log(beta_wb_f_C)+log(qgamma(runif(n),alpha_wb_f_C,1))/sigma_wb_f_C
+  T_wb_f=exp(-Z_f%*%beta_f+V_wb_f_T)
+  C_wb_f=exp(-Z_f%*%beta_f+V_wb_f_C)
+  X_wb_f=C_wb_f*(T_wb_f>C_wb_f)+T_wb_f*(T_wb_f<=C_wb_f) # observed failure time
+  D_wb_f=0*(T_wb_f>C_wb_f)+1*(T_wb_f<=C_wb_f)       # delta 0:censored & 1:observed
+  
+  D_wb_f=D_wb_f[order(X_wb_f)]
+  Z_wb_f=Z[order(X_wb_f)]
+  X_wb_f=X_wb_f[order(X_wb_f)]
+  #length(which(D_wb_f==0))/n
+  
+  #-------------------------------------------------------------
+  #-------------Estimate Beta_hat_wb by using Aftgee------------
+  #-------------------------------------------------------------
+  aftsrr_beta_wb=aftsrr(Surv(X_wb,D_wb)~Z_wb,method="nonsm")
+  beta_hat_wb=-unlist(summary(aftsrr_beta_wb))$coefficients1;beta_hat_wb
+  std_hat_wb=unlist(summary(aftsrr_beta_wb))$coefficients2;std_hat_wb
+  
+  #-------------------------------------------------------------
+  #------------Estimate Beta_hat_gev by using Aftgee------------
+  #-------------------------------------------------------------
+  aftsrr_beta_gg=aftsrr(Surv(X_gg,D_gg)~Z_gg,method="nonsm")
+  beta_hat_gg=-unlist(summary(aftsrr_beta_gg))$coefficients1;beta_hat_gg
+  std_hat_gg=unlist(summary(aftsrr_beta_gg))$coefficients2;std_hat_gg
+  
+  # result_wb
+  result_wb=sample_path(path,beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,given_weight,given_test,given_tol)
+  
+  # result_gg
+  result_gg=sample_path(path,beta_hat_gg,std_hat_gg,X_gg,D_gg,Z_gg,given_weight,given_test,given_tol)
   
   #-----------------------------------------------------------
   #  p  : the ratio of (What>=W)*1
@@ -85,26 +144,26 @@ iteration_function=function(iteration,n,path,alpha,weight,test,tol){
   # p_alpha는 acceptance rate을 구하는 것이다! 
   #-----------------------------------------------------------
   
-  p_exact=rbind(c(result_aft$p_value,result_aft$std_p_value),
-                c(result_cox$p_value,result_cox$std_p_value))
+  p_exact=rbind(c(result_wb$p_value,result_wb$std_p_value),
+                c(result_gg$p_value,result_gg$std_p_value))
   colnames(p_exact)=c("W","std.W")
-  rownames(p_exact)=c("p_aft_exact","p_cox_exact")
+  rownames(p_exact)=c("p_wb_exact","p_gg_exact")
   #p_exact
   
   P_alpha=(p_exact>=alpha)*1
   colnames(P_alpha)=c("W","std.W")
-  rownames(P_alpha)=c("p_aft_alpha","p_cox_alpha")
+  rownames(P_alpha)=c("p_wb_alpha","p_gg_alpha")
   #P_alpha
   
   p_value=list(p_exact,P_alpha)
   #p_value
   
-  result[[k]]=list(result_aft,result_cox,p_value)
+  result[[k]]=list(result_wb,result_gg,p_value)
   }
   return(result)
 }
 date()
-iteration_result4=iteration_function(iteration,n,path,alpha,given_weight,given_test,given_tol)
+iteration_result1=iteration_function(iteration,n,path,alpha,given_weight,given_test,given_tol)
 date()
 
 prob.table=function(iter_result){
@@ -123,7 +182,7 @@ prob.table=function(iter_result){
   
   return(list(p_exact,p_alpha))
 }
-prob.table(iteration_result4)
+prob.table(iteration_result1)
 
 #given_to1=100000
 #iteration_result1 # iteration 100
