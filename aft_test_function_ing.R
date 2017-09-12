@@ -1,9 +1,9 @@
 #-------------------------------------------------------------
 #-----------------------TEST STATISTICS-----------------------
 #-------------------------------------------------------------
-W_t.z_omni=function(b,Time,Delta,Covari,weight="fi"){
-  #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;weight="fi"
-  #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;weight="fi"
+W_t.z_omni=function(b,Time,Delta,Covari){
+  #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
+  #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   
   # Covari is n by J matrix consited of the covariates
   Covari=matrix(Covari,nrow=n)
@@ -22,64 +22,25 @@ W_t.z_omni=function(b,Time,Delta,Covari,weight="fi"){
   e_i_beta=e_i_beta[order_resid]
   
   # weight function
-  if(weight=="11"){
-    w_ij_z=1
-  }
-  
   if(p==1){
-    if(weight=="fi"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      Covari_order_j=as.vector(Covari)[order(Covari)]
-      for(i in 1:n){
-        w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*Covari_order_j[i])[order_resid]
-      }
-      w_ij_z[[p]]=w_i_z
+    w_ij_z=list(NA)
+    w_i_z=list(NA)
+    Covari_order_j=as.vector(Covari)[order(Covari)]
+    for(i in 1:n){
+      w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*Covari_order_j[i])[order_resid]
     }
-    if(weight=="f1"){
-      w_ij_z=list(NA)
-      w_ij_z[[p]]=Covari
-    }
-    if(weight=="1i"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      Covari_order_j=as.vector(Covari)[order(Covari)]
-      for(i in 1:n){
-        w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*1)
-      }
-      w_ij_z[[p]]=w_i_z
-    }
+    w_ij_z[[p]]=w_i_z
   }
   
   if(p>1){
-    if(weight=="fi"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      for(j in 1:p){
-        Covari_order_j=as.vector(Covari[,j])[order(Covari[,j])]
-        for(i in 1:n){
-          w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*Covari_order_j[i])[order_resid]
-        }
-        w_ij_z[[j]]=w_i_z
+    w_ij_z=list(NA)
+    w_i_z=list(NA)
+    for(j in 1:p){
+      Covari_order_j=as.vector(Covari[,j])[order(Covari[,j])]
+      for(i in 1:n){
+        w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*Covari_order_j[i])[order_resid]
       }
-      #w_ij_z
-    }
-    if(weight=="f1"){
-      w_ij_z=list(NA)
-      for(j in 1:p){
-        w_ij_z[[j]]=Covari[,j]
-      }
-    }
-    if(weight=="1i"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      for(j in 1:p){
-        Covari_order_j=as.vector(Covari[,j])[order(Covari[,j])]
-        for(i in 1:n){
-          w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*1)[order_resid]
-        }
-        w_ij_z[[j]]=w_i_z
-      }
+      w_ij_z[[j]]=w_i_z
     }
   }
 
@@ -143,11 +104,10 @@ W_t.z_omni=function(b,Time,Delta,Covari,weight="fi"){
   return(result)
 }
 #W_t.z_omni()
-W_t.z_omni(beta_hat_wb,X_wb,D_wb,Z_wb,"fi")
 
-W_z_ftnform=function(b,Time,Delta,Covari,weight="1i"){
-  #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;weight="1i"
-  #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;weight="1i"
+W_z_ftnform=function(b,Time,Delta,Covari){
+  #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
+  #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   
   # Covari is n by J matrix consited of the covariates
   Covari=matrix(Covari,nrow=n)
@@ -166,64 +126,25 @@ W_z_ftnform=function(b,Time,Delta,Covari,weight="1i"){
   e_i_beta=e_i_beta[order_resid]
   
   # weight function
-  if(weight=="11"){
-    w_ij_z=1
-  }
-  
   if(p==1){
-    if(weight=="fi"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      Covari_order_j=as.vector(Covari)[order(Covari)]
-      for(i in 1:n){
-        w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*Covari_order_j[i])[order_resid]
-      }
-      w_ij_z[[p]]=w_i_z
+    w_ij_z=list(NA)
+    w_i_z=list(NA)
+    Covari_order_j=as.vector(Covari)[order(Covari)]
+    for(i in 1:n){
+      w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*1)[order_resid]
     }
-    if(weight=="f1"){
-      w_ij_z=list(NA)
-      w_ij_z[[p]]=Covari
-    }
-    if(weight=="1i"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      Covari_order_j=as.vector(Covari)[order(Covari)]
-      for(i in 1:n){
-        w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*1)[order_resid]
-      }
-      w_ij_z[[p]]=w_i_z
-    }
+    w_ij_z[[p]]=w_i_z
   }
   
   if(p>1){
-    if(weight=="fi"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      for(j in 1:p){
-        Covari_order_j=as.vector(Covari[,j])[order(Covari[,j])]
-        for(i in 1:n){
-          w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*Covari_order_j[i])[order_resid]
-        }
-        w_ij_z[[j]]=w_i_z
+    w_ij_z=list(NA)
+    w_i_z=list(NA)
+    for(j in 1:p){
+      Covari_order_j=as.vector(Covari[,j])[order(Covari[,j])]
+      for(i in 1:n){
+        w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*1)[order_resid]
       }
-      #w_ij_z
-    }
-    if(weight=="f1"){
-      w_ij_z=list(NA)
-      for(j in 1:p){
-        w_ij_z[[j]]=Covari[,j]
-      }
-    }
-    if(weight=="1i"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      for(j in 1:p){
-        Covari_order_j=as.vector(Covari[,j])[order(Covari[,j])]
-        for(i in 1:n){
-          w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*1)[order_resid]
-        }
-        w_ij_z[[j]]=w_i_z
-      }
+      w_ij_z[[j]]=w_i_z
     }
   }
   
@@ -287,11 +208,10 @@ W_z_ftnform=function(b,Time,Delta,Covari,weight="1i"){
   return(result)
 }
 #W_z_ftnform()
-W_z_ftnform(beta_hat_wb,X_wb,D_wb,Z_wb,"1i")
 
-W_z_linkftn=function(b,Time,Delta,Covari,weight="1i"){
-  #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;weight="1i"
-  #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;weight="1i"
+W_z_linkftn=function(b,Time,Delta,Covari){
+  #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
+  #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   
   # Covari is n by J matrix consited of the covariates
   Covari=matrix(Covari,nrow=n)
@@ -312,64 +232,25 @@ W_z_linkftn=function(b,Time,Delta,Covari,weight="1i"){
   e_i_beta=e_i_beta[order_resid]
   
   # weight function
-  if(weight=="11"){
-    w_ij_z=1
-  }
-  
   if(p==1){
-    if(weight=="fi"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      Covari_order_j=as.vector(Covari)[order(Covari)]
-      for(i in 1:n){
-        w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*Covari_order_j[i])[order_resid]
-      }
-      w_ij_z[[p]]=w_i_z
+    w_ij_z=list(NA)
+    w_i_z=list(NA)
+    Covari_order_j=as.vector(Covari)[order(Covari)]
+    for(i in 1:n){
+      w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*1)[order_resid]
     }
-    if(weight=="f1"){
-      w_ij_z=list(NA)
-      w_ij_z[[p]]=Covari
-    }
-    if(weight=="1i"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      Covari_order_j=as.vector(Covari)[order(Covari)]
-      for(i in 1:n){
-        w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*1)[order_resid]
-      }
-      w_ij_z[[p]]=w_i_z
-    }
+    w_ij_z[[p]]=w_i_z
   }
   
   if(p>1){
-    if(weight=="fi"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      for(j in 1:p){
-        Covari_order_j=as.vector(Covari[,j])[order(Covari[,j])]
-        for(i in 1:n){
-          w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*Covari_order_j[i])[order_resid]
-        }
-        w_ij_z[[j]]=w_i_z
+    w_ij_z=list(NA)
+    w_i_z=list(NA)
+    for(j in 1:p){
+      Covari_order_j=as.vector(Covari[,j])[order(Covari[,j])]
+      for(i in 1:n){
+        w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*1)[order_resid]
       }
-      #w_ij_z
-    }
-    if(weight=="f1"){
-      w_ij_z=list(NA)
-      for(j in 1:p){
-        w_ij_z[[j]]=Covari[,j]
-      }
-    }
-    if(weight=="1i"){
-      w_ij_z=list(NA)
-      w_i_z=list(NA)
-      for(j in 1:p){
-        Covari_order_j=as.vector(Covari[,j])[order(Covari[,j])]
-        for(i in 1:n){
-          w_i_z[[i]]=((Covari_order_j>=Covari_order_j[i])*1)[order_resid]
-        }
-        w_ij_z[[j]]=w_i_z
-      }
+      w_ij_z[[j]]=w_i_z
     }
   }
   
@@ -433,24 +314,23 @@ W_z_linkftn=function(b,Time,Delta,Covari,weight="1i"){
   return(result)
 }
 #W_z_linkftn()
-W_z_linkftn(beta_hat_wb,X_wb,D_wb,Z_wb,"1i")
 
-W_t.z=function(b,Time,Delta,Covari,weight,test){
+W_t.z=function(b,Time,Delta,Covari,test){
   if(test=="omni"){
-    return(W_t.z_omni(b,Time,Delta,Covari,weight))
+    return(W_t.z_omni(b,Time,Delta,Covari))
   }
   if(test=="ftnform"){
-    return(W_z_ftnform(b,Time,Delta,Covari,weight))
+    return(W_z_ftnform(b,Time,Delta,Covari))
   }
   if(test=="linkftn"){
-    return(W_z_linkftn(b,Time,Delta,Covari,weight))
+    return(W_z_linkftn(b,Time,Delta,Covari))
   }
   if(test=="aft"){
     return(print("NOT YET..."))
   }
 }
 #W_t.z()
-aa=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"fi","omni")$W_j_t.z
+aa=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"omni")$W_j_t.z
 aa[[1]]
 
 #-------------------------------------------------------------
