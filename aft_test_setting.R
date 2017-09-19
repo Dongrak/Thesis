@@ -8,6 +8,7 @@ memory.limit(16*2^20)
 options(max.print=999999)
 options(error=NULL)
 
+
 #install.packages("ggplot2")
 #install.packages("survival")
 #install.packages("aftgee")
@@ -23,7 +24,7 @@ library(ENmisc)
 #-------------------------------------------------------------
 path=200
 
-given_tol=0.1
+given_tol=1
 
 given_weight="c"
 #(weight=="a"){w_i=Covari*(Covari<=median(Covari))}
@@ -66,8 +67,8 @@ length(which(D_wb==0))/n
 # T ~ Generalized Gamma(alpha,beta,sigma) if. V ~ Generalized Gumbell(beta,sigma)
 # alpha : shape // beta : scale // sigma : rate parameter of generaized gamma
 alpha_gg_T=100;alpha_gg_C=110    # alpha must be greater than one whne not weibull
-beta_gg_T=100;beta_gg_C=100       # gamma distribution
-sigma_gg_T=100;sigma_gg_C=100       #
+beta_gg_T=0.1;beta_gg_C=0.1       # gamma distribution
+sigma_gg_T=1;sigma_gg_C=1       #
 
 V_gg_T=log(beta_gg_T)+log(qgamma(runif(n),alpha_gg_T,1))/sigma_gg_T
 V_gg_C=log(beta_gg_C)+log(qgamma(runif(n),alpha_gg_C,1))/sigma_gg_C
