@@ -1,7 +1,7 @@
-What_t.z_omni(b,std,Time,Delta,Covari,tol){
-  #b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;weight=given_weight;test=given_test;tol=given_tol;
-  b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;weight=given_weight;test=given_test;tol=given_tol;
-  
+What_j_t.z_omni=function(b,std,Time,Delta,Covari,tol){
+  #b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
+  #b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
+  #b=c(beta_hat_wb,beta_hat_wb^2);Covari=c(Z_wb,Z_wb^2);
   Covari=matrix(Covari,nrow=n)
   
   n=length(Time) # the number of individuals
@@ -159,10 +159,13 @@ What_t.z_omni(b,std,Time,Delta,Covari,tol){
   #-----------------------------------------------------------
   #--------Find Beta_hat_star by using optimize function------
   #-----------------------------------------------------------
-  U_beta=function(beta_U=b,Time_U=Time,Delta_U=Delta,Covari_U=Covari){
-    #beta_U=b;Time_U=Time;Delta_U=Delta;Covari_U=Covari;
+  optim_U_beta=function(x){
+    beta_U=x
+    #beta_U=b;
+    
+    Time_U=Time;Delta_U=Delta;Covari_U=Covari;
 
-    e_i_beta_U=as.vector(log(Time_U)+Covari_U%*%b)
+    e_i_beta_U=as.vector(log(Time_U)+Covari_U%*%beta_U)
     
     order_resid_U=order(e_i_beta_U)
     
@@ -232,10 +235,10 @@ What_t.z_omni(b,std,Time,Delta,Covari,tol){
     }
     #U_j_t_U
 
-    U_inf_U=unlist(lapply(U_j_t_U,function(x){x[n]}))
-    #U_inf_U
+    U_j_inf_U=unlist(lapply(U_j_t_U,function(x){x[n]}))
+    #U_j_inf_U
 
-    return(U_inf_U)
+    return(U_j_inf_U)
   }
   #U_beta()
   
@@ -246,15 +249,14 @@ What_t.z_omni(b,std,Time,Delta,Covari,tol){
     phi_i=rnorm(n)
     #phi_i
 
-    U_j_pi_phi_t.z=list(NA)
+    U_j_pi_phi_t.z1=list(NA)
     for(j in 1:p){
-      U_j_pi_phi_t.z[[j]]=Reduce('+',mapply(function(x){t(apply(x,2,cumsum))}
+      U_j_pi_phi_t.z1[[j]]=Reduce('+',mapply(function(x){t(apply(x,2,cumsum))}
                           ,mapply("*",mapply("*",dMhat_i_t,lapply(lapply(
                           pi_ij_z[[j]],function(x,y){x-y},E_j_pi_t.z[[j]]),
                           function(x,y){t(t(x)*y)},psi_t),SIMPLIFY=FALSE)
                           ,phi_i,SIMPLIFY=FALSE),SIMPLIFY=FALSE))
     }
-    #U_j_pi_phi_t.z
     
     U_j_phi_t=list(NA)
     for(j in 1:p){
@@ -266,18 +268,32 @@ What_t.z_omni(b,std,Time,Delta,Covari,tol){
 
     U_j_phi_inf=unlist(lapply(U_j_phi_t,max))
     #U_j_phi_inf
-    
-    beta_hat_s_list=optimize(function(y){abs(U_beta(y)-U_j_phi_inf)},
-                             c(b-2*std,b+2*std),
-                             tol = 1e-16)
-    beta_hat_s_list
-    
-    tolerance=beta_hat_s_list$objective
-    #tolerance
+    if(p==1){
+      beta_hat_s_list=optimize(function(BETA){sum((U_beta(BETA)-U_j_phi_inf)^2)},
+                            c(b-2*std,b+2*std),tol = 1e-16)
+      #beta_hat_s_list
+      
+      beta_hat_s=beta_hat_s_list$minimum;beta_hat_s
+      #beta_hat_s
+      
+      tolerance=beta_hat_s_list$objective
+      #tolerance
+      
+    }
+    if(p>1){
+      beta_hat_s_list=optim(b,function(BETA){sum((U_beta(BETA)-U_j_phi_inf)^2)})
+      #beta_hat_s_list
+      
+      beta_hat_s=beta_hat_s_list$par;beta_hat_s
+      #beta_hat_s
+      
+      tolerance=beta_hat_s_list$objective
+      #tolerance
+    }
+    #beta_hat_s_list
   #}
+
   
-  beta_hat_s=beta_hat_s_list$minimum;beta_hat_s
-  #beta_hat_s
   
   e_i_beta_s=as.vector(log(Time)+Covari%*%beta_hat_s)
   
@@ -327,7 +343,7 @@ What_t.z_omni(b,std,Time,Delta,Covari,tol){
   
   order_Time=order(Time)
   #order_Time
-  mapply()
+
   F.T.=lapply(U_j_pi_phi_t.z,"/",sqrt(n))
   S.T.=mapply("*",mapply("+",fhat_j_t.z,mapply(function(x){t(apply(x,2,cumsum))}
         ,lapply(ghat_j_t.z,function(x,y){t(t(x)*y)},dLambdahat_0_t),
@@ -343,4 +359,6 @@ What_t.z_omni(b,std,Time,Delta,Covari,tol){
   
   return(result)
 }
-#What_t.z_omni()
+#What_j_t.z_omni()
+What_j_t.z_omni(c(beta_hat_wb,beta_hat_wb^2),std_hat_wb,X_wb,D_wb,c(Z_wb,Z_wb^2),given_tol)$What_j_t.z
+

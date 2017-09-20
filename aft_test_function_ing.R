@@ -377,17 +377,17 @@ W_j_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"omni")
 #-------------------------------------------------------------
 #-------------------------SAMPLE PATH-------------------------
 #-------------------------------------------------------------
-What_t.z_omni(b,std,Time,Delta,Covari,tol){}
+What_t.z_omni=function(b,std,Time,Delta,Covari,tol){}
 #What_t.z_omni()
 
-What_z_ftnform(b,std,Time,Delta,Covari,tol){}
+What_z_ftnform=function(b,std,Time,Delta,Covari,tol){}
 #What_z_ftnform()
 
-What_z_linkftn(b,std,Time,Delta,Covari,tol){}
+What_z_linkftn=function(b,std,Time,Delta,Covari,tol){}
 #What_z_linkftn()
 
 ################################################ mi wan sung
-What_t.z_aft(b,std,Time,Delta,Covari,tol){}
+What_t.z_aft=function(b,std,Time,Delta,Covari,tol){}
 #What_t.z_aft()
 
 What_t.z=function(b,std,Time,Delta,Covari,test,tol){
