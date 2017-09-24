@@ -5,7 +5,7 @@ What_j_t.z_omni=function(b,std,Time,Delta,Covari,tol){
   Covari=matrix(Covari,nrow=n)
   
   n=length(Time) # the number of individuals
-  p=length(b) # the number of parameters
+  p=length(b) # the number of parametersa
   
   e_i_beta=as.vector(log(Time)+Covari%*%b)
   
@@ -159,8 +159,7 @@ What_j_t.z_omni=function(b,std,Time,Delta,Covari,tol){
   #-----------------------------------------------------------
   #--------Find Beta_hat_star by using optimize function------
   #-----------------------------------------------------------
-  optim_U_beta=function(x){
-    beta_U=x
+  U_beta=function(beta_U){
     #beta_U=b;
     
     Time_U=Time;Delta_U=Delta;Covari_U=Covari;
@@ -249,9 +248,9 @@ What_j_t.z_omni=function(b,std,Time,Delta,Covari,tol){
     phi_i=rnorm(n)
     #phi_i
 
-    U_j_pi_phi_t.z1=list(NA)
+    U_j_pi_phi_t.z=list(NA)
     for(j in 1:p){
-      U_j_pi_phi_t.z1[[j]]=Reduce('+',mapply(function(x){t(apply(x,2,cumsum))}
+      U_j_pi_phi_t.z[[j]]=Reduce('+',mapply(function(x){t(apply(x,2,cumsum))}
                           ,mapply("*",mapply("*",dMhat_i_t,lapply(lapply(
                           pi_ij_z[[j]],function(x,y){x-y},E_j_pi_t.z[[j]]),
                           function(x,y){t(t(x)*y)},psi_t),SIMPLIFY=FALSE)
@@ -292,8 +291,6 @@ What_j_t.z_omni=function(b,std,Time,Delta,Covari,tol){
     }
     #beta_hat_s_list
   #}
-
-  
   
   e_i_beta_s=as.vector(log(Time)+Covari%*%beta_hat_s)
   

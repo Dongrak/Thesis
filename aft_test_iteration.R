@@ -11,10 +11,12 @@ options(error=NULL)
 #install.packages("ggplot2")
 #install.packages("survival")
 #install.packages("aftgee")
+#install.packages("ENmisc")
 
 library(ggplot2)
 library(survival)
 library(aftgee)
+library(ENmisc)
 
 iteration=200
 n=200
