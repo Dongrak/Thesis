@@ -865,13 +865,16 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   
   return(result)
 }
-#sample_path
+# sample_path_omni(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,100000)
 
 sample_path_ftnform=function(path,b,std,Time,Delta,Covari,tol){}
+# sample_path_ftnform(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,100000)
 
 sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){}
+# sample_path_linkftn(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,100000)
 
 sample_path_aft=function(path,b,std,Time,Delta,Covari,tol){}
+# sample_path_aft(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,100000)
 
 sample_path=function(path,b,std,Time,Delta,Covari,test,tol){
   if(test=="omni"){
@@ -888,5 +891,5 @@ sample_path=function(path,b,std,Time,Delta,Covari,test,tol){
     #return(sample_path_aft(path,b,std,Time,Delta,Covari,tol))
   }
 }
-
+# sample_path(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,"omni",100000)
 
