@@ -12,11 +12,13 @@ options(error=NULL)
 #install.packages("survival")
 #install.packages("aftgee")
 #install.packages("ENmisc")
+#install.packages("plotly")
 
 library(ggplot2)
 library(survival)
 library(aftgee)
 library(ENmisc)
+library(plotly)
 
 iteration=200
 n=200
@@ -146,15 +148,15 @@ iteration_function=function(iteration,n,path,alpha,weight,test,tol){
   # p_alpha는 acceptance rate을 구하는 것이다! 
   #-----------------------------------------------------------
   
-  p_exact=rbind(c(result_wb$p_value,result_wb$std_p_value),
-                c(result_gg$p_value,result_gg$std_p_value))
+  p_exact=rbind(c(result_wb$p_value,result_wb$std.p_value),
+                c(result_gg$p_value,result_gg$std.p_value))
   colnames(p_exact)=c("W","std.W")
   rownames(p_exact)=c("p_wb_exact","p_gg_exact")
   #p_exact
   
-  P_alpha=(p_exact>=alpha)*1
-  colnames(P_alpha)=c("W","std.W")
-  rownames(P_alpha)=c("p_wb_alpha","p_gg_alpha")
+  p_alpha=(p_exact>=alpha)*1
+  colnames(p_alpha)=c("W","std.W")
+  rownames(p_alpha)=c("p_wb_alpha","p_gg_alpha")
   #P_alpha
   
   p_value=list(p_exact,P_alpha)

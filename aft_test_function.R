@@ -1,25 +1,25 @@
 #-------------------------------------------------------------
 #-----------------------TEST STATISTICS-----------------------
 #-------------------------------------------------------------
-W_t=function(b,Time,Delta,Covari,weight,test){
-  #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;weight=given_weight;test=given_test;
-  #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;weight=given_weight;test=given_test;
+W_t=function(b,Time,Delta,Covari){
+  #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;
+  #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;
+  
+  Covari=matrix(Covari,nrow=n)
   
   n=length(Time)
+  p=length(b)
   
-  e_i_beta=log(Time)+Covari*b
+  e_i_beta=as.vector(log(Time)+Covari%*%b)
   
   order_resid=order(e_i_beta)
   
   Time=Time[order_resid]
-  Covari=Covari[order_resid]
+  Covari=matrix(Covari[order_resid,],nrow=n)
   Delta=Delta[order_resid]
   e_i_beta=e_i_beta[order_resid]
-  
-  if (weight=="a"){w_i=Covari*(Covari<=median(Covari))}
-  if (weight=="b"){w_i=Covari}
-  if (weight=="c"){w_i=1*(Covari<=median(Covari))}
-  if (weight=="d"){w_i=1}
+
+  w_i=1*(Covari<=Covari[order(Covari)][100])
   
   N_i_s_t.beta=list(NA)
   for(j in 1:n){
@@ -39,8 +39,8 @@ W_t=function(b,Time,Delta,Covari,weight,test){
   S_0_s_t.beta=Reduce('+',Y_i_s_t.beta)
   #S_0_s_t.beta
   
-  S_1_s_t.beta=Reduce('+',mapply(
-    "*", Y_i_s_t.beta, Covari, SIMPLIFY = FALSE))
+  S_1_s_t.beta=Reduce('+',mapply(function(x,y){x%*%t(y)},Y_i_s_t.beta,
+                                 as.list(data.frame(t(Covari))),SIMPLIFY=FALSE))
   #S_1_s_t.beta
   
   E_s_t.beta=S_1_s_t.beta/S_0_s_t.beta
@@ -62,17 +62,15 @@ W_t=function(b,Time,Delta,Covari,weight,test){
     Y_i_s_t.beta,"*",dAhat_0_t.beta),cumsum), SIMPLIFY = FALSE)
   #Mhat_i_s_t.beta
   
-  W_t=(Reduce('+',mapply('*',Mhat_i_s_t.beta,w_i,SIMPLIFY = FALSE)))/sqrt(n)
-  #W_t
+  W_t_test=(Reduce('+',mapply('*',Mhat_i_s_t.beta,w_i,SIMPLIFY = FALSE)))/sqrt(n)
+  #W_t_test
   
-  order_Time=order(Time)
-  #order_Time
-  
-  if (test=="omni"){return(W_t[order_Time])}
-  if (test=="ftn.form"){return(W_t[order(Covari)])}
-  
+  return(W_t_test)
+
+  plot(W_t_test)
 }
 #W_t()
+ee=W_t(beta_hat_wb,X_wb,D_wb,Z_wb)
 
 #-------------------------------------------------------------
 #-------------------------SAMPLE PATH-------------------------

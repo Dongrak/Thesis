@@ -8,16 +8,17 @@ memory.limit(16*2^20)
 options(max.print=999999)
 options(error=NULL)
 
-
 #install.packages("ggplot2")
 #install.packages("survival")
 #install.packages("aftgee")
 #install.packages("ENmisc")
+#install.packages("plotly")
 
 library(ggplot2)
 library(survival)
 library(aftgee)
 library(ENmisc)
+library(plotly)
 
 #-------------------------------------------------------------
 #------------------------WEIGHT&TOLERANCE---------------------
@@ -124,17 +125,15 @@ aftsrr_beta_wb_f=aftsrr(Surv(X_wb_f,D_wb_f)~Z_wb_f,method="nonsm")
 beta_hat_wb_f=-unlist(summary(aftsrr_beta_wb_f))$coefficients1;beta_hat_wb_f
 std_hat_wb_f=unlist(summary(aftsrr_beta_wb_f))$coefficients2;std_hat_wb_f
 
-
-
 #-------------------LOG NORMAL DISTRIBUTION-------------------
-T_ln_aft=exp(-beta_0*Z)*qlnorm(runif(n),5,1)
-C_ln_aft=exp(-beta_0*Z)*qlnorm(runif(n),6.5,1)
+T_ln_aft=as.vector(exp(-beta_0*Z)*qlnorm(runif(n),5,1))
+C_ln_aft=as.vector(exp(-beta_0*Z)*qlnorm(runif(n),6.5,1))
 X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
 D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
 Z_ln_aft=Z
 
-T_ln_cox=qlnorm((1-runif(n))^(1/exp(beta_0*Z)),5,1,lower.tail = FALSE)
-C_ln_cox=qlnorm((1-runif(n))^(1/exp(beta_0*Z)),5.7,1,lower.tail = FALSE)
+T_ln_cox=as.vector(qlnorm((1-runif(n))^(1/exp(beta_0*Z)),5,1,lower.tail = FALSE))
+C_ln_cox=as.vector(qlnorm((1-runif(n))^(1/exp(beta_0*Z)),5.7,1,lower.tail = FALSE))
 X_ln_cox=C_ln_cox*(T_ln_cox > C_ln_cox)+T_ln_cox*(T_ln_cox<=C_ln_cox)
 D_ln_cox=0*(T_ln_cox > C_ln_cox)+1*(T_ln_cox <= C_ln_cox)
 Z_ln_cox=Z
@@ -147,7 +146,3 @@ std_hat_ln_aft=unlist(summary(aftsrr_beta_ln_aft))$coefficients2;std_hat_ln_aft
 aftsrr_beta_ln_cox=aftsrr(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,method="nonsm")
 beta_hat_ln_cox=-unlist(summary(aftsrr_beta_ln_cox))$coefficients1;beta_hat_ln_cox
 std_hat_ln_cox=unlist(summary(aftsrr_beta_ln_cox))$coefficients2;std_hat_ln_cox
-
-
-
-
