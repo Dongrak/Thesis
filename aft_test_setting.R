@@ -25,7 +25,7 @@ library(plotly)
 #-------------------------------------------------------------
 path=200
 
-given_tol=1
+given_tol=0.1
 
 given_weight="c"
 #(weight=="a"){w_i=Covari*(Covari<=median(Covari))}
