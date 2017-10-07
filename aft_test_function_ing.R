@@ -506,7 +506,7 @@ What_omni=function(b,std,Time,Delta,Covari,tol){
       beta_hat_s=beta_hat_s_list$par
       #beta_hat_s
       
-      tolerance=beta_hat_s_list$objective
+      tolerance=beta_hat_s_list$value
       #tolerance
     }
   }
@@ -826,7 +826,7 @@ What_ftnform=function(b,std,Time,Delta,Covari,tol){
       beta_hat_s=beta_hat_s_list$par
       #beta_hat_s
       
-      tolerance=beta_hat_s_list$objective
+      tolerance=beta_hat_s_list$value
       #tolerance
     }
   }
@@ -1140,7 +1140,7 @@ What_linkftn=function(b,std,Time,Delta,Covari,tol){
       beta_hat_s=beta_hat_s_list$par
       #beta_hat_s
       
-      tolerance=beta_hat_s_list$objective
+      tolerance=beta_hat_s_list$value
       #tolerance
     }
   }
@@ -1259,6 +1259,7 @@ What_t.z=function(b,std,Time,Delta,Covari,test,tol){
 sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
+  #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
   
   #------------------------SAMPLE PATH------------------------
   dataset_What=list(NA)
@@ -1323,16 +1324,147 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   
   return(result)
 }
-# result_omni=sample_path_omni(100,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
+#sample_path_omni
 
-sample_path_ftnform=function(path,b,std,Time,Delta,Covari,tol){}
-# result_ftnform=sample_path_ftnform(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
+sample_path_ftnform=function(path,b,std,Time,Delta,Covari,tol){
+  #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
+  #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
+  #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
+  
+  #------------------------SAMPLE PATH------------------------
+  dataset_What=list(NA)
+  for(k in 1:path){
+    dataset_What[[k]]=What_ftnform(b,std,Time,Delta,Covari,tol)$sim_stat
+    if(k%%100==0) {
+      cat("Sample Path",k,"\n")
+    }
+  }
+  
+  #------------------------BOOTSTRAPPING----------------------
+  std.boot=matrix(apply(mapply(function(x){as.vector(x)},dataset_What),1,sd),nrow=n)
+  # std.boot
+  
+  dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
+  # dataset_std.What
+  
+  dataset_W=W_ftnform(b,Time,Delta,Covari)$obs_stat
+  # dataset_W
+  
+  dataset_std.W=dataset_W/std.boot
+  # dataset_std.W
+  
+  #-----------------------MAXIMUM VALUE-----------------------
+  max_path_What=unlist(lapply(dataset_What,function(x){max(abs(x))}))
+  # max_path_What
+  
+  max_path_W=max(abs(dataset_W))
+  # max_path_W
+  
+  max_path_std.What=unlist(lapply(dataset_std.What,function(x){max(abs(x))}))
+  # max_path_std.What
+  
+  max_path_std.W=max(abs(dataset_std.W))
+  # max_path_std.W
+  
+  #-----------------------------------------------------------
+  #  p  : the ratio of (What>=W)*1
+  # H_0 : the data follow the assumption of the aft model.
+  #
+  # if p>0.05, cannot reject the null hypothesis. i.e. accept it 
+  # if p=<0.05, reject the null hypothesis.
+  #
+  # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
+  # 0.96이면 당연히 accetp
+  # 0.04이면 당연히 reject
+  # 0.45이면 accetp
+  # p_alpha는 acceptance rate을 구하는 것이다! 
+  #-----------------------------------------------------------
+  
+  #--------------------------P VALUE--------------------------
+  p_value=length(which((max_path_What>max_path_W)*1==1))/path
+  # p_value
+  
+  std.p_value=length(which((max_path_std.What>max_path_std.W)*1==1))/path
+  # std.p_value
+  
+  result=list(dataset_What=dataset_What,dataset_std.What=dataset_std.What,
+              dataset_W=dataset_W,dataset_std.W=dataset_std.W,
+              std.boot=std.boot,p_value=p_value,std.p_value=std.p_value)
+  # result
+  
+  return(result)
+}
+#sample_path_ftnform
 
-sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){}
-# result_linkftn=sample_path_linkftn(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
-
-sample_path_aft=function(path,b,std,Time,Delta,Covari,tol){}
-# result_aft=sample_path_aft(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
+sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){
+  #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
+  #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
+  #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
+  
+  #------------------------SAMPLE PATH------------------------
+  dataset_What=list(NA)
+  for(k in 1:path){
+    dataset_What[[k]]=What_linkftn(b,std,Time,Delta,Covari,tol)$sim_stat
+    if(k%%100==0) {
+      cat("Sample Path",k,"\n")
+    }
+  }
+  
+  #------------------------BOOTSTRAPPING----------------------
+  std.boot=matrix(apply(mapply(function(x){as.vector(x)},dataset_What),1,sd),nrow=n)
+  # std.boot
+  
+  dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
+  # dataset_std.What
+  
+  dataset_W=W_linkftn(b,Time,Delta,Covari)$obs_stat
+  # dataset_W
+  
+  dataset_std.W=dataset_W/std.boot
+  # dataset_std.W
+  
+  #-----------------------MAXIMUM VALUE-----------------------
+  max_path_What=unlist(lapply(dataset_What,function(x){max(abs(x))}))
+  # max_path_What
+  
+  max_path_W=max(abs(dataset_W))
+  # max_path_W
+  
+  max_path_std.What=unlist(lapply(dataset_std.What,function(x){max(abs(x))}))
+  # max_path_std.What
+  
+  max_path_std.W=max(abs(dataset_std.W))
+  # max_path_std.W
+  
+  #-----------------------------------------------------------
+  #  p  : the ratio of (What>=W)*1
+  # H_0 : the data follow the assumption of the aft model.
+  #
+  # if p>0.05, cannot reject the null hypothesis. i.e. accept it 
+  # if p=<0.05, reject the null hypothesis.
+  #
+  # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
+  # 0.96이면 당연히 accetp
+  # 0.04이면 당연히 reject
+  # 0.45이면 accetp
+  # p_alpha는 acceptance rate을 구하는 것이다! 
+  #-----------------------------------------------------------
+  
+  #--------------------------P VALUE--------------------------
+  p_value=length(which((max_path_What>max_path_W)*1==1))/path
+  # p_value
+  
+  std.p_value=length(which((max_path_std.What>max_path_std.W)*1==1))/path
+  # std.p_value
+  
+  result=list(dataset_What=dataset_What,dataset_std.What=dataset_std.What,
+              dataset_W=dataset_W,dataset_std.W=dataset_std.W,
+              std.boot=std.boot,p_value=p_value,std.p_value=std.p_value)
+  # result
+  
+  return(result)
+}
+#sample_path_linkftn
 
 sample_path=function(path,b,std,Time,Delta,Covari,test,tol){
   if(test=="omni"){
@@ -1349,10 +1481,80 @@ sample_path=function(path,b,std,Time,Delta,Covari,test,tol){
     #return(sample_path_aft(path,b,std,Time,Delta,Covari,tol))
   }
 }
-# result_test=sample_path(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,"omni",0.1)
+#sample_path
 
+##############################################################
+# omnibus test
+#####aft
+# path1=30
+# result_omni_aft=sample_path_omni(path1,beta_hat_ln_aft,std_hat_ln_aft,
+# X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
+# for(i in 1:path1){
+#   plot(result_omni_aft$dataset_std.What[[i]][(n/2),],ylim=c(-3,3),type="s",
+# col="grey");par(new=TRUE)
+# }
+# plot(result_omni_aft$dataset_std.W[(n/2),],ylim=c(-3,3),type="s",col="red")
+#####cox
+# path1=30
+# result_omni_cox=sample_path_omni(path1,beta_hat_ln_cox,std_hat_ln_cox,
+# X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
+# for(i in 1:path1){
+#   plot(result_omni_cox$dataset_std.What[[i]][(n/2),],ylim=c(-3,3),type="s",
+#   col="grey");par(new=TRUE)
+# }
+# plot(result_omni_cox$dataset_std.W[(n/2),],ylim=c(-3,3),type="s",col="red")
 
-####################################################################### mi wan sung
+##############################################################
+# functional form
+#####aft
+# path1=30
+# result_ftnform_aft=sample_path_ftnform(path1,beta_hat_ln_aft,std_hat_ln_aft,
+# X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
+# for(i in 1:path1){
+#   plot(result_ftnform_aft$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
+#   col="grey");par(new=TRUE)
+# }
+# plot(result_ftnform_aft$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
+#####cox
+# path1=30
+# result_ftnform_cox=sample_path_ftnform(path1,beta_hat_ln_cox,std_hat_ln_cox,
+# X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
+# for(i in 1:path1){
+#   plot(result_ftnform_cox$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
+#   col="grey");par(new=TRUE)
+# }
+# plot(result_ftnform_cox$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
+
+##############################################################
+# link function
+#####aft
+# path1=30
+# result_linkftn_aft=sample_path_linkftn(path1,beta_hat_ln_aft,std_hat_ln_aft,
+# X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
+# for(i in 1:path1){
+#   plot(result_linkftn_aft$dataset_std.What[[i]],ylim=c(-3,3),type="s",
+#   col="grey");par(new=TRUE)
+# }
+# plot(result_linkftn_aft$dataset_std.W,ylim=c(-3,3),type="s",col="red")
+#####cox
+# path1=30
+# result_linkftn_cox=sample_path_linkftn(path1,beta_hat_ln_cox,std_hat_ln_cox,
+# X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
+# for(i in 1:path1){
+#   plot(result_linkftn_cox$dataset_std.What[[i]],ylim=c(-3,3),type="s",
+#   col="grey");par(new=TRUE)
+# }
+# plot(result_linkftn_cox$dataset_std.W,ylim=c(-3,3),type="s",col="red")
+
+##############################################################
+
+##############################################################
+##############################################################
+##############################################################
+############################미완성############################
+##############################################################
+##############################################################
+##############################################################
 W_aft=function(b,Time,Delta,Covari){
   #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
   #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
@@ -1435,3 +1637,5 @@ W_aft=function(b,Time,Delta,Covari){
 What_aft=function(b,std,Time,Delta,Covari,tol){}
 #What_aft()
 
+sample_path_aft=function(path,b,std,Time,Delta,Covari,tol){}
+# result_aft=sample_path_aft(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,0.1)

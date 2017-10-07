@@ -108,22 +108,22 @@ X_wb_f=X_wb_f[order(X_wb_f)]
 #-------------Estimate Beta_hat_wb by using Aftgee------------
 #-------------------------------------------------------------
 aftsrr_beta_wb=aftsrr(Surv(X_wb,D_wb)~Z_wb,method="nonsm")
-beta_hat_wb=-unlist(summary(aftsrr_beta_wb))$coefficients1;beta_hat_wb
-std_hat_wb=unlist(summary(aftsrr_beta_wb))$coefficients2;std_hat_wb
+beta_hat_wb=-as.vector(aftsrr_beta_wb$beta);beta_hat_wb
+std_hat_wb=diag(aftsrr_beta_wb$covmat$ISMB);std_hat_wb
 
 #-------------------------------------------------------------
 #------------Estimate Beta_hat_gev by using Aftgee------------
 #-------------------------------------------------------------
 aftsrr_beta_gg=aftsrr(Surv(X_gg,D_gg)~Z_gg,method="nonsm")
-beta_hat_gg=-unlist(summary(aftsrr_beta_gg))$coefficients1;beta_hat_gg
-std_hat_gg=unlist(summary(aftsrr_beta_gg))$coefficients2;std_hat_gg
+beta_hat_gg=-as.vector(aftsrr_beta_gg$beta);beta_hat_gg
+std_hat_gg=diag(aftsrr_beta_gg$covmat$ISMB);std_hat_gg
 
 #-------------------------------------------------------------
 #------------Estimate Beta_hat_wb_f by using Aftgee-----------
 #-------------------------------------------------------------
 aftsrr_beta_wb_f=aftsrr(Surv(X_wb_f,D_wb_f)~Z_wb_f,method="nonsm")
-beta_hat_wb_f=-unlist(summary(aftsrr_beta_wb_f))$coefficients1;beta_hat_wb_f
-std_hat_wb_f=unlist(summary(aftsrr_beta_wb_f))$coefficients2;std_hat_wb_f
+beta_hat_wb_f=-as.vector(aftsrr_beta_wb_f$beta);beta_hat_wb_f
+std_hat_wb_f=diag(aftsrr_beta_wb_f$covmat$ISMB);std_hat_wb_f
 
 #-------------------LOG NORMAL DISTRIBUTION-------------------
 T_ln_aft=as.vector(exp(-beta_0*Z)*qlnorm(runif(n),5,1))
@@ -140,9 +140,9 @@ Z_ln_cox=Z
 
 #------------Estimate Beta_hat_wb_f by using Aftgee-----------
 aftsrr_beta_ln_aft=aftsrr(Surv(X_ln_aft,D_ln_aft)~Z_ln_aft,method="nonsm")
-beta_hat_ln_aft=-unlist(summary(aftsrr_beta_ln_aft))$coefficients1;beta_hat_ln_aft
-std_hat_ln_aft=unlist(summary(aftsrr_beta_ln_aft))$coefficients2;std_hat_ln_aft
+beta_hat_ln_aft=-as.vector(aftsrr_beta_ln_aft$beta);beta_hat_ln_aft
+std_hat_ln_aft=diag(aftsrr_beta_ln_aft$covmat$ISMB);std_hat_ln_aft
 
 aftsrr_beta_ln_cox=aftsrr(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,method="nonsm")
-beta_hat_ln_cox=-unlist(summary(aftsrr_beta_ln_cox))$coefficients1;beta_hat_ln_cox
-std_hat_ln_cox=unlist(summary(aftsrr_beta_ln_cox))$coefficients2;std_hat_ln_cox
+beta_hat_ln_cox=-as.vector(coxsrr_beta_ln_cox$beta);beta_hat_ln_cox
+std_hat_ln_cox=diag(coxsrr_beta_ln_cox$covmat$ISMB);std_hat_ln_cox
