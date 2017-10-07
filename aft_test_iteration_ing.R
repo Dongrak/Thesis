@@ -78,7 +78,6 @@ iteration_function_omni=function(iteration,n,path,alpha,tol){
     beta_hat_ln_cox=-unlist(summary(aftsrr_beta_ln_cox))$coefficients1;beta_hat_ln_cox
     std_hat_ln_cox=unlist(summary(aftsrr_beta_ln_cox))$coefficients2;std_hat_ln_cox
     
-    
     # result_ln_aft
     result_ln_aft=sample_path_omni(path,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
     
@@ -92,11 +91,11 @@ iteration_function_omni=function(iteration,n,path,alpha,tol){
     # if p>0.05, cannot reject the null hypothesis. i.e. accept it 
     # if p=<0.05, reject the null hypothesis.
     #
-    # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
-    # 0.96이면 당연히 accetp
-    # 0.04이면 당연히 reject
-    # 0.45이면 accetp
-    # p_alpha는 acceptance rate을 구하는 것이다! 
+    # absolute/maximum ????��?? What?? ū???? ??��(p)?? 
+    # 0.96?̸? ?翬?? accetp
+    # 0.04?̸? ?翬?? reject
+    # 0.45?̸? accetp
+    # p_alpha?? acceptance rate�� ???ϴ? ???̴?! 
     #-----------------------------------------------------------
     
     p_exact=rbind(c(result_ln_aft$p_value,result_ln_aft$std.p_value),
@@ -117,9 +116,6 @@ iteration_function_omni=function(iteration,n,path,alpha,tol){
   }
   return(result)
 }
-date()
-iteration_result_omni1=iteration_function_omni(iteration,n,path,alpha,given_tol)
-date()
 
 prob.table=function(iter_result){
   iter=length(iter_result)
@@ -137,18 +133,26 @@ prob.table=function(iter_result){
   
   return(list(p_exact,p_alpha))
 }
+
+date()
+iteration_result_omni1=iteration_function_omni(iteration,n,path,alpha,given_tol)
 prob.table(iteration_result_omni1)
+date()
+iteration_result_omni2=iteration_function_omni(iteration,n,path,alpha,given_tol)
+prob.table(iteration_result_omni2)
+date()
+iteration_result_omni3=iteration_function_omni(iteration,n,path,alpha,given_tol)
+prob.table(iteration_result_omni3)
+date()
+iteration_result_omni4=iteration_function_omni(iteration,n,path,alpha,given_tol)
+prob.table(iteration_result_omni4)
+date()
+iteration_result_omni5=iteration_function_omni(iteration,n,path,alpha,given_tol)
+prob.table(iteration_result_omni5)
+date()
+iteration_result_omni=c(iteration_result_omni1,iteration_result_omni2,
+                        iteration_result_omni3,iteration_result_omni4,
+                        iteration_result_omni5)
+prob.table(iteration_result_omni)
+date()
 
-#given_to1=100000
-#iteration_result1 # iteration 100
-
-#given_to1=0.1
-#iteration_result2 # iteration 100
-#iteration_result3 # iteration 100 
-#iteration_result4 # iteration 400 
-#iteration_result5 # iteration 400 
-
-#iteration 1000
-#iteration_result=c(iteration_result2,iteration_result3,iteration_result4,iteration_result5)
-#prob.table(iteration_result)
-#iteration_result[[1]]
