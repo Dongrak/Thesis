@@ -1494,6 +1494,7 @@ sample_path=function(path,b,std,Time,Delta,Covari,test,tol){
 # col="grey");par(new=TRUE)
 # }
 # plot(result_omni_aft$dataset_std.W[(n/2),],ylim=c(-3,3),type="s",col="red")
+
 #####cox
 # path1=30
 # result_omni_cox=sample_path_omni(path1,beta_hat_ln_cox,std_hat_ln_cox,

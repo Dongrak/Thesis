@@ -144,5 +144,5 @@ beta_hat_ln_aft=-as.vector(aftsrr_beta_ln_aft$beta);beta_hat_ln_aft
 std_hat_ln_aft=diag(aftsrr_beta_ln_aft$covmat$ISMB);std_hat_ln_aft
 
 aftsrr_beta_ln_cox=aftsrr(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,method="nonsm")
-beta_hat_ln_cox=-as.vector(coxsrr_beta_ln_cox$beta);beta_hat_ln_cox
-std_hat_ln_cox=diag(coxsrr_beta_ln_cox$covmat$ISMB);std_hat_ln_cox
+beta_hat_ln_cox=-as.vector(aftsrr_beta_ln_cox$beta);beta_hat_ln_cox
+std_hat_ln_cox=diag(aftsrr_beta_ln_cox$covmat$ISMB);std_hat_ln_cox
