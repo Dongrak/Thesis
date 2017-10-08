@@ -20,7 +20,7 @@ library(aftgee)
 library(ENmisc)
 library(plotly)
 
-iteration=200
+simulation=200
 n=200
 path=200
 alpha=0.05
@@ -30,14 +30,14 @@ given_tol=0.1
 #-------------------------------------------------------------
 #-------------------------OMNIBUS TEST------------------------
 #-------------------------------------------------------------
-iteration_function_omni=function(iteration,n,path,alpha,tol){
-  #iteration=iteration;n=n;path=path;alpha=alpha;tol=given_tol;
+simulation_omni=function(simulation,n,path,alpha,tol){
+  #simulation=simulation;n=n;path=path;alpha=alpha;tol=given_tol;
   
   result=list(NA)
   
-  for(k in 1:iteration){
+  for(k in 1:simulation){
     if(k%%1==0) {
-      cat("Iteration",k,"\n")
+      cat("simulation",k,"\n")
     }
     # -------------------------------------------------------------
     # ------------------------DATA GENERATE------------------------
@@ -108,59 +108,59 @@ iteration_function_omni=function(iteration,n,path,alpha,tol){
   }
   return(result)
 }
-#iteration_function_omni
+#simulation_omni
 
-prob.table_omni=function(iter_result){
-  iter=length(iter_result)
+prob.table_omni=function(simul_result){
+  simul=length(simul_result)
   
   p_mean_set=list(NA)
   p_alpha_set=list(NA)
   
-  for(k in 1:iter){
-    p_mean_set[[k]]=iter_result[[k]][[3]][[1]]
-    p_alpha_set[[k]]=iter_result[[k]][[3]][[2]]
+  for(k in 1:simul){
+    p_mean_set[[k]]=simul_result[[k]][[3]][[1]]
+    p_alpha_set[[k]]=simul_result[[k]][[3]][[2]]
   }
   
-  p_mean=Reduce("+",p_mean_set)/iter
-  p_alpha=Reduce("+",p_alpha_set)/iter
+  p_mean=Reduce("+",p_mean_set)/simul
+  p_alpha=Reduce("+",p_alpha_set)/simul
   
   return(list(p_mean,p_alpha))
 }
 #prob.table_omni
 
 date()
-iteration_result_omni1=iteration_function_omni(iteration,n,path,alpha,given_tol)
-prob.table_omni(iteration_result_omni1)
+simulation_result_omni1=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni1)
 date()
-iteration_result_omni2=iteration_function_omni(iteration,n,path,alpha,given_tol)
-prob.table_omni(iteration_result_omni2)
+simulation_result_omni2=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni2)
 date()
-iteration_result_omni3=iteration_function_omni(iteration,n,path,alpha,given_tol)
-prob.table_omni(iteration_result_omni3)
+simulation_result_omni3=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni3)
 date()
-iteration_result_omni4=iteration_function_omni(iteration,n,path,alpha,given_tol)
-prob.table_omni(iteration_result_omni4)
+simulation_result_omni4=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni4)
 date()
-iteration_result_omni5=iteration_function_omni(iteration,n,path,alpha,given_tol)
-prob.table_omni(iteration_result_omni5)
+simulation_result_omni5=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni5)
 date()
-iteration_result_omni=c(iteration_result_omni1,iteration_result_omni2,
-                        iteration_result_omni3,iteration_result_omni4,
-                        iteration_result_omni5)
-prob.table_omni(iteration_result_omni)
+simulation_result_omni=c(simulation_result_omni1,simulation_result_omni2,
+                        simulation_result_omni3,simulation_result_omni4,
+                        simulation_result_omni5)
+prob.table_omni(simulation_result_omni)
 date()
 
 #-------------------------------------------------------------
 #-----------------------FUNCTIONAL FORM-----------------------
 #-------------------------------------------------------------
-iteration_function_ftnform=function(iteration,n,path,alpha,tol){
-  #iteration=iteration;n=n;path=path;alpha=alpha;tol=given_tol;
+simulation_ftnform=function(simulation,n,path,alpha,tol){
+  #simulation=simulation;n=n;path=path;alpha=alpha;tol=given_tol;
   
   result=list(NA)
   
-  for(k in 1:iteration){
+  for(k in 1:simulation){
     if(k%%1==0) {
-      cat("Iteration",k,"\n")
+      cat("simulation",k,"\n")
     }
     # -------------------------------------------------------------
     # ------------------------DATA GENERATE------------------------
@@ -217,59 +217,59 @@ iteration_function_ftnform=function(iteration,n,path,alpha,tol){
   }
   return(result)
 }
-#iteration_function_ftnform
+#simulation_ftnform
 
-prob.table_ftnform=function(iter_result){
-  iter=length(iter_result)
+prob.table_ftnform=function(simul_result){
+  simul=length(simul_result)
   
   p_mean_set=list(NA)
   p_alpha_set=list(NA)
   
-  for(k in 1:iter){
-    p_mean_set[[k]]=iter_result[[k]][[2]][[1]]
-    p_alpha_set[[k]]=iter_result[[k]][[2]][[2]]
+  for(k in 1:simul){
+    p_mean_set[[k]]=simul_result[[k]][[2]][[1]]
+    p_alpha_set[[k]]=simul_result[[k]][[2]][[2]]
   }
   
-  p_mean=Reduce("+",p_mean_set)/iter
-  p_alpha=Reduce("+",p_alpha_set)/iter
+  p_mean=Reduce("+",p_mean_set)/simul
+  p_alpha=Reduce("+",p_alpha_set)/simul
   
   return(list(p_mean,p_alpha))
 }
 #prob.table_ftnform
 
 date()
-iteration_result_ftnform1=iteration_function_ftnform(iteration,n,path,alpha,given_tol)
-prob.table_ftnform(iteration_result_ftnform1)
+simulation_result_ftnform1=simulation_ftnform(simulation,n,path,alpha,given_tol)
+prob.table_ftnform(simulation_result_ftnform1)
 date()
-iteration_result_ftnform2=iteration_function_ftnform(iteration,n,path,alpha,given_tol)
-prob.table_ftnform(iteration_result_ftnform2)
+simulation_result_ftnform2=simulation_ftnform(simulation,n,path,alpha,given_tol)
+prob.table_ftnform(simulation_result_ftnform2)
 date()
-iteration_result_ftnform3=iteration_function_ftnform(iteration,n,path,alpha,given_tol)
-prob.table_ftnform(iteration_result_ftnform3)
+simulation_result_ftnform3=simulation_ftnform(simulation,n,path,alpha,given_tol)
+prob.table_ftnform(simulation_result_ftnform3)
 date()
-iteration_result_ftnform4=iteration_function_ftnform(iteration,n,path,alpha,given_tol)
-prob.table_ftnform(iteration_result_ftnform4)
+simulation_result_ftnform4=simulation_ftnform(simulation,n,path,alpha,given_tol)
+prob.table_ftnform(simulation_result_ftnform4)
 date()
-iteration_result_ftnform5=iteration_function_ftnform(iteration,n,path,alpha,given_tol)
-prob.table_ftnform(iteration_result_ftnform5)
+simulation_result_ftnform5=simulation_ftnform(simulation,n,path,alpha,given_tol)
+prob.table_ftnform(simulation_result_ftnform5)
 date()
-iteration_result_ftnform=c(iteration_result_ftnform1,iteration_result_ftnform2,
-                           iteration_result_ftnform3,iteration_result_ftnform4,
-                           iteration_result_ftnform5)
-prob.table_ftnform(iteration_result_ftnform)
+simulation_result_ftnform=c(simulation_result_ftnform1,simulation_result_ftnform2,
+                           simulation_result_ftnform3,simulation_result_ftnform4,
+                           simulation_result_ftnform5)
+prob.table_ftnform(simulation_result_ftnform)
 date()
 
 #-------------------------------------------------------------
 #------------------------LINK FUNCTION------------------------
 #-------------------------------------------------------------
-iteration_function_linkftn=function(iteration,n,path,alpha,tol){
-  #iteration=iteration;n=n;path=path;alpha=alpha;tol=given_tol;
+simulation_linkftn=function(simulation,n,path,alpha,tol){
+  #simulation=simulation;n=n;path=path;alpha=alpha;tol=given_tol;
   
   result=list(NA)
   
-  for(k in 1:iteration){
+  for(k in 1:simulation){
     if(k%%1==0) {
-      cat("Iteration",k,"\n")
+      cat("simulation",k,"\n")
     }
     # -------------------------------------------------------------
     # ------------------------DATA GENERATE------------------------
@@ -329,46 +329,46 @@ iteration_function_linkftn=function(iteration,n,path,alpha,tol){
   }
   return(result)
 }
-#iteration_function_linkftn
+#simulation_linkftn
 
-prob.table_linkftn=function(iter_result){
-  iter=length(iter_result)
+prob.table_linkftn=function(simul_result){
+  simul=length(simul_result)
   
   p_mean_set=list(NA)
   p_alpha_set=list(NA)
   
-  for(k in 1:iter){
-    p_mean_set[[k]]=iter_result[[k]][[2]][[1]]
-    p_alpha_set[[k]]=iter_result[[k]][[2]][[2]]
+  for(k in 1:simul){
+    p_mean_set[[k]]=simul_result[[k]][[2]][[1]]
+    p_alpha_set[[k]]=simul_result[[k]][[2]][[2]]
   }
   
-  p_mean=Reduce("+",p_mean_set)/iter
-  p_alpha=Reduce("+",p_alpha_set)/iter
+  p_mean=Reduce("+",p_mean_set)/simul
+  p_alpha=Reduce("+",p_alpha_set)/simul
   
   return(list(p_mean,p_alpha))
 }
 #prob.table_linkftn
 
 date()
-iteration_result_linkftn1=iteration_function_linkftn(iteration,n,path,alpha,given_tol)
-prob.table_linkftn(iteration_result_linkftn1)
+simulation_result_linkftn1=simulation_linkftn(simulation,n,path,alpha,given_tol)
+prob.table_linkftn(simulation_result_linkftn1)
 date()
-iteration_result_linkftn2=iteration_function_linkftn(iteration,n,path,alpha,given_tol)
-prob.table_linkftn(iteration_result_linkftn2)
+simulation_result_linkftn2=simulation_linkftn(simulation,n,path,alpha,given_tol)
+prob.table_linkftn(simulation_result_linkftn2)
 date()
-iteration_result_linkftn3=iteration_function_linkftn(iteration,n,path,alpha,given_tol)
-prob.table_linkftn(iteration_result_linkftn3)
+simulation_result_linkftn3=simulation_linkftn(simulation,n,path,alpha,given_tol)
+prob.table_linkftn(simulation_result_linkftn3)
 date()
-iteration_result_linkftn4=iteration_function_linkftn(iteration,n,path,alpha,given_tol)
-prob.table_linkftn(iteration_result_linkftn4)
+simulation_result_linkftn4=simulation_linkftn(simulation,n,path,alpha,given_tol)
+prob.table_linkftn(simulation_result_linkftn4)
 date()
-iteration_result_linkftn5=iteration_function_linkftn(iteration,n,path,alpha,given_tol)
-prob.table_linkftn(iteration_result_linkftn5)
+simulation_result_linkftn5=simulation_linkftn(simulation,n,path,alpha,given_tol)
+prob.table_linkftn(simulation_result_linkftn5)
 date()
-iteration_result_linkftn=c(iteration_result_linkftn1,iteration_result_linkftn2,
-                           iteration_result_linkftn3,iteration_result_linkftn4,
-                           iteration_result_linkftn5)
-prob.table_linkftn(iteration_result_linkftn)
+simulation_result_linkftn=c(simulation_result_linkftn1,simulation_result_linkftn2,
+                           simulation_result_linkftn3,simulation_result_linkftn4,
+                           simulation_result_linkftn5)
+prob.table_linkftn(simulation_result_linkftn)
 date()
 
 
