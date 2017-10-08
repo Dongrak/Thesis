@@ -566,7 +566,8 @@ simulation_linkftn=function(simulation,n,path,alpha,tol){
     p_value=list(p_mean,p_alpha)
     #p_value
     
-    result[[k]]=list(result_ln_aft,p_value)
+    #result[[k]]=list(result_ln_aft,result_ln_cox,p_value)
+    result[[k]]=list(p_value)
   }
   return(result)
 }
@@ -579,8 +580,10 @@ prob.table_linkftn=function(simul_result){
   p_alpha_set=list(NA)
   
   for(k in 1:simul){
-    p_mean_set[[k]]=simul_result[[k]][[2]][[1]]
-    p_alpha_set[[k]]=simul_result[[k]][[2]][[2]]
+    # p_mean_set[[k]]=simul_result[[k]][[3]][[1]]
+    # p_alpha_set[[k]]=simul_result[[k]][[3]][[2]]
+    p_mean_set[[k]]=simul_result[[k]][[1]][[1]]
+    p_alpha_set[[k]]=simul_result[[k]][[1]][[2]]
   }
   
   p_mean=Reduce("+",p_mean_set)/simul
