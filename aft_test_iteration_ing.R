@@ -281,8 +281,8 @@ iteration_function_linkftn=function(iteration,n,path,alpha,tol){
     Z2=matrix(rnorm(n,5,2),nrow=n)
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------
-    T_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*Z2)*qlnorm(runif(n),5,1))
-    C_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*Z2)*qlnorm(runif(n),6.5,1))
+    T_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*log(Z2))*qlnorm(runif(n),5,1))
+    C_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*log(Z2))*qlnorm(runif(n),6.5,1))
     X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
     D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
     Z1_ln_aft=Z1
