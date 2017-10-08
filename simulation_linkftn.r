@@ -20,7 +20,7 @@ library(aftgee)
 library(ENmisc)
 library(plotly)
 
-iteration=200
+simulation=200
 n=200
 path=200
 alpha=0.05
@@ -428,16 +428,89 @@ What_linkftn=function(b,std,Time,Delta,Covari,tol){
 #What_linkftn()
 
 #-------------------------------------------------------------
+#-------------------------SAMPLE PATH-------------------------
+#-------------------------------------------------------------
+sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){
+  #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
+  #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
+  #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
+  
+  #------------------------SAMPLE PATH------------------------
+  dataset_What=list(NA)
+  for(k in 1:path){
+    dataset_What[[k]]=What_linkftn(b,std,Time,Delta,Covari,tol)$sim_stat
+    if(k%%100==0) {
+      cat("Sample Path",k,"\n")
+    }
+  }
+  
+  #------------------------BOOTSTRAPPING----------------------
+  std.boot=matrix(apply(mapply(function(x){as.vector(x)},dataset_What),1,sd),nrow=n)
+  # std.boot
+  
+  dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
+  # dataset_std.What
+  
+  dataset_W=W_linkftn(b,Time,Delta,Covari)$obs_stat
+  # dataset_W
+  
+  dataset_std.W=dataset_W/std.boot
+  # dataset_std.W
+  
+  #-----------------------MAXIMUM VALUE-----------------------
+  max_path_What=unlist(lapply(dataset_What,function(x){max(abs(x))}))
+  # max_path_What
+  
+  max_path_W=max(abs(dataset_W))
+  # max_path_W
+  
+  max_path_std.What=unlist(lapply(dataset_std.What,function(x){max(abs(x))}))
+  # max_path_std.What
+  
+  max_path_std.W=max(abs(dataset_std.W))
+  # max_path_std.W
+  
+  #-----------------------------------------------------------
+  #  p  : the ratio of (What>=W)*1
+  # H_0 : the data follow the assumption of the aft model.
+  #
+  # if p>0.05, cannot reject the null hypothesis. i.e. accept it 
+  # if p=<0.05, reject the null hypothesis.
+  #
+  # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
+  # 0.96이면 당연히 accetp
+  # 0.04이면 당연히 reject
+  # 0.45이면 accetp
+  # p_alpha는 acceptance rate을 구하는 것이다! 
+  #-----------------------------------------------------------
+  
+  #--------------------------P VALUE--------------------------
+  p_value=length(which((max_path_What>max_path_W)*1==1))/path
+  # p_value
+  
+  std.p_value=length(which((max_path_std.What>max_path_std.W)*1==1))/path
+  # std.p_value
+  
+  result=list(dataset_What=dataset_What,dataset_std.What=dataset_std.What,
+              dataset_W=dataset_W,dataset_std.W=dataset_std.W,
+              std.boot=std.boot,p_value=p_value,std.p_value=std.p_value)
+  # result
+  
+  return(result)
+}
+#sample_path_linkftn
+
+#-------------------------------------------------------------
 #------------------------LINK FUNCTION------------------------
 #-------------------------------------------------------------
-iteration_function_linkftn=function(iteration,n,path,alpha,tol){
-  #iteration=iteration;n=n;path=path;alpha=alpha;tol=given_tol;
+simulation_linkftn=function(simulation,n,path,alpha,tol){
+  #simulation=simulation;n=n;path=path;alpha=alpha;tol=given_tol;
   
   result=list(NA)
   
-  for(k in 1:iteration){
+  for(k in 1:simulation){
     if(k%%1==0) {
-      cat("Iteration",k,"\n")
+      cat("simulation",k,"\n")
     }
     # -------------------------------------------------------------
     # ------------------------DATA GENERATE------------------------
@@ -446,11 +519,11 @@ iteration_function_linkftn=function(iteration,n,path,alpha,tol){
     beta_0=1
     gamma_0=0.1
     Z1=matrix(rnorm(n,3,1),nrow=n)
-    Z2=matrix(rnorm(n,5,2),nrow=n)
+    Z2=matrix(rnorm(n,1,1),nrow=n)
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------
-    T_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*log(Z2))*qlnorm(runif(n),5,1))
-    C_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*log(Z2))*qlnorm(runif(n),6.5,1))
+    T_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),5,1))
+    C_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),6.5,1))
     X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
     D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
     Z1_ln_aft=Z1
@@ -497,44 +570,44 @@ iteration_function_linkftn=function(iteration,n,path,alpha,tol){
   }
   return(result)
 }
-#iteration_function_linkftn
+#simulation_linkftn
 
-prob.table_linkftn=function(iter_result){
-  iter=length(iter_result)
+prob.table_linkftn=function(simul_result){
+  simul=length(simul_result)
   
   p_mean_set=list(NA)
   p_alpha_set=list(NA)
   
-  for(k in 1:iter){
-    p_mean_set[[k]]=iter_result[[k]][[2]][[1]]
-    p_alpha_set[[k]]=iter_result[[k]][[2]][[2]]
+  for(k in 1:simul){
+    p_mean_set[[k]]=simul_result[[k]][[2]][[1]]
+    p_alpha_set[[k]]=simul_result[[k]][[2]][[2]]
   }
   
-  p_mean=Reduce("+",p_mean_set)/iter
-  p_alpha=Reduce("+",p_alpha_set)/iter
+  p_mean=Reduce("+",p_mean_set)/simul
+  p_alpha=Reduce("+",p_alpha_set)/simul
   
   return(list(p_mean,p_alpha))
 }
 #prob.table_linkftn
 
 date()
-iteration_result_linkftn1=iteration_function_linkftn(iteration,n,path,alpha,given_tol)
-prob.table_linkftn(iteration_result_linkftn1)
+simulation_result_linkftn1=simulation_linkftn(simulation,n,path,alpha,given_tol)
+prob.table_linkftn(simulation_result_linkftn1)
 date()
-iteration_result_linkftn2=iteration_function_linkftn(iteration,n,path,alpha,given_tol)
-prob.table_linkftn(iteration_result_linkftn2)
+simulation_result_linkftn2=simulation_linkftn(simulation,n,path,alpha,given_tol)
+prob.table_linkftn(simulation_result_linkftn2)
 date()
-iteration_result_linkftn3=iteration_function_linkftn(iteration,n,path,alpha,given_tol)
-prob.table_linkftn(iteration_result_linkftn3)
+simulation_result_linkftn3=simulation_linkftn(simulation,n,path,alpha,given_tol)
+prob.table_linkftn(simulation_result_linkftn3)
 date()
-iteration_result_linkftn4=iteration_function_linkftn(iteration,n,path,alpha,given_tol)
-prob.table_linkftn(iteration_result_linkftn4)
+simulation_result_linkftn4=simulation_linkftn(simulation,n,path,alpha,given_tol)
+prob.table_linkftn(simulation_result_linkftn4)
 date()
-iteration_result_linkftn5=iteration_function_linkftn(iteration,n,path,alpha,given_tol)
-prob.table_linkftn(iteration_result_linkftn5)
+simulation_result_linkftn5=simulation_linkftn(simulation,n,path,alpha,given_tol)
+prob.table_linkftn(simulation_result_linkftn5)
 date()
-iteration_result_linkftn=c(iteration_result_linkftn1,iteration_result_linkftn2,
-                           iteration_result_linkftn3,iteration_result_linkftn4,
-                           iteration_result_linkftn5)
-prob.table_linkftn(iteration_result_linkftn)
+simulation_result_linkftn=c(simulation_result_linkftn1,simulation_result_linkftn2,
+                            simulation_result_linkftn3,simulation_result_linkftn4,
+                            simulation_result_linkftn5)
+prob.table_linkftn(simulation_result_linkftn)
 date()

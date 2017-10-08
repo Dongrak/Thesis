@@ -20,9 +20,9 @@ library(aftgee)
 library(ENmisc)
 library(plotly)
 
-simulation=200
-n=200
-path=200
+simulation=2
+n=20
+path=20
 alpha=0.05
 
 given_tol=0.1
@@ -65,8 +65,8 @@ simulation_omni=function(simulation,n,path,alpha,tol){
     std_hat_ln_aft=diag(aftsrr_beta_ln_aft$covmat$ISMB);std_hat_ln_aft
     
     aftsrr_beta_ln_cox=aftsrr(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,method="nonsm")
-    beta_hat_ln_cox=-as.vector(coxsrr_beta_ln_cox$beta);beta_hat_ln_cox
-    std_hat_ln_cox=diag(coxsrr_beta_ln_cox$covmat$ISMB);std_hat_ln_cox
+    beta_hat_ln_cox=-as.vector(aftsrr_beta_ln_cox$beta);beta_hat_ln_cox
+    std_hat_ln_cox=diag(aftsrr_beta_ln_cox$covmat$ISMB);std_hat_ln_cox
     
     # result_ln_aft
     result_ln_aft=sample_path_omni(path,beta_hat_ln_aft,std_hat_ln_aft,
@@ -278,11 +278,11 @@ simulation_linkftn=function(simulation,n,path,alpha,tol){
     beta_0=1
     gamma_0=0.1
     Z1=matrix(rnorm(n,3,1),nrow=n)
-    Z2=matrix(rnorm(n,5,2),nrow=n)
+    Z2=matrix(rnorm(n,1,1),nrow=n)
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------
-    T_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*log(Z2))*qlnorm(runif(n),5,1))
-    C_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*log(Z2))*qlnorm(runif(n),6.5,1))
+    T_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),5,1))
+    C_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),6.5,1))
     X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
     D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
     Z1_ln_aft=Z1

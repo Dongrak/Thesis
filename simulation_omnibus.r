@@ -20,7 +20,7 @@ library(aftgee)
 library(ENmisc)
 library(plotly)
 
-iteration=200
+simulation=200
 n=200
 path=200
 alpha=0.05
@@ -423,16 +423,89 @@ What_omni=function(b,std,Time,Delta,Covari,tol){
 #What_omni()
 
 #-------------------------------------------------------------
-#-------------------------OMNIBUS TEST------------------------
+#-------------------------SAMPLE PATH-------------------------
 #-------------------------------------------------------------
-iteration_function_omni=function(iteration,n,path,alpha,tol){
-  #iteration=iteration;n=n;path=path;alpha=alpha;tol=given_tol;
+sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
+  #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
+  #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
+  #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
+  
+  #------------------------SAMPLE PATH------------------------
+  dataset_What=list(NA)
+  for(k in 1:path){
+    dataset_What[[k]]=What_omni(b,std,Time,Delta,Covari,tol)$sim_stat
+    if(k%%100==0) {
+      cat("Sample Path",k,"\n")
+    }
+  }
+  
+  #------------------------BOOTSTRAPPING----------------------
+  std.boot=matrix(apply(mapply(function(x){as.vector(x)},dataset_What),1,sd),nrow=n)
+  # std.boot
+  
+  dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
+  # dataset_std.What
+  
+  dataset_W=W_omni(b,Time,Delta,Covari)$obs_stat
+  # dataset_W
+  
+  dataset_std.W=dataset_W/std.boot
+  # dataset_std.W
+  
+  #-----------------------MAXIMUM VALUE-----------------------
+  max_path_What=unlist(lapply(dataset_What,function(x){max(abs(x))}))
+  # max_path_What
+  
+  max_path_W=max(abs(dataset_W))
+  # max_path_W
+  
+  max_path_std.What=unlist(lapply(dataset_std.What,function(x){max(abs(x))}))
+  # max_path_std.What
+  
+  max_path_std.W=max(abs(dataset_std.W))
+  # max_path_std.W
+  
+  #-----------------------------------------------------------
+  #  p  : the ratio of (What>=W)*1
+  # H_0 : the data follow the assumption of the aft model.
+  #
+  # if p>0.05, cannot reject the null hypothesis. i.e. accept it 
+  # if p=<0.05, reject the null hypothesis.
+  #
+  # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
+  # 0.96이면 당연히 accetp
+  # 0.04이면 당연히 reject
+  # 0.45이면 accetp
+  # p_alpha는 acceptance rate을 구하는 것이다! 
+  #-----------------------------------------------------------
+  
+  #--------------------------P VALUE--------------------------
+  p_value=length(which((max_path_What>max_path_W)*1==1))/path
+  # p_value
+  
+  std.p_value=length(which((max_path_std.What>max_path_std.W)*1==1))/path
+  # std.p_value
+  
+  result=list(dataset_What=dataset_What,dataset_std.What=dataset_std.What,
+              dataset_W=dataset_W,dataset_std.W=dataset_std.W,
+              std.boot=std.boot,p_value=p_value,std.p_value=std.p_value)
+  # result
+  
+  return(result)
+}
+#sample_path_omni
+
+#-------------------------------------------------------------
+#--------------------------SIMULATION-------------------------
+#-------------------------------------------------------------
+simulation_omni=function(simulation,n,path,alpha,tol){
+  #simulation=simulation;n=n;path=path;alpha=alpha;tol=given_tol;
   
   result=list(NA)
   
-  for(k in 1:iteration){
+  for(k in 1:simulation){
     if(k%%1==0) {
-      cat("Iteration",k,"\n")
+      cat("simulation",k,"\n")
     }
     # -------------------------------------------------------------
     # ------------------------DATA GENERATE------------------------
@@ -460,8 +533,8 @@ iteration_function_omni=function(iteration,n,path,alpha,tol){
     std_hat_ln_aft=diag(aftsrr_beta_ln_aft$covmat$ISMB);std_hat_ln_aft
     
     aftsrr_beta_ln_cox=aftsrr(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,method="nonsm")
-    beta_hat_ln_cox=-as.vector(coxsrr_beta_ln_cox$beta);beta_hat_ln_cox
-    std_hat_ln_cox=diag(coxsrr_beta_ln_cox$covmat$ISMB);std_hat_ln_cox
+    beta_hat_ln_cox=-as.vector(aftsrr_beta_ln_cox$beta);beta_hat_ln_cox
+    std_hat_ln_cox=diag(aftsrr_beta_ln_cox$covmat$ISMB);std_hat_ln_cox
     
     # result_ln_aft
     result_ln_aft=sample_path_omni(path,beta_hat_ln_aft,std_hat_ln_aft,
@@ -503,44 +576,44 @@ iteration_function_omni=function(iteration,n,path,alpha,tol){
   }
   return(result)
 }
-#iteration_function_omni
+#simulation_omni
 
-prob.table_omni=function(iter_result){
-  iter=length(iter_result)
+prob.table_omni=function(simul_result){
+  simul=length(simul_result)
   
   p_mean_set=list(NA)
   p_alpha_set=list(NA)
   
-  for(k in 1:iter){
-    p_mean_set[[k]]=iter_result[[k]][[3]][[1]]
-    p_alpha_set[[k]]=iter_result[[k]][[3]][[2]]
+  for(k in 1:simul){
+    p_mean_set[[k]]=simul_result[[k]][[3]][[1]]
+    p_alpha_set[[k]]=simul_result[[k]][[3]][[2]]
   }
   
-  p_mean=Reduce("+",p_mean_set)/iter
-  p_alpha=Reduce("+",p_alpha_set)/iter
+  p_mean=Reduce("+",p_mean_set)/simul
+  p_alpha=Reduce("+",p_alpha_set)/simul
   
   return(list(p_mean,p_alpha))
 }
 #prob.table_omni
 
 date()
-iteration_result_omni1=iteration_function_omni(iteration,n,path,alpha,given_tol)
-prob.table_omni(iteration_result_omni1)
+simulation_result_omni1=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni1)
 date()
-iteration_result_omni2=iteration_function_omni(iteration,n,path,alpha,given_tol)
-prob.table_omni(iteration_result_omni2)
+simulation_result_omni2=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni2)
 date()
-iteration_result_omni3=iteration_function_omni(iteration,n,path,alpha,given_tol)
-prob.table_omni(iteration_result_omni3)
+simulation_result_omni3=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni3)
 date()
-iteration_result_omni4=iteration_function_omni(iteration,n,path,alpha,given_tol)
-prob.table_omni(iteration_result_omni4)
+simulation_result_omni4=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni4)
 date()
-iteration_result_omni5=iteration_function_omni(iteration,n,path,alpha,given_tol)
-prob.table_omni(iteration_result_omni5)
+simulation_result_omni5=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni5)
 date()
-iteration_result_omni=c(iteration_result_omni1,iteration_result_omni2,
-                        iteration_result_omni3,iteration_result_omni4,
-                        iteration_result_omni5)
-prob.table_omni(iteration_result_omni)
+simulation_result_omni=c(simulation_result_omni1,simulation_result_omni2,
+                         simulation_result_omni3,simulation_result_omni4,
+                         simulation_result_omni5)
+prob.table_omni(simulation_result_omni)
 date()

@@ -1254,7 +1254,7 @@ What_t.z=function(b,std,Time,Delta,Covari,test,tol){
 ##############################################################
 
 #-------------------------------------------------------------
-#-------------------------SAMPLE PATH-------------------------
+#--------------------------SIMULATION-------------------------
 #-------------------------------------------------------------
 sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
