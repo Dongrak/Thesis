@@ -78,7 +78,7 @@ W_omni=function(b,Time,Delta,Covari){
 }
 #W_omni()
 
-W_ftnform=function(b,Time,Delta,Covari){
+W_fform=function(b,Time,Delta,Covari){
   #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
   #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-5*Z_wb);
@@ -159,9 +159,9 @@ W_ftnform=function(b,Time,Delta,Covari){
   
   return(result)
 }
-#W_ftnform()
+#W_fform()
 
-W_linkftn=function(b,Time,Delta,Covari){
+W_linkf=function(b,Time,Delta,Covari){
   #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
   #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-5*Z_wb);
@@ -239,17 +239,17 @@ W_linkftn=function(b,Time,Delta,Covari){
   
   return(result)
 }
-#W_linkftn()
+#W_linkf()
 
 W_t.z=function(b,Time,Delta,Covari,test){
   if(test=="omni"){
     return(W_omni(b,Time,Delta,Covari))
   }
-  if(test=="ftnform"){
-    return(W_ftnform(b,Time,Delta,Covari))
+  if(test=="fform"){
+    return(W_fform(b,Time,Delta,Covari))
   }
-  if(test=="linkftn"){
-    return(W_linkftn(b,Time,Delta,Covari))
+  if(test=="linkf"){
+    return(W_linkf(b,Time,Delta,Covari))
   }
   if(test=="aft"){
     return(print("NOT YET..."))
@@ -573,7 +573,7 @@ What_omni=function(b,std,Time,Delta,Covari,tol){
 }
 #What_omni()
 
-What_ftnform=function(b,std,Time,Delta,Covari,tol){
+What_fform=function(b,std,Time,Delta,Covari,tol){
   #b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
@@ -891,9 +891,9 @@ What_ftnform=function(b,std,Time,Delta,Covari,tol){
   names(result)=c("Time","Delta","Covari","Resid","sim_stat")
   
   return(result)}
-#What_ftnform()
+#What_fform()
 
-What_linkftn=function(b,std,Time,Delta,Covari,tol){
+What_linkf=function(b,std,Time,Delta,Covari,tol){
   #b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
@@ -1205,17 +1205,17 @@ What_linkftn=function(b,std,Time,Delta,Covari,tol){
   
   return(result)
 }
-#What_linkftn()
+#What_linkf()
 
 What_t.z=function(b,std,Time,Delta,Covari,test,tol){
   if(test=="omni"){
     return(What_omni(b,std,Time,Delta,Covari,tol))
   }
-  if(test=="ftnform"){
-    return(What_ftnform(b,std,Time,Delta,Covari,tol))
+  if(test=="fform"){
+    return(What_fform(b,std,Time,Delta,Covari,tol))
   }
-  if(test=="linkftn"){
-    return(What_linkftn(b,std,Time,Delta,Covari,tol))
+  if(test=="linkf"){
+    return(What_linkf(b,std,Time,Delta,Covari,tol))
   }
   if(test=="aft"){
     return(print("NOT YET..."))
@@ -1235,18 +1235,18 @@ What_t.z=function(b,std,Time,Delta,Covari,test,tol){
 
 ##############################################################
 # functional form
-# a=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"ftnform")$obs_stat[,1]
+# a=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"fform")$obs_stat[,1]
 # for(i in 1:30){
-#   plot(What_t.z(beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,"ftnform",
+#   plot(What_t.z(beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,"fform",
 #   given_tol)$sim_stat[,1],type="s",col="grey",ylim=c(-2,2));par(new=TRUE)
 # }
 # plot(a,type="s",col="red",ylim=c(-2,2))
 
 ##############################################################
 # link function
-# a=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"linkftn")$obs_stat
+# a=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"linkf")$obs_stat
 # for(i in 1:30){
-#   plot(What_t.z(beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,"linkftn",
+#   plot(What_t.z(beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,"linkf",
 #   given_tol)$sim_stat,type="s",col="grey",ylim=c(-2,2));par(new=TRUE)
 # }
 # plot(a,type="s",col="red",ylim=c(-2,2))
@@ -1326,7 +1326,7 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
 }
 #sample_path_omni
 
-sample_path_ftnform=function(path,b,std,Time,Delta,Covari,tol){
+sample_path_fform=function(path,b,std,Time,Delta,Covari,tol){
   #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
@@ -1334,7 +1334,7 @@ sample_path_ftnform=function(path,b,std,Time,Delta,Covari,tol){
   #------------------------SAMPLE PATH------------------------
   dataset_What=list(NA)
   for(k in 1:path){
-    dataset_What[[k]]=What_ftnform(b,std,Time,Delta,Covari,tol)$sim_stat
+    dataset_What[[k]]=What_fform(b,std,Time,Delta,Covari,tol)$sim_stat
     if(k%%100==0) {
       cat("Sample Path",k,"\n")
     }
@@ -1347,7 +1347,7 @@ sample_path_ftnform=function(path,b,std,Time,Delta,Covari,tol){
   dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
   # dataset_std.What
   
-  dataset_W=W_ftnform(b,Time,Delta,Covari)$obs_stat
+  dataset_W=W_fform(b,Time,Delta,Covari)$obs_stat
   # dataset_W
   
   dataset_std.W=dataset_W/std.boot
@@ -1394,9 +1394,9 @@ sample_path_ftnform=function(path,b,std,Time,Delta,Covari,tol){
   
   return(result)
 }
-#sample_path_ftnform
+#sample_path_fform
 
-sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){
+sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
   #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
@@ -1404,7 +1404,7 @@ sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){
   #------------------------SAMPLE PATH------------------------
   dataset_What=list(NA)
   for(k in 1:path){
-    dataset_What[[k]]=What_linkftn(b,std,Time,Delta,Covari,tol)$sim_stat
+    dataset_What[[k]]=What_linkf(b,std,Time,Delta,Covari,tol)$sim_stat
     if(k%%100==0) {
       cat("Sample Path",k,"\n")
     }
@@ -1417,7 +1417,7 @@ sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){
   dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
   # dataset_std.What
   
-  dataset_W=W_linkftn(b,Time,Delta,Covari)$obs_stat
+  dataset_W=W_linkf(b,Time,Delta,Covari)$obs_stat
   # dataset_W
   
   dataset_std.W=dataset_W/std.boot
@@ -1464,17 +1464,17 @@ sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){
   
   return(result)
 }
-#sample_path_linkftn
+#sample_path_linkf
 
 sample_path=function(path,b,std,Time,Delta,Covari,test,tol){
   if(test=="omni"){
     return(sample_path_omni(path,b,std,Time,Delta,Covari,tol))
   }
-  if(test=="ftnform"){
-    return(sample_path_ftnform(path,b,std,Time,Delta,Covari,tol))
+  if(test=="fform"){
+    return(sample_path_fform(path,b,std,Time,Delta,Covari,tol))
   }
-  if(test=="linkftn"){
-    return(sample_path_linkftn(path,b,std,Time,Delta,Covari,tol))
+  if(test=="linkf"){
+    return(sample_path_linkf(path,b,std,Time,Delta,Covari,tol))
   }
   if(test=="aft"){
     return(print("NOT YET..."))
@@ -1509,43 +1509,139 @@ sample_path=function(path,b,std,Time,Delta,Covari,test,tol){
 # functional form
 #####aft
 # path1=30
-# result_ftnform_aft=sample_path_ftnform(path1,beta_hat_ln_aft,std_hat_ln_aft,
+# result_fform_aft=sample_path_fform(path1,beta_hat_ln_aft,std_hat_ln_aft,
 # X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
 # for(i in 1:path1){
-#   plot(result_ftnform_aft$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
+#   plot(result_fform_aft$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
 #   col="grey");par(new=TRUE)
 # }
-# plot(result_ftnform_aft$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
+# plot(result_fform_aft$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
 #####cox
-# path1=30
-# result_ftnform_cox=sample_path_ftnform(path1,beta_hat_ln_cox,std_hat_ln_cox,
-# X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
-# for(i in 1:path1){
-#   plot(result_ftnform_cox$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
-#   col="grey");par(new=TRUE)
-# }
-# plot(result_ftnform_cox$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
+path1=30
+result_fform_cox=sample_path_fform(path1,beta_hat_ln_cox,std_hat_ln_cox,
+X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
+for(i in 1:path1){
+  plot(result_fform_cox$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
+  col="grey");par(new=TRUE)
+}
+plot(result_fform_cox$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
 
 ##############################################################
 # link function
 #####aft
 # path1=30
-# result_linkftn_aft=sample_path_linkftn(path1,beta_hat_ln_aft,std_hat_ln_aft,
+# result_linkf_aft=sample_path_linkf(path1,beta_hat_ln_aft,std_hat_ln_aft,
 # X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
 # for(i in 1:path1){
-#   plot(result_linkftn_aft$dataset_std.What[[i]],ylim=c(-3,3),type="s",
+#   plot(result_linkf_aft$dataset_std.What[[i]],ylim=c(-3,3),type="s",
 #   col="grey");par(new=TRUE)
 # }
-# plot(result_linkftn_aft$dataset_std.W,ylim=c(-3,3),type="s",col="red")
+# plot(result_linkf_aft$dataset_std.W,ylim=c(-3,3),type="s",col="red")
 #####cox
 # path1=30
-# result_linkftn_cox=sample_path_linkftn(path1,beta_hat_ln_cox,std_hat_ln_cox,
+# result_linkf_cox=sample_path_linkf(path1,beta_hat_ln_cox,std_hat_ln_cox,
 # X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
 # for(i in 1:path1){
-#   plot(result_linkftn_cox$dataset_std.What[[i]],ylim=c(-3,3),type="s",
+#   plot(result_linkf_cox$dataset_std.What[[i]],ylim=c(-3,3),type="s",
 #   col="grey");par(new=TRUE)
 # }
-# plot(result_linkftn_cox$dataset_std.W,ylim=c(-3,3),type="s",col="red")
+# plot(result_linkf_cox$dataset_std.W,ylim=c(-3,3),type="s",col="red")
+
+#-------------------------------------------------------------
+#---------------------------PLOTTING--------------------------
+#-------------------------------------------------------------
+plotting_omni=function(result,path){}
+
+plotting_std.omni=function(result,path){}
+
+plotting_fform=function(result,path){}
+
+plotting_std.fform=function(result,path){}
+
+plotting_linkf=function(result,path){}
+
+plotting_std.linkf=function(result,path){}
+
+
+plotting_asdfasdfasdf=function(result,standardization="standardized",path=50){
+  
+  if (standardization==0) {
+    dataset_What=data.frame()
+    for (i in 1:n.path){
+      group=i
+      A=result$dataset_What[,i]
+      AA=data.frame(group,t_i=1:n,What=A)
+      dataset_What=rbind(dataset_What,AA)
+    }
+    #dataset_What
+    
+    dataset_W=data.frame(group,t_i=1:n,W=result$dataset_W)
+    #dataset_W
+    
+    Figure1_W=
+      ggplot()+
+      geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
+      geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
+    #Figure1_W
+    
+    return(Figure1_W)
+  }
+  if (standardization==1) {
+    dataset_std.What=data.frame()
+    for (i in 1:n.path){
+      group=i
+      A=result$dataset_std.What[,i]
+      AA=data.frame(group,t_i=1:n,std.What=A)
+      dataset_std.What=rbind(dataset_std.What,AA)
+    }
+    #dataset_std.What
+    
+    dataset_std.W=data.frame(group,t_i=1:n,std.W=result$dataset_std.W)
+    #dataset_std.W
+    
+    Figure1_std.W=
+      ggplot()+
+      geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
+      geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
+    return(Figure1_std.W)
+  }
+}
+
+plotting=function(result,standardization="standardized",path=50){
+  if(test=="omni"){
+    if(standardization=="standardized"){
+      return(plotting_std.omni(result,path=50))
+    }
+    if(standardization=="unstandardized"){
+      return(plotting_omni(result,path=50))
+    }
+  }
+  if(test=="fform"){
+    if(standardization=="standardized"){
+      return(plotting_std.fform(result,path=50))
+    }
+    if(standardization=="unstandardized"){
+      return(plotting_fform(result,path=50))
+    }
+  }
+  if(test=="linkf"){
+    if(standardization=="standardized"){
+      return(plotting_std.linkf(result,path=50))
+    }
+    if(standardization=="unstandardized"){
+      return(plotting_linkf(result,path=50))
+    }
+  }
+  # if(test=="aft"){
+  #   if(standardization=="standardized"){
+  #     return(plotting_std.aft(result,path=50))
+  #   }
+  #   if(standardization=="unstandardized"){
+  #     return(plotting_aft(result,path=50))
+  #   }
+  # }
+}
+#plotting
 
 ##############################################################
 ##############################################################
@@ -1638,3 +1734,8 @@ What_aft=function(b,std,Time,Delta,Covari,tol){}
 
 sample_path_aft=function(path,b,std,Time,Delta,Covari,tol){}
 # result_aft=sample_path_aft(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
+
+plotting_aft=function(result,path){}
+
+plotting_std.aft=function(result,path){}
+
