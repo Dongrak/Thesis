@@ -30,15 +30,15 @@ given_tol=0.1
 #-------------------------------------------------------------
 #-----------------------TEST STATISTICS-----------------------
 #-------------------------------------------------------------
-W_linkftn=function(b,Time,Delta,Covari){
+W_fform=function(b,Time,Delta,Covari){
   #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
   #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-5*Z_wb);
   
-  Covari=matrix(Covari,nrow=n)
+  n=length(Time) # the number of subjects
+  p=length(b) # the number of parametersa
   
-  n=length(Time)
-  p=length(b)
+  Covari=matrix(Covari,nrow=n)
   
   e_i_beta=as.vector(log(Time)+Covari%*%b)
   
@@ -52,9 +52,12 @@ W_linkftn=function(b,Time,Delta,Covari){
   # weight function
   pi_i_z=list(NA)
   for(i in 1:n){
-    pi_i_z[[i]]=apply(apply(Covari,2,function(x){(x<=((x[order(x)])[i]))*1}),1,prod)
+    pi_i_z[[i]]=apply(Covari,2,function(x){(x<=((x[order(x)])[i]))*1})
   }
-  pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
+  pi_ij_z=list(NA)
+  for(j in 1:p){
+    pi_ij_z[[j]]=as.list(data.frame(t(matrix(unlist(lapply(pi_i_z,function(x){x[,j]})),nrow=n))))
+  }
   
   N_i_t=list(NA)
   for(i in 1:n){
@@ -99,8 +102,8 @@ W_linkftn=function(b,Time,Delta,Covari){
   Mhat_i_inf=unlist(lapply(Mhat_i_t,function(x){x[n]}))
   #Mhat_i_inf
   
-  obs_stat=(1/sqrt(n))*Reduce('+',mapply(function(x,y){x*y},
-                                         pi_i_z,Mhat_i_inf,SIMPLIFY=FALSE))
+  obs_stat=matrix(unlist(lapply(lapply(pi_ij_z,function(z){mapply(function(x,y){x*y},
+                                                                  z,Mhat_i_inf,SIMPLIFY=FALSE)}),function(x){Reduce('+',x)/sqrt(n)})),nrow=n)
   #obs_stat
   
   result=list(Time,Delta,Covari,e_i_beta,obs_stat)
@@ -108,19 +111,20 @@ W_linkftn=function(b,Time,Delta,Covari){
   
   return(result)
 }
-#W_linkftn()
+#W_fform()
 
 #-------------------------------------------------------------
 #-------------------------REALIZATION-------------------------
 #-------------------------------------------------------------
-What_linkftn=function(b,std,Time,Delta,Covari,tol){
+What_fform=function(b,std,Time,Delta,Covari,tol){
   #b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
-  Covari=matrix(Covari,nrow=n)
   
   n=length(Time) # the number of subjects
   p=length(b) # the number of parametersa
+  
+  Covari=matrix(Covari,nrow=n)
   
   e_i_beta=as.vector(log(Time)+Covari%*%b)
   
@@ -134,9 +138,13 @@ What_linkftn=function(b,std,Time,Delta,Covari,tol){
   # weight function
   pi_i_z=list(NA)
   for(i in 1:n){
-    pi_i_z[[i]]=apply(apply(Covari,2,function(x){(x<=((x[order(x)])[i]))*1}),1,prod)
+    pi_i_z[[i]]=apply(Covari,2,function(x){(x<=((x[order(x)])[i]))*1})
   }
-  pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
+  pi_ij_z=list(NA)
+  for(j in 1:p){
+    pi_ij_z[[j]]=as.list(data.frame(t(matrix(unlist(
+      lapply(pi_i_z,function(x){x[,j]})),nrow=n))))
+  }
   
   N_i_t=list(NA)
   for(j in 1:n){
@@ -185,14 +193,16 @@ What_linkftn=function(b,std,Time,Delta,Covari,tol){
   psi_t=S_0_t/n # Gehan's weight
   #psi_t
   
-  U_t=Reduce('+',lapply(mapply("*",lapply(lapply(as.list(data.frame(t(Covari))),function(x)
-  {t(x-t(E_t))}),"*",psi_t),dN_i_t,SIMPLIFY=FALSE),function(x){apply(x,2,cumsum)}))
+  U_t=Reduce('+',lapply(mapply("*",lapply(lapply(as.list(data.frame(t(Covari))),
+                                                 function(x){t(x-t(E_t))}),"*",psi_t),dN_i_t,SIMPLIFY=FALSE),function(x)
+                                                 {apply(x,2,cumsum)}))
   #U_t
   
-  S_pi_t.z=Reduce('+',mapply(function(x,y){x%*%t(y)},pi_i_z,Y_i_t,SIMPLIFY=FALSE))
+  S_pi_t.z=lapply(lapply(pi_ij_z,function(z){mapply(function(x,y){x%*%t(y)},z,
+                                                    Y_i_t,SIMPLIFY=FALSE)}),function(x){Reduce('+',x)})
   #S_pi_t.z
   
-  E_pi_t.z=t(t(S_pi_t.z)/S_0_t)
+  E_pi_t.z=lapply(S_pi_t.z,function(x){t(t(x)/S_0_t)})
   #E_pi_t.z
   
   dMhat_i_t=lapply(Mhat_i_t,function(x){diff(c(0,x))})
@@ -215,7 +225,8 @@ What_linkftn=function(b,std,Time,Delta,Covari,tol){
   
   ghat_t.z=list(NA)
   for(j in 1:p){
-    ghat_t.z[[j]]=Reduce('+',lapply(mapply("*",pi_i_z,Covari[,j],SIMPLIFY=FALSE),'%*%',t(ghat_0_t*Time)))/n
+    ghat_t.z[[j]]=Reduce('+',lapply(mapply("*",pi_ij_z[[j]],Covari[,j],SIMPLIFY=FALSE),
+                                    '%*%',t(ghat_0_t*Time)))/n
   }
   #ghat_t.z
   
@@ -245,23 +256,13 @@ What_linkftn=function(b,std,Time,Delta,Covari,tol){
   
   fhat_t.z=list(NA)
   for(j in 1:p){
-    fhat_t.z[[j]]=Reduce('+',lapply(mapply("*",pi_i_z,Delta*Covari[,j],SIMPLIFY=FALSE),'%*%',t(ghat_0_t*Time)))/n
+    fhat_t.z[[j]]=Reduce('+',lapply(mapply("*",pi_ij_z[[j]],Delta*Covari[,j],
+                                           SIMPLIFY=FALSE),'%*%',t(ghat_0_t*Time)))/n
   }
   #fhat_t.z
   
   fhat_inf.z=lapply(fhat_t.z,function(x){x[,n]})
-  
-  #-----------------------------------------------------------
-  # ghat_t.z=list(NA)
-  # for(j in 1:p){
-  #   ghat_t.z[[j]]=Reduce('+',lapply(lapply(pi_i_z,"*",Covari[,j]),'%*%',t(ghat_0_t*Time)))/n
-  # }
-  # 
-  # fhat_t.z=list(NA)
-  # for(j in 1:p){
-  #   fhat_t.z[[j]]=Reduce('+',lapply(lapply(pi_i_z,"*",Delta*Covari[,j]),'%*%',t(ghat_0_t*Time)))/n
-  # }
-  #-----------------------------------------------------------
+  #fhat_inf.z
   
   #-----------------------------------------------------------
   #--------Find Beta_hat_star by using optimize function------
@@ -326,24 +327,31 @@ What_linkftn=function(b,std,Time,Delta,Covari,tol){
     phi_i=rnorm(n)
     #phi_i
     
-    U_pi_phi_t.z=Reduce('+',mapply("*",lapply(mapply(function(x,y){t(t(x)*y)},
-                                                     lapply(pi_i_z,function(x,y){x-E_pi_t.z}),lapply(dMhat_i_t,"*",psi_t),
-                                                     SIMPLIFY=FALSE),function(x){t(apply(x,1,cumsum))}),phi_i,SIMPLIFY=FALSE))
+    U_pi_phi_t.z=list(NA)
+    for(j in 1:p){
+      U_pi_phi_t.z[[j]]=Reduce('+',mapply("*",lapply(mapply(function(x,y){t(t(x)*y)},
+                                                            lapply(pi_ij_z[[j]],function(x,y){x-y},E_pi_t.z[[j]]),lapply(dMhat_i_t,"*",psi_t)
+                                                            ,SIMPLIFY=FALSE),function(x){t(apply(x,1,cumsum))}),phi_i,SIMPLIFY=FALSE))
+    }
     #U_pi_phi_t.z
     
-    U_pi_phi_inf.z=U_pi_phi_t.z[,n]
+    U_pi_phi_inf.z=lapply(U_pi_phi_t.z,function(x){x[,n]})
+    #U_pi_phi_inf.z
     
-    U_phi_t=Reduce('+',mapply("*",lapply(mapply("*",lapply(as.list(data.frame(
-      t(Covari))),function(x){t(x-t(E_t))}),lapply(dMhat_i_t,"*",psi_t),
-      SIMPLIFY=FALSE),function(x){apply(x,2,cumsum)}),phi_i,SIMPLIFY=FALSE))
+    U_phi_t=list(NA)
+    for(j in 1:p){
+      U_phi_t[[j]]=Reduce('+',mapply("*",lapply(mapply("*",lapply(Covari[,j],'-',E_t[,j]),
+                                                       lapply(dMhat_i_t,"*",psi_t),SIMPLIFY=FALSE),cumsum),phi_i,SIMPLIFY=FALSE))
+    }
     #U_phi_t
     
-    U_phi_inf=U_phi_t[n,]
+    U_phi_inf=unlist(lapply(U_phi_t,function(x){x[n]}))
     #U_phi_inf
+    
     
     if(p==1){
       beta_hat_s_list=optimize(function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)},
-                               c(b-2*std,b+2*std),tol = 1e-16)
+                               c(b-5*std,b+5*std),tol = 1e-16)
       #beta_hat_s_list
       
       beta_hat_s=beta_hat_s_list$minimum
@@ -353,6 +361,7 @@ What_linkftn=function(b,std,Time,Delta,Covari,tol){
       #tolerance
       
     }
+    
     if(p>1){
       beta_hat_s_list=optim(b,function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)})
       #beta_hat_s_list
@@ -411,26 +420,26 @@ What_linkftn=function(b,std,Time,Delta,Covari,tol){
   dLambdahat_0_t_s=diff(c(0,Lambdahat_0_t_s))
   #dLambdahat_0_t_s
   
-  F.T.=(1/sqrt(n))*U_pi_phi_inf.z
-  S.T.=sqrt(n)*Reduce("+",mapply("*",mapply("+",fhat_inf.z,
-                                            mapply(function(x){apply(x,2,sum)},lapply(ghat_t.z,function(x,y){t(x)*y},
-                                                                                      dLambdahat_0_t),SIMPLIFY=FALSE),SIMPLIFY=FALSE),(b-beta_hat_s),SIMPLIFY=FALSE))
-  T.T.=(1/sqrt(n))*(apply((t(S_pi_t.z)*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,sum))
+  F.T.=lapply(U_pi_phi_inf.z,function(x){x/sqrt(n)})
+  S.T.=mapply("*",mapply("+",fhat_inf.z,mapply(function(x){apply(x,2,sum)},
+                                               lapply(ghat_t.z,function(x,y){t(x)*y},dLambdahat_0_t),SIMPLIFY=FALSE),
+                         SIMPLIFY=FALSE),sqrt(n)*(b-beta_hat_s),SIMPLIFY=FALSE)
+  T.T.=lapply(S_pi_t.z,function(x){apply(t(x)*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))
+                                         ,2,sum)/sqrt(n)})
   
-  sim_stat=F.T.-S.T.-T.T.
+  sim_stat=mapply(function(x,y,z){x-y-z},F.T.,S.T.,T.T.)
   #sim_stat
   
   result=list(Time,Delta,Covari,e_i_beta,sim_stat)
   names(result)=c("Time","Delta","Covari","Resid","sim_stat")
   
-  return(result)
-}
-#What_linkftn()
+  return(result)}
+#What_fform()
 
 #-------------------------------------------------------------
 #-------------------------SAMPLE PATH-------------------------
 #-------------------------------------------------------------
-sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){
+sample_path_fform=function(path,b,std,Time,Delta,Covari,tol){
   #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
@@ -438,7 +447,7 @@ sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){
   #------------------------SAMPLE PATH------------------------
   dataset_What=list(NA)
   for(k in 1:path){
-    dataset_What[[k]]=What_linkftn(b,std,Time,Delta,Covari,tol)$sim_stat
+    dataset_What[[k]]=What_fform(b,std,Time,Delta,Covari,tol)$sim_stat
     if(k%%100==0) {
       cat("Sample Path",k,"\n")
     }
@@ -451,7 +460,7 @@ sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){
   dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
   # dataset_std.What
   
-  dataset_W=W_linkftn(b,Time,Delta,Covari)$obs_stat
+  dataset_W=W_fform(b,Time,Delta,Covari)$obs_stat
   # dataset_W
   
   dataset_std.W=dataset_W/std.boot
@@ -498,12 +507,12 @@ sample_path_linkftn=function(path,b,std,Time,Delta,Covari,tol){
   
   return(result)
 }
-#sample_path_linkftn
+#sample_path_fform
 
 #-------------------------------------------------------------
-#------------------------LINK FUNCTION------------------------
+#-----------------------FUNCTIONAL FORM-----------------------
 #-------------------------------------------------------------
-simulation_linkftn=function(simulation,n,path,alpha,tol){
+simulation_fform=function(simulation,n,path,alpha,tol){
   #simulation=simulation;n=n;path=path;alpha=alpha;tol=given_tol;
   
   result=list(NA)
@@ -518,26 +527,37 @@ simulation_linkftn=function(simulation,n,path,alpha,tol){
     # n=200
     beta_0=1
     gamma_0=0.1
-    Z1=matrix(rnorm(n,3,1),nrow=n)
-    Z2=matrix(rnorm(n,1,1),nrow=n)
+    Z=matrix(rnorm(n,3,1),nrow=n)
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------
-    T_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),5,1))
-    C_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),6.5,1))
+    T_ln_aft=as.vector(exp(-beta_0*Z)*qlnorm(runif(n),5,1))
+    C_ln_aft=as.vector(exp(-beta_0*Z)*qlnorm(runif(n),6.5,1))
     X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
     D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
-    Z1_ln_aft=Z1
-    Z2_ln_aft=Z2
-    Z_ln_aft=cbind(Z1_ln_aft,Z2_ln_aft)
+    Z_ln_aft=Z
     
-    #------------Estimate Beta_hat_ln_aft by using Aftgee-----------
-    aftsrr_beta_ln_aft=aftsrr(Surv(X_ln_aft,D_ln_aft)~Z1_ln_aft+Z2_ln_aft,method="nonsm")
+    T_ln_aft_f=as.vector(exp(-beta_0*Z-gamma_0*(Z^2))*qlnorm(runif(n),5,1))
+    C_ln_aft_f=as.vector(exp(-beta_0*Z-gamma_0*(Z^2))*qlnorm(runif(n),6.5,1))
+    X_ln_aft_f=C_ln_aft_f*(T_ln_aft_f>C_ln_aft_f)+T_ln_aft_f*(T_ln_aft_f<=C_ln_aft_f)
+    D_ln_aft_f=0*(T_ln_aft_f>C_ln_aft_f)+1*(T_ln_aft_f<=C_ln_aft_f)
+    Z_ln_aft_f=Z
+    
+    #------------Estimate Beta_hat_ln_aft_f by using Aftgee-----------
+    aftsrr_beta_ln_aft=aftsrr(Surv(X_ln_aft,D_ln_aft)~Z_ln_aft,method="nonsm")
     beta_hat_ln_aft=-as.vector(aftsrr_beta_ln_aft$beta);beta_hat_ln_aft
     std_hat_ln_aft=diag(aftsrr_beta_ln_aft$covmat$ISMB);std_hat_ln_aft
     
+    aftsrr_beta_ln_aft_f=aftsrr(Surv(X_ln_aft_f,D_ln_aft_f)~Z_ln_aft_f,method="nonsm")
+    beta_hat_ln_aft_f=-as.vector(aftsrr_beta_ln_aft_f$beta);beta_hat_ln_aft_f
+    std_hat_ln_aft_f=diag(aftsrr_beta_ln_aft_f$covmat$ISMB);std_hat_ln_aft_f
+    
     # result_ln_aft
-    result_ln_aft=sample_path_linkftn(path,beta_hat_ln_aft,std_hat_ln_aft,
-                                      X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+    result_ln_aft=sample_path_fform(path,beta_hat_ln_aft,std_hat_ln_aft,
+                                    X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+    
+    # result_ln_aft_f
+    result_ln_aft_f=sample_path_fform(path,beta_hat_ln_aft_f,std_hat_ln_aft_f,
+                                      X_ln_aft_f,D_ln_aft_f,Z_ln_aft_f,given_tol)
     
     #-----------------------------------------------------------
     #  p  : the ratio of (What>=W)*1
@@ -553,14 +573,15 @@ simulation_linkftn=function(simulation,n,path,alpha,tol){
     # p_alpha는 acceptance rate을 구하는 것이다! 
     #-----------------------------------------------------------
     
-    p_mean=rbind(c(result_ln_aft$p_value,result_ln_aft$std.p_value))
+    p_mean=rbind(c(result_ln_aft$p_value,result_ln_aft$std.p_value),
+                 c(result_ln_aft_f$p_value,result_ln_aft_f$std.p_value))
     colnames(p_mean)=c("W","std.W")
-    rownames(p_mean)=c("p_ln_aft_mean")
+    rownames(p_mean)=c("p_ln_aft_mean","p_ln_aft_f_mean")
     #p_mean
     
     p_alpha=(p_mean>=alpha)*1
     colnames(p_alpha)=c("W","std.W")
-    rownames(p_alpha)=c("p_ln_aft_alpha")
+    rownames(p_alpha)=c("p_ln_aft_alpha","p_ln_aft_f_alpha")
     #p_alpha
     
     p_value=list(p_mean,p_alpha)
@@ -571,9 +592,9 @@ simulation_linkftn=function(simulation,n,path,alpha,tol){
   }
   return(result)
 }
-#simulation_linkftn
+#simulation_fform
 
-prob.table_linkftn=function(simul_result){
+prob.table_fform=function(simul_result){
   simul=length(simul_result)
   
   p_mean_set=list(NA)
@@ -591,26 +612,27 @@ prob.table_linkftn=function(simul_result){
   
   return(list(p_mean,p_alpha))
 }
-#prob.table_linkftn
+#prob.table_fform
 
 date()
-simulation_result_linkftn1=simulation_linkftn(simulation,n,path,alpha,given_tol)
-prob.table_linkftn(simulation_result_linkftn1)
+simulation_result_fform1=simulation_fform(simulation,n,path,alpha,given_tol)
+prob.table_fform(simulation_result_fform1)
 date()
-simulation_result_linkftn2=simulation_linkftn(simulation,n,path,alpha,given_tol)
-prob.table_linkftn(simulation_result_linkftn2)
+simulation_result_fform2=simulation_fform(simulation,n,path,alpha,given_tol)
+prob.table_fform(simulation_result_fform2)
 date()
-simulation_result_linkftn3=simulation_linkftn(simulation,n,path,alpha,given_tol)
-prob.table_linkftn(simulation_result_linkftn3)
+simulation_result_fform3=simulation_fform(simulation,n,path,alpha,given_tol)
+prob.table_fform(simulation_result_fform3)
 date()
-simulation_result_linkftn4=simulation_linkftn(simulation,n,path,alpha,given_tol)
-prob.table_linkftn(simulation_result_linkftn4)
+simulation_result_fform4=simulation_fform(simulation,n,path,alpha,given_tol)
+prob.table_fform(simulation_result_fform4)
 date()
-simulation_result_linkftn5=simulation_linkftn(simulation,n,path,alpha,given_tol)
-prob.table_linkftn(simulation_result_linkftn5)
+simulation_result_fform5=simulation_fform(simulation,n,path,alpha,given_tol)
+prob.table_fform(simulation_result_fform5)
 date()
-simulation_result_linkftn=c(simulation_result_linkftn1,simulation_result_linkftn2,
-                            simulation_result_linkftn3,simulation_result_linkftn4,
-                            simulation_result_linkftn5)
-prob.table_linkftn(simulation_result_linkftn)
+simulation_result_fform=c(simulation_result_fform1,simulation_result_fform2,
+                          simulation_result_fform3,simulation_result_fform4,
+                          simulation_result_fform5)
+prob.table_fform(simulation_result_fform)
 date()
+

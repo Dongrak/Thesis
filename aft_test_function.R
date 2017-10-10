@@ -6,10 +6,10 @@ W_omni=function(b,Time,Delta,Covari){
   #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
   
-  Covari=matrix(Covari,nrow=n)
+  n=length(Time) # the number of subjects
+  p=length(b) # the number of parametersa
   
-  n=length(Time)
-  p=length(b)
+  Covari=matrix(Covari,nrow=n)
   
   e_i_beta=as.vector(log(Time)+Covari%*%b)
   
@@ -83,10 +83,10 @@ W_fform=function(b,Time,Delta,Covari){
   #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-5*Z_wb);
   
-  Covari=matrix(Covari,nrow=n)
+  n=length(Time) # the number of subjects
+  p=length(b) # the number of parametersa
   
-  n=length(Time)
-  p=length(b)
+  Covari=matrix(Covari,nrow=n)
   
   e_i_beta=as.vector(log(Time)+Covari%*%b)
   
@@ -166,10 +166,10 @@ W_linkf=function(b,Time,Delta,Covari){
   #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-5*Z_wb);
   
-  Covari=matrix(Covari,nrow=n)
+  n=length(Time) # the number of subjects
+  p=length(b) # the number of parametersa
   
-  n=length(Time)
-  p=length(b)
+  Covari=matrix(Covari,nrow=n)
   
   e_i_beta=as.vector(log(Time)+Covari%*%b)
   
@@ -265,10 +265,11 @@ What_omni=function(b,std,Time,Delta,Covari,tol){
   #b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
-  Covari=matrix(Covari,nrow=n)
   
   n=length(Time) # the number of subjects
   p=length(b) # the number of parametersa
+  
+  Covari=matrix(Covari,nrow=n)
   
   e_i_beta=as.vector(log(Time)+Covari%*%b)
   
@@ -578,10 +579,10 @@ What_fform=function(b,std,Time,Delta,Covari,tol){
   #b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
   
-  Covari=matrix(Covari,nrow=n)
-  
   n=length(Time) # the number of subjects
   p=length(b) # the number of parametersa
+  
+  Covari=matrix(Covari,nrow=n)
   
   e_i_beta=as.vector(log(Time)+Covari%*%b)
   
@@ -897,10 +898,11 @@ What_linkf=function(b,std,Time,Delta,Covari,tol){
   #b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
-  Covari=matrix(Covari,nrow=n)
   
   n=length(Time) # the number of subjects
   p=length(b) # the number of parametersa
+  
+  Covari=matrix(Covari,nrow=n)
   
   e_i_beta=as.vector(log(Time)+Covari%*%b)
   
@@ -1517,14 +1519,14 @@ sample_path=function(path,b,std,Time,Delta,Covari,test,tol){
 # }
 # plot(result_fform_aft$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
 #####cox
-path1=30
-result_fform_cox=sample_path_fform(path1,beta_hat_ln_cox,std_hat_ln_cox,
-X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
-for(i in 1:path1){
-  plot(result_fform_cox$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
-  col="grey");par(new=TRUE)
-}
-plot(result_fform_cox$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
+# path1=30
+# result_fform_cox=sample_path_fform(path1,beta_hat_ln_cox,std_hat_ln_cox,
+# X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
+# for(i in 1:path1){
+#   plot(result_fform_cox$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
+#   col="grey");par(new=TRUE)
+# }
+# plot(result_fform_cox$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
 
 ##############################################################
 # link function

@@ -21,7 +21,7 @@ library(ENmisc)
 library(plotly)
 
 simulation=2
-n=20
+n=200
 path=20
 alpha=0.05
 
@@ -156,7 +156,7 @@ date()
 #-------------------------------------------------------------
 #-----------------------FUNCTIONAL FORM-----------------------
 #-------------------------------------------------------------
-simulation_ftnform=function(simulation,n,path,alpha,tol){
+simulation_fform=function(simulation,n,path,alpha,tol){
   #simulation=simulation;n=n;path=path;alpha=alpha;tol=given_tol;
   
   result=list(NA)
@@ -174,6 +174,12 @@ simulation_ftnform=function(simulation,n,path,alpha,tol){
     Z=matrix(rnorm(n,3,1),nrow=n)
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------
+    T_ln_aft=as.vector(exp(-beta_0*Z)*qlnorm(runif(n),5,1))
+    C_ln_aft=as.vector(exp(-beta_0*Z)*qlnorm(runif(n),6.5,1))
+    X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
+    D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
+    Z_ln_aft=Z
+    
     T_ln_aft_f=as.vector(exp(-beta_0*Z-gamma_0*(Z^2))*qlnorm(runif(n),5,1))
     C_ln_aft_f=as.vector(exp(-beta_0*Z-gamma_0*(Z^2))*qlnorm(runif(n),6.5,1))
     X_ln_aft_f=C_ln_aft_f*(T_ln_aft_f>C_ln_aft_f)+T_ln_aft_f*(T_ln_aft_f<=C_ln_aft_f)
@@ -181,12 +187,20 @@ simulation_ftnform=function(simulation,n,path,alpha,tol){
     Z_ln_aft_f=Z
     
     #------------Estimate Beta_hat_ln_aft_f by using Aftgee-----------
+    aftsrr_beta_ln_aft=aftsrr(Surv(X_ln_aft,D_ln_aft)~Z_ln_aft,method="nonsm")
+    beta_hat_ln_aft=-as.vector(aftsrr_beta_ln_aft$beta);beta_hat_ln_aft
+    std_hat_ln_aft=diag(aftsrr_beta_ln_aft$covmat$ISMB);std_hat_ln_aft
+    
     aftsrr_beta_ln_aft_f=aftsrr(Surv(X_ln_aft_f,D_ln_aft_f)~Z_ln_aft_f,method="nonsm")
     beta_hat_ln_aft_f=-as.vector(aftsrr_beta_ln_aft_f$beta);beta_hat_ln_aft_f
     std_hat_ln_aft_f=diag(aftsrr_beta_ln_aft_f$covmat$ISMB);std_hat_ln_aft_f
     
+    # result_ln_aft
+    result_ln_aft=sample_path_fform(path,beta_hat_ln_aft,std_hat_ln_aft,
+                                      X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+    
     # result_ln_aft_f
-    result_ln_aft_f=sample_path_ftnform(path,beta_hat_ln_aft_f,std_hat_ln_aft_f,
+    result_ln_aft_f=sample_path_fform(path,beta_hat_ln_aft_f,std_hat_ln_aft_f,
                                         X_ln_aft_f,D_ln_aft_f,Z_ln_aft_f,given_tol)
     
     #-----------------------------------------------------------
@@ -203,14 +217,15 @@ simulation_ftnform=function(simulation,n,path,alpha,tol){
     # p_alpha는 acceptance rate을 구하는 것이다! 
     #-----------------------------------------------------------
     
-    p_mean=rbind(c(result_ln_aft_f$p_value,result_ln_aft_f$std.p_value))
+    p_mean=rbind(c(result_ln_aft$p_value,result_ln_aft$std.p_value),
+                 c(result_ln_aft_f$p_value,result_ln_aft_f$std.p_value))
     colnames(p_mean)=c("W","std.W")
-    rownames(p_mean)=c("p_ln_aft_mean")
+    rownames(p_mean)=c("p_ln_aft_mean","p_ln_aft_f_mean")
     #p_mean
     
     p_alpha=(p_mean>=alpha)*1
     colnames(p_alpha)=c("W","std.W")
-    rownames(p_alpha)=c("p_ln_aft_alpha")
+    rownames(p_alpha)=c("p_ln_aft_alpha","p_ln_aft_f_alpha")
     #p_alpha
     
     p_value=list(p_mean,p_alpha)
@@ -221,9 +236,9 @@ simulation_ftnform=function(simulation,n,path,alpha,tol){
   }
   return(result)
 }
-#simulation_ftnform
+#simulation_fform
 
-prob.table_ftnform=function(simul_result){
+prob.table_fform=function(simul_result){
   simul=length(simul_result)
   
   p_mean_set=list(NA)
@@ -241,34 +256,34 @@ prob.table_ftnform=function(simul_result){
   
   return(list(p_mean,p_alpha))
 }
-#prob.table_ftnform
+#prob.table_fform
 
 date()
-simulation_result_ftnform1=simulation_ftnform(simulation,n,path,alpha,given_tol)
-prob.table_ftnform(simulation_result_ftnform1)
+simulation_result_fform1=simulation_fform(simulation,n,path,alpha,given_tol)
+prob.table_fform(simulation_result_fform1)
 date()
-simulation_result_ftnform2=simulation_ftnform(simulation,n,path,alpha,given_tol)
-prob.table_ftnform(simulation_result_ftnform2)
+simulation_result_fform2=simulation_fform(simulation,n,path,alpha,given_tol)
+prob.table_fform(simulation_result_fform2)
 date()
-simulation_result_ftnform3=simulation_ftnform(simulation,n,path,alpha,given_tol)
-prob.table_ftnform(simulation_result_ftnform3)
+simulation_result_fform3=simulation_fform(simulation,n,path,alpha,given_tol)
+prob.table_fform(simulation_result_fform3)
 date()
-simulation_result_ftnform4=simulation_ftnform(simulation,n,path,alpha,given_tol)
-prob.table_ftnform(simulation_result_ftnform4)
+simulation_result_fform4=simulation_fform(simulation,n,path,alpha,given_tol)
+prob.table_fform(simulation_result_fform4)
 date()
-simulation_result_ftnform5=simulation_ftnform(simulation,n,path,alpha,given_tol)
-prob.table_ftnform(simulation_result_ftnform5)
+simulation_result_fform5=simulation_fform(simulation,n,path,alpha,given_tol)
+prob.table_fform(simulation_result_fform5)
 date()
-simulation_result_ftnform=c(simulation_result_ftnform1,simulation_result_ftnform2,
-                           simulation_result_ftnform3,simulation_result_ftnform4,
-                           simulation_result_ftnform5)
-prob.table_ftnform(simulation_result_ftnform)
+simulation_result_fform=c(simulation_result_fform1,simulation_result_fform2,
+                           simulation_result_fform3,simulation_result_fform4,
+                           simulation_result_fform5)
+prob.table_fform(simulation_result_fform)
 date()
 
 #-------------------------------------------------------------
 #------------------------LINK FUNCTION------------------------
 #-------------------------------------------------------------
-simulation_linkftn=function(simulation,n,path,alpha,tol){
+simulation_linkf=function(simulation,n,path,alpha,tol){
   #simulation=simulation;n=n;path=path;alpha=alpha;tol=given_tol;
   
   result=list(NA)
@@ -301,7 +316,7 @@ simulation_linkftn=function(simulation,n,path,alpha,tol){
     std_hat_ln_aft=diag(aftsrr_beta_ln_aft$covmat$ISMB);std_hat_ln_aft
     
     # result_ln_aft
-    result_ln_aft=sample_path_linkftn(path,beta_hat_ln_aft,std_hat_ln_aft,
+    result_ln_aft=sample_path_linkf(path,beta_hat_ln_aft,std_hat_ln_aft,
                                       X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
     
     #-----------------------------------------------------------
@@ -336,9 +351,9 @@ simulation_linkftn=function(simulation,n,path,alpha,tol){
   }
   return(result)
 }
-#simulation_linkftn
+#simulation_linkf
 
-prob.table_linkftn=function(simul_result){
+prob.table_linkf=function(simul_result){
   simul=length(simul_result)
   
   p_mean_set=list(NA)
@@ -356,28 +371,28 @@ prob.table_linkftn=function(simul_result){
   
   return(list(p_mean,p_alpha))
 }
-#prob.table_linkftn
+#prob.table_linkf
 
 date()
-simulation_result_linkftn1=simulation_linkftn(simulation,n,path,alpha,given_tol)
-prob.table_linkftn(simulation_result_linkftn1)
+simulation_result_linkf1=simulation_linkf(simulation,n,path,alpha,given_tol)
+prob.table_linkf(simulation_result_linkf1)
 date()
-simulation_result_linkftn2=simulation_linkftn(simulation,n,path,alpha,given_tol)
-prob.table_linkftn(simulation_result_linkftn2)
+simulation_result_linkf2=simulation_linkf(simulation,n,path,alpha,given_tol)
+prob.table_linkf(simulation_result_linkf2)
 date()
-simulation_result_linkftn3=simulation_linkftn(simulation,n,path,alpha,given_tol)
-prob.table_linkftn(simulation_result_linkftn3)
+simulation_result_linkf3=simulation_linkf(simulation,n,path,alpha,given_tol)
+prob.table_linkf(simulation_result_linkf3)
 date()
-simulation_result_linkftn4=simulation_linkftn(simulation,n,path,alpha,given_tol)
-prob.table_linkftn(simulation_result_linkftn4)
+simulation_result_linkf4=simulation_linkf(simulation,n,path,alpha,given_tol)
+prob.table_linkf(simulation_result_linkf4)
 date()
-simulation_result_linkftn5=simulation_linkftn(simulation,n,path,alpha,given_tol)
-prob.table_linkftn(simulation_result_linkftn5)
+simulation_result_linkf5=simulation_linkf(simulation,n,path,alpha,given_tol)
+prob.table_linkf(simulation_result_linkf5)
 date()
-simulation_result_linkftn=c(simulation_result_linkftn1,simulation_result_linkftn2,
-                           simulation_result_linkftn3,simulation_result_linkftn4,
-                           simulation_result_linkftn5)
-prob.table_linkftn(simulation_result_linkftn)
+simulation_result_linkf=c(simulation_result_linkf1,simulation_result_linkf2,
+                           simulation_result_linkf3,simulation_result_linkf4,
+                           simulation_result_linkf5)
+prob.table_linkf(simulation_result_linkf)
 date()
 
 
