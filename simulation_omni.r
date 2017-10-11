@@ -20,9 +20,9 @@ library(aftgee)
 library(ENmisc)
 library(plotly)
 
-simulation=200
-n=200
-path=200
+simulation=100
+n=250
+path=150
 alpha=0.05
 
 given_tol=0.1

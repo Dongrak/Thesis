@@ -27,17 +27,6 @@ path=200
 
 given_tol=0.1
 
-given_weight="c"
-#(weight=="a"){w_i=Covari*(Covari<=median(Covari))}
-#(weight=="b"){w_i=Covari}  
-#(weight=="c"){w_i=1*(Covari<=median(Covari))}
-#(weight=="d"){w_i=1}
-
-given_test="omni"
-# given_test=="link.ftn"
-# given_test=="ftn.form"
-# given_test=="....???"
-
 #------------------------DATA GENERATION----------------------
 n=200
 beta_0=1

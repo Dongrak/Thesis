@@ -20,9 +20,9 @@ library(aftgee)
 library(ENmisc)
 library(plotly)
 
-simulation=200
-n=200
-path=200
+simulation=100
+n=250
+path=150
 alpha=0.05
 
 given_tol=0.1
@@ -523,8 +523,8 @@ simulation_linkf=function(simulation,n,path,alpha,tol){
     Z2=matrix(rnorm(n,1,1),nrow=n)
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------
-    T_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),5,1))
-    C_ln_aft=as.vector(exp(-beta_0*exp(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),6.5,1))
+    T_ln_aft=as.vector(exp(-beta_0*sqrt(abs(Z1))-gamma_0*(Z2^3))*qlnorm(runif(n),5,1))
+    C_ln_aft=as.vector(exp(-beta_0*sqrt(abs(Z1))-gamma_0*(Z2^3))*qlnorm(runif(n),6.5,1))
     X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
     D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
     Z1_ln_aft=Z1
@@ -615,4 +615,5 @@ simulation_result_linkf=c(simulation_result_linkf1,simulation_result_linkf2,
                           simulation_result_linkf5)
 prob.table_linkf(simulation_result_linkf)
 date()
+
 
