@@ -431,10 +431,13 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
   
   #------------------------SAMPLE PATH------------------------
+  
+  path_check=ceiling(path/2)
+  
   dataset_What=list(NA)
   for(k in 1:path){
     dataset_What[[k]]=What_omni(b,std,Time,Delta,Covari,tol)$sim_stat
-    if(k%%100==0) {
+    if(k%%path_check==0) {
       cat("Sample Path",k,"\n")
     }
   }
@@ -494,6 +497,7 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   return(result)
 }
 #sample_path_omni
+
 
 #-------------------------------------------------------------
 #--------------------------SIMULATION-------------------------

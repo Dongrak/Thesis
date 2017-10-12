@@ -436,11 +436,13 @@ sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
   #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
   
+  path_check=ceiling(path/2)
+  
   #------------------------SAMPLE PATH------------------------
   dataset_What=list(NA)
   for(k in 1:path){
     dataset_What[[k]]=What_linkf(b,std,Time,Delta,Covari,tol)$sim_stat
-    if(k%%100==0) {
+    if(k%%path_check==0) {
       cat("Sample Path",k,"\n")
     }
   }
@@ -519,26 +521,41 @@ simulation_linkf=function(simulation,n,path,alpha,tol){
     # n=200
     beta_0=1
     gamma_0=0.1
-    Z1=matrix(rnorm(n,3,1),nrow=n)
+    Z1=matrix(abs(rnorm(n,3,1)),nrow=n)
     Z2=matrix(rnorm(n,1,1),nrow=n)
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------
-    T_ln_aft=as.vector(exp(-beta_0*sqrt(abs(Z1))-gamma_0*(Z2^3))*qlnorm(runif(n),5,1))
-    C_ln_aft=as.vector(exp(-beta_0*sqrt(abs(Z1))-gamma_0*(Z2^3))*qlnorm(runif(n),6.5,1))
+    T_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*Z2)*qlnorm(runif(n),5,1))
+    C_ln_aft=as.vector(exp(-beta_0*sqrt(abs(Z1))-gamma_0*(Z2^2))*qlnorm(runif(n),6.5,1))
     X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
     D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
     Z1_ln_aft=Z1
     Z2_ln_aft=Z2
     Z_ln_aft=cbind(Z1_ln_aft,Z2_ln_aft)
     
+    T_ln_aft_l=as.vector(exp(-beta_0*sqrt(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),5,1))
+    C_ln_aft_l=as.vector(exp(-beta_0*sqrt(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),6.5,1))
+    X_ln_aft_l=C_ln_aft_l*(T_ln_aft_l>C_ln_aft_l)+T_ln_aft_l*(T_ln_aft_l<=C_ln_aft_l)
+    D_ln_aft_l=0*(T_ln_aft_l>C_ln_aft_l)+1*(T_ln_aft_l<=C_ln_aft_l)
+    Z1_ln_aft_l=Z1
+    Z2_ln_aft_l=Z2
+    Z_ln_aft_l=cbind(Z1_ln_aft_l,Z2_ln_aft_l)
+    
     #------------Estimate Beta_hat_ln_aft by using Aftgee-----------
     aftsrr_beta_ln_aft=aftsrr(Surv(X_ln_aft,D_ln_aft)~Z1_ln_aft+Z2_ln_aft,method="nonsm")
     beta_hat_ln_aft=-as.vector(aftsrr_beta_ln_aft$beta);beta_hat_ln_aft
     std_hat_ln_aft=diag(aftsrr_beta_ln_aft$covmat$ISMB);std_hat_ln_aft
     
+    aftsrr_beta_ln_aft_l=aftsrr(Surv(X_ln_aft_l,D_ln_aft_l)~Z1_ln_aft_l+Z2_ln_aft_l,method="nonsm")
+    beta_hat_ln_aft_l=-as.vector(aftsrr_beta_ln_aft_l$beta);beta_hat_ln_aft_l
+    std_hat_ln_aft_l=diag(aftsrr_beta_ln_aft_l$covmat$ISMB);std_hat_ln_aft_l
+    
     # result_ln_aft
     result_ln_aft=sample_path_linkf(path,beta_hat_ln_aft,std_hat_ln_aft,
                                     X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+    
+    result_ln_aft_l=sample_path_linkf(path,beta_hat_ln_aft_l,std_hat_ln_aft_l,
+                                    X_ln_aft_l,D_ln_aft_l,Z_ln_aft_l,given_tol)
     
     #-----------------------------------------------------------
     #  p  : the ratio of (What>=W)*1
@@ -554,7 +571,8 @@ simulation_linkf=function(simulation,n,path,alpha,tol){
     # p_alpha는 acceptance rate을 구하는 것이다! 
     #-----------------------------------------------------------
     
-    p_mean=rbind(c(result_ln_aft$p_value,result_ln_aft$std.p_value))
+    p_mean=rbind(c(result_ln_aft$p_value,result_ln_aft$std.p_value),
+                 c(result_ln_aft_l$p_value,result_ln_aft_l$std.p_value))
     colnames(p_mean)=c("W","std.W")
     rownames(p_mean)=c("p_ln_aft_mean")
     #p_mean
