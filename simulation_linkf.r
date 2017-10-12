@@ -555,7 +555,7 @@ simulation_linkf=function(simulation,n,path,alpha,tol){
                                     X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
     
     result_ln_aft_l=sample_path_linkf(path,beta_hat_ln_aft_l,std_hat_ln_aft_l,
-                                    X_ln_aft_l,D_ln_aft_l,Z_ln_aft_l,given_tol)
+                                      X_ln_aft_l,D_ln_aft_l,Z_ln_aft_l,given_tol)
     
     #-----------------------------------------------------------
     #  p  : the ratio of (What>=W)*1
@@ -574,12 +574,12 @@ simulation_linkf=function(simulation,n,path,alpha,tol){
     p_mean=rbind(c(result_ln_aft$p_value,result_ln_aft$std.p_value),
                  c(result_ln_aft_l$p_value,result_ln_aft_l$std.p_value))
     colnames(p_mean)=c("W","std.W")
-    rownames(p_mean)=c("p_ln_aft_mean")
+    rownames(p_mean)=c("p_ln_aft_mean","p_ln_aft_l_mean")
     #p_mean
     
     p_alpha=(p_mean>=alpha)*1
     colnames(p_alpha)=c("W","std.W")
-    rownames(p_alpha)=c("p_ln_aft_alpha")
+    rownames(p_alpha)=c("p_ln_aft_alpha","p_ln_aft_l_alpha")
     #p_alpha
     
     p_value=list(p_mean,p_alpha)
