@@ -134,23 +134,29 @@ prob.table_omni=function(simul_result){
 date()
 simulation_result_omni1=simulation_omni(simulation,n,path,alpha,given_tol)
 prob.table_omni(simulation_result_omni1)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni1_n500p150sim100")
 date()
 simulation_result_omni2=simulation_omni(simulation,n,path,alpha,given_tol)
 prob.table_omni(simulation_result_omni2)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni2_n500p150sim100")
 date()
 simulation_result_omni3=simulation_omni(simulation,n,path,alpha,given_tol)
 prob.table_omni(simulation_result_omni3)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni3_n500p150sim100")
 date()
 simulation_result_omni4=simulation_omni(simulation,n,path,alpha,given_tol)
 prob.table_omni(simulation_result_omni4)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni4_n500p150sim100")
 date()
 simulation_result_omni5=simulation_omni(simulation,n,path,alpha,given_tol)
 prob.table_omni(simulation_result_omni5)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni5_n500p150sim100")
 date()
 simulation_result_omni=c(simulation_result_omni1,simulation_result_omni2,
-                        simulation_result_omni3,simulation_result_omni4,
-                        simulation_result_omni5)
+                         simulation_result_omni3,simulation_result_omni4,
+                         simulation_result_omni5)
 prob.table_omni(simulation_result_omni)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n500p150sim500")
 date()
 
 #-------------------------------------------------------------
@@ -261,25 +267,30 @@ prob.table_fform=function(simul_result){
 date()
 simulation_result_fform1=simulation_fform(simulation,n,path,alpha,given_tol)
 prob.table_fform(simulation_result_fform1)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_fform1_n500p150sim100")
 date()
 simulation_result_fform2=simulation_fform(simulation,n,path,alpha,given_tol)
 prob.table_fform(simulation_result_fform2)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_fform2_n500p150sim100")
 date()
 simulation_result_fform3=simulation_fform(simulation,n,path,alpha,given_tol)
 prob.table_fform(simulation_result_fform3)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_fform3_n500p150sim100")
 date()
 simulation_result_fform4=simulation_fform(simulation,n,path,alpha,given_tol)
 prob.table_fform(simulation_result_fform4)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_fform4_n500p150sim100")
 date()
 simulation_result_fform5=simulation_fform(simulation,n,path,alpha,given_tol)
 prob.table_fform(simulation_result_fform5)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_fform5_n500p150sim100")
 date()
 simulation_result_fform=c(simulation_result_fform1,simulation_result_fform2,
-                           simulation_result_fform3,simulation_result_fform4,
-                           simulation_result_fform5)
+                          simulation_result_fform3,simulation_result_fform4,
+                          simulation_result_fform5)
 prob.table_fform(simulation_result_fform)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_fform_n500p150sim500")
 date()
-
 #-------------------------------------------------------------
 #------------------------LINK FUNCTION------------------------
 #-------------------------------------------------------------
@@ -392,23 +403,29 @@ prob.table_linkf=function(simul_result){
 date()
 simulation_result_linkf1=simulation_linkf(simulation,n,path,alpha,given_tol)
 prob.table_linkf(simulation_result_linkf1)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_linkf1_n500p150sim100")
 date()
 simulation_result_linkf2=simulation_linkf(simulation,n,path,alpha,given_tol)
 prob.table_linkf(simulation_result_linkf2)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_linkf2_n500p150sim100")
 date()
 simulation_result_linkf3=simulation_linkf(simulation,n,path,alpha,given_tol)
 prob.table_linkf(simulation_result_linkf3)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_linkf3_n500p150sim100")
 date()
 simulation_result_linkf4=simulation_linkf(simulation,n,path,alpha,given_tol)
 prob.table_linkf(simulation_result_linkf4)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_linkf4_n500p150sim100")
 date()
 simulation_result_linkf5=simulation_linkf(simulation,n,path,alpha,given_tol)
 prob.table_linkf(simulation_result_linkf5)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_linkf5_n500p150sim100")
 date()
 simulation_result_linkf=c(simulation_result_linkf1,simulation_result_linkf2,
-                           simulation_result_linkf3,simulation_result_linkf4,
-                           simulation_result_linkf5)
+                          simulation_result_linkf3,simulation_result_linkf4,
+                          simulation_result_linkf5)
 prob.table_linkf(simulation_result_linkf)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_linkf_n500p150sim500")
 date()
 
 
