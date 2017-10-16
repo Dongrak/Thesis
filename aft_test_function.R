@@ -245,23 +245,6 @@ W_linkf=function(b,Time,Delta,Covari){
 }
 #W_linkf()
 
-W_t.z=function(b,Time,Delta,Covari,test){
-  if(test=="omni"){
-    return(W_omni(b,Time,Delta,Covari))
-  }
-  if(test=="fform"){
-    return(W_fform(b,Time,Delta,Covari))
-  }
-  if(test=="linkf"){
-    return(W_linkf(b,Time,Delta,Covari))
-  }
-  if(test=="aft"){
-    return(print("NOT YET..."))
-    #return(W_aft(b,Time,Delta,Covari))
-  }
-}
-#W_t.z()
-
 #-------------------------------------------------------------
 #-------------------------REALIZATION-------------------------
 #-------------------------------------------------------------
@@ -1204,23 +1187,6 @@ What_linkf=function(b,std,Time,Delta,Covari,tol){
 }
 #What_linkf()
 
-What_t.z=function(b,std,Time,Delta,Covari,test,tol){
-  if(test=="omni"){
-    return(What_omni(b,std,Time,Delta,Covari,tol))
-  }
-  if(test=="fform"){
-    return(What_fform(b,std,Time,Delta,Covari,tol))
-  }
-  if(test=="linkf"){
-    return(What_linkf(b,std,Time,Delta,Covari,tol))
-  }
-  if(test=="aft"){
-    return(print("NOT YET..."))
-    #return(What_aft(b,std,Time,Delta,Covari,tol))
-  }
-}
-#What_t.z()
-
 #-------------------------------------------------------------
 #--------------------------SIMULATION-------------------------
 #-------------------------------------------------------------
@@ -1468,23 +1434,6 @@ sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
 }
 #sample_path_linkf
 
-sample_path=function(path,b,std,Time,Delta,Covari,testtype,tol){
-  if(testtype=="omni"){
-    return(sample_path_omni(path,b,std,Time,Delta,Covari,tol))
-  }
-  if(testtype=="fform"){
-    return(sample_path_fform(path,b,std,Time,Delta,Covari,tol))
-  }
-  if(testtype=="linkf"){
-    return(sample_path_linkf(path,b,std,Time,Delta,Covari,tol))
-  }
-  # if(testtype=="aft"){
-  #   return(print("NOT YET..."))
-  #   return(sample_path_aft(path,b,std,Time,Delta,Covari,tol))
-  # }
-}
-#sample_path
-
 #-------------------------------------------------------------
 #---------------------------PLOTTING--------------------------
 #-------------------------------------------------------------
@@ -1507,7 +1456,7 @@ plotting_omni=function(result,path){
   
   Figure1_W=
     ggplot()+
-    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
     geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
   #Figure1_W
   
@@ -1533,7 +1482,7 @@ plotting_std.omni=function(result,path){
   
   Figure1_std.W=
     ggplot()+
-    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
     geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
   #Figure1_std.W
   
@@ -1557,7 +1506,7 @@ plotting_fform=function(result,path){
   
   Figure1_W=
     ggplot()+
-    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
     geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
   #Figure1_W
   
@@ -1581,7 +1530,7 @@ plotting_std.fform=function(result,path){
   
   Figure1_std.W=
     ggplot()+
-    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
     geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
   #Figure1_std.W
   colnames(dataset_std.What)
@@ -1604,7 +1553,7 @@ plotting_linkf=function(result,path){
   
   Figure1_W=
     ggplot()+
-    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
     geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
   #Figure1_W
   
@@ -1627,7 +1576,7 @@ plotting_std.linkf=function(result,path){
   
   Figure1_std.W=
     ggplot()+
-    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
     geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
   #Figure1_std.W
   

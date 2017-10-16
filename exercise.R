@@ -708,6 +708,10 @@ plotting_aft=function(result,path){}
 
 plotting_std.aft=function(result,path){}
 
-
+# eps파일로 저장하는 코드
+cairo_ps("afttest_linkf_std.eps",onefile=F,
+         height=4,width=8, fallback_resolution = 600)
+afttestplot(afttest_linkf,standardization="standardized",path=path1)
+dev.off()
 
 
