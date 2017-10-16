@@ -526,7 +526,7 @@ simulation_linkf=function(simulation,n,path,alpha,tol){
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------
     T_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*Z2)*qlnorm(runif(n),5,1))
-    C_ln_aft=as.vector(exp(-beta_0*sqrt(abs(Z1))-gamma_0*(Z2^2))*qlnorm(runif(n),6.5,1))
+    C_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*Z2)*qlnorm(runif(n),6.5,1))
     X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
     D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
     Z1_ln_aft=Z1

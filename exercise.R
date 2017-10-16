@@ -51,9 +51,6 @@ Reduce("pmax",dd[[1]])
 lapply(dataset_What,function(x,y){x[[j]]/y[[j]]},std.boot)
 lapply(dd,function(x){pmax(x[[j]])})
 
-
-
-
 What_omni=function(b,std,Time,Delta,Covari,tol){
   #b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
@@ -516,3 +513,201 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   return(result)
 }
 # sample_path_omni(path,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+
+
+##############################################################
+# omnibus test
+# a=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"omni")[100,]
+# for(i in 1:30){
+#   plot(What_t.z(beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,"omni",
+#   given_tol)$sim_stat[100,],type="s",col="grey",ylim=c(-2,2));par(new=TRUE)
+# }
+# plot(a,type="s",col="red",ylim=c(-2,2))
+
+##############################################################
+# functional form
+# a=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"fform")$obs_stat[,1]
+# for(i in 1:30){
+#   plot(What_t.z(beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,"fform",
+#   given_tol)$sim_stat[,1],type="s",col="grey",ylim=c(-2,2));par(new=TRUE)
+# }
+# plot(a,type="s",col="red",ylim=c(-2,2))
+
+##############################################################
+# link function
+# a=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"linkf")$obs_stat
+# for(i in 1:30){
+#   plot(What_t.z(beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,"linkf",
+#   given_tol)$sim_stat,type="s",col="grey",ylim=c(-2,2));par(new=TRUE)
+# }
+# plot(a,type="s",col="red",ylim=c(-2,2))
+
+##############################################################
+
+##############################################################
+# omnibus test
+#####aft
+# path1=30
+# result_omni_aft=sample_path_omni(path1,beta_hat_ln_aft,std_hat_ln_aft,
+# X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
+# for(i in 1:path1){
+# plot(result_omni_aft$dataset_std.What[[i]][(n/2),],ylim=c(-3,3),type="s",
+# col="grey");par(new=TRUE)
+# }
+# plot(result_omni_aft$dataset_std.W[(n/2),],ylim=c(-3,3),type="s",col="red")
+# result_omni_aft$p_value
+# result_omni_aft$std.p_value
+
+#####cox
+# path1=30
+# result_omni_cox=sample_path_omni(path1,beta_hat_ln_cox,std_hat_ln_cox,
+# X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
+# for(i in 1:path1){
+#   plot(result_omni_cox$dataset_std.What[[i]][(n/2),],ylim=c(-3,3),type="s",
+#   col="grey");par(new=TRUE)
+# }
+# plot(result_omni_cox$dataset_std.W[(n/2),],ylim=c(-3,3),type="s",col="red")
+# result_omni_cox$p_value
+# result_omni_cox$std.p_value
+
+##############################################################
+# functional form
+#####aft
+# path1=30
+# result_fform_aft=sample_path_fform(path1,beta_hat_ln_aft,std_hat_ln_aft,
+# X_ln_aft,D_ln_aft,Z_ln_aft,10)
+# for(i in 1:path1){
+#   plot(result_fform_aft$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
+#   col="grey");par(new=TRUE)
+# }
+# plot(result_fform_aft$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
+#####cox
+# path1=30
+# result_fform_cox=sample_path_fform(path1,beta_hat_ln_cox,std_hat_ln_cox,
+# X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
+# for(i in 1:path1){
+#   plot(result_fform_cox$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
+#   col="grey");par(new=TRUE)
+# }
+# plot(result_fform_cox$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
+
+##############################################################
+# link function
+#####aft
+# path1=30
+# result_linkf_aft=sample_path_linkf(path1,beta_hat_ln_aft,std_hat_ln_aft,
+# X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
+# for(i in 1:path1){
+#   plot(result_linkf_aft$dataset_std.What[[i]],ylim=c(-3,3),type="s",
+#   col="grey");par(new=TRUE)
+# }
+# plot(result_linkf_aft$dataset_std.W,ylim=c(-3,3),type="s",col="red")
+#####cox
+# path1=30
+# result_linkf_cox=sample_path_linkf(path1,beta_hat_ln_cox,std_hat_ln_cox,
+# X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
+# for(i in 1:path1){
+#   plot(result_linkf_cox$dataset_std.What[[i]],ylim=c(-3,3),type="s",
+#   col="grey");par(new=TRUE)
+# }
+# plot(result_linkf_cox$dataset_std.W,ylim=c(-3,3),type="s",col="red")
+
+##############################################################
+##############################################################
+##############################################################
+############################미완성############################
+##############################################################
+##############################################################
+##############################################################
+W_aft=function(b,Time,Delta,Covari){
+  #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
+  #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
+  
+  e_i_beta=as.vector(log(Time)+Covari%*%b)
+  
+  order_resid=order(e_i_beta)
+  
+  Time=Time[order_resid]
+  Covari=matrix(Covari[order_resid,],nrow=n)
+  Delta=Delta[order_resid]
+  e_i_beta=e_i_beta[order_resid]
+  
+  # weight function
+  pi_ij_z=list(NA)
+  for(j in 1:p){
+    pi_ij_z[[j]]=Covari[,j]
+  }
+  
+  N_i_t=list(NA)
+  for(i in 1:n){
+    N_i_t[[i]]=(e_i_beta>=e_i_beta[i])*Delta[i]
+  }
+  #N_i_t
+  
+  Y_i_t=list(NA)
+  for(i in 1:n){
+    Y_i_t[[i]]=(e_i_beta<=e_i_beta[i])*1
+  }
+  #Y_i_t
+  
+  N_d_t=Reduce('+',N_i_t)
+  #N_d_t
+  
+  S_0_t=Reduce('+',Y_i_t)
+  #S_0_t
+  
+  S_1_t=Reduce('+',mapply(function(x,y){x%*%t(y)},Y_i_t,as.list(data.frame(t(Covari))),SIMPLIFY=FALSE))
+  #S_1_t
+  
+  E_t=S_1_t/S_0_t
+  #E_t
+  
+  J_t=(S_0_t>0)*1
+  #J_t
+  
+  dN_d_t=diff(c(0,N_d_t))
+  #dN_d_t
+  
+  Lambdahat_0_t=cumsum((J_t/S_0_t)*dN_d_t)
+  #Lambdahat_0_t
+  
+  dLambdahat_0_t=diff(c(0,Lambdahat_0_t))
+  #dLambdahat_0_t
+  
+  Mhat_i_t=mapply("-", N_i_t,lapply(lapply(
+    Y_i_t,"*",dLambdahat_0_t),cumsum), SIMPLIFY = FALSE)
+  #Mhat_i_t
+  
+  pi_ij_z.Mhat_i_t=list(NA)
+  for(j in 1:p){
+    pi_ij_z.Mhat_i_t[[j]]=lapply(Mhat_i_t,function(x){pi_ij_z[[j]]%*%t(x)})
+  }
+  #pi_ij_z.Mhat_i_t
+  # z by t matrix
+  
+  obs_stat=list(NA)
+  for(j in 1:p){
+    obs_stat[[j]]=Reduce('+',pi_ij_z.Mhat_i_t[[j]])/sqrt(n)
+  }
+  #obs_stat
+  
+  result=list(Time,Delta,Covari,e_i_beta,obs_stat)
+  names(result)=c("Time","Delta","Covari","Resid","obs_stat")
+  
+  return(result)
+}
+#W_aft()
+
+What_aft=function(b,std,Time,Delta,Covari,tol){}
+#What_aft()
+
+sample_path_aft=function(path,b,std,Time,Delta,Covari,tol){}
+# result_aft=sample_path_aft(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
+
+plotting_aft=function(result,path){}
+
+plotting_std.aft=function(result,path){}
+
+
+
+

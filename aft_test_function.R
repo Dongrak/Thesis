@@ -68,12 +68,13 @@ W_omni=function(b,Time,Delta,Covari){
     Y_i_t,"*",dLambdahat_0_t),cumsum), SIMPLIFY = FALSE)
   #Mhat_i_t
   
-  obs_stat=Reduce('+',mapply(function(x,y){x%*%t(y)},pi_i_z,Mhat_i_t,SIMPLIFY=FALSE))/sqrt(n)
-  #obs_stat
+  obs_stat_omni=Reduce('+',mapply(function(x,y){x%*%t(y)},pi_i_z,Mhat_i_t,SIMPLIFY=FALSE))/sqrt(n)
+  #obs_stat_omni
   
-  result=list(Time,Delta,Covari,e_i_beta,obs_stat)
-  names(result)=c("Time","Delta","Covari","Resid","obs_stat")
+  result=list(e_i_beta,obs_stat_omni)
   
+  names(result)=c("Resid","obs_stat_omni")
+
   return(result)
 }
 #W_omni()
@@ -150,14 +151,16 @@ W_fform=function(b,Time,Delta,Covari){
   Mhat_i_inf=unlist(lapply(Mhat_i_t,function(x){x[n]}))
   #Mhat_i_inf
   
-  obs_stat=matrix(unlist(lapply(lapply(pi_ij_z,function(z){mapply(function(x,y){x*y},
+  obs_stat_fform=matrix(unlist(lapply(lapply(pi_ij_z,function(z){mapply(function(x,y){x*y},
           z,Mhat_i_inf,SIMPLIFY=FALSE)}),function(x){Reduce('+',x)/sqrt(n)})),nrow=n)
-  #obs_stat
+  #obs_stat_fform
+
+  result=list(e_i_beta,obs_stat_fform)
   
-  result=list(Time,Delta,Covari,e_i_beta,obs_stat)
-  names(result)=c("Time","Delta","Covari","Resid","obs_stat")
+  names(result)=c("Resid","obs_stat_fform")
   
   return(result)
+
 }
 #W_fform()
 
@@ -230,12 +233,13 @@ W_linkf=function(b,Time,Delta,Covari){
   Mhat_i_inf=unlist(lapply(Mhat_i_t,function(x){x[n]}))
   #Mhat_i_inf
   
-  obs_stat=(1/sqrt(n))*Reduce('+',mapply(function(x,y){x*y},
+  obs_stat_linkf=(1/sqrt(n))*Reduce('+',mapply(function(x,y){x*y},
           pi_i_z,Mhat_i_inf,SIMPLIFY=FALSE))
-  #obs_stat
+  #obs_stat_linkf
+
+  result=list(e_i_beta,obs_stat_linkf)
   
-  result=list(Time,Delta,Covari,e_i_beta,obs_stat)
-  names(result)=c("Time","Delta","Covari","Resid","obs_stat")
+  names(result)=c("Resid","obs_stat_linkf")
   
   return(result)
 }
@@ -564,13 +568,10 @@ What_omni=function(b,std,Time,Delta,Covari,tol){
     ,SIMPLIFY=FALSE),SIMPLIFY=FALSE),(b-beta_hat_s),SIMPLIFY=FALSE))
   T.T.=(1/sqrt(n))*t(apply((t(S_pi_t.z)*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,cumsum))
   
-  sim_stat=F.T.-S.T.-T.T.
-  #sim_stat
+  sim_stat_omni=F.T.-S.T.-T.T.
+  #sim_stat_omni
   
-  result=list(Time,Delta,Covari,e_i_beta,sim_stat)
-  names(result)=c("Time","Delta","Covari","Resid","sim_stat")
-  
-  return(result)
+  return(sim_stat_omni)
 }
 #What_omni()
 
@@ -885,13 +886,10 @@ What_fform=function(b,std,Time,Delta,Covari,tol){
   T.T.=lapply(S_pi_t.z,function(x){apply(t(x)*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))
         ,2,sum)/sqrt(n)})
   
-  sim_stat=mapply(function(x,y,z){x-y-z},F.T.,S.T.,T.T.)
-  #sim_stat
-  
-  result=list(Time,Delta,Covari,e_i_beta,sim_stat)
-  names(result)=c("Time","Delta","Covari","Resid","sim_stat")
-  
-  return(result)}
+  sim_stat_fform=mapply(function(x,y,z){x-y-z},F.T.,S.T.,T.T.)
+  #sim_stat_fform
+
+  return(sim_stat_fform)}
 #What_fform()
 
 What_linkf=function(b,std,Time,Delta,Covari,tol){
@@ -1199,13 +1197,10 @@ What_linkf=function(b,std,Time,Delta,Covari,tol){
         dLambdahat_0_t),SIMPLIFY=FALSE),SIMPLIFY=FALSE),(b-beta_hat_s),SIMPLIFY=FALSE))
   T.T.=(1/sqrt(n))*(apply((t(S_pi_t.z)*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,sum))
   
-  sim_stat=F.T.-S.T.-T.T.
-  #sim_stat
-  
-  result=list(Time,Delta,Covari,e_i_beta,sim_stat)
-  names(result)=c("Time","Delta","Covari","Resid","sim_stat")
-  
-  return(result)
+  sim_stat_linkf=F.T.-S.T.-T.T.
+  #sim_stat_linkf
+
+  return(sim_stat_linkf)
 }
 #What_linkf()
 
@@ -1226,35 +1221,6 @@ What_t.z=function(b,std,Time,Delta,Covari,test,tol){
 }
 #What_t.z()
 
-##############################################################
-# omnibus test
-# a=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"omni")$obs_stat[100,]
-# for(i in 1:30){
-#   plot(What_t.z(beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,"omni",
-#   given_tol)$sim_stat[100,],type="s",col="grey",ylim=c(-2,2));par(new=TRUE)
-# }
-# plot(a,type="s",col="red",ylim=c(-2,2))
-
-##############################################################
-# functional form
-# a=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"fform")$obs_stat[,1]
-# for(i in 1:30){
-#   plot(What_t.z(beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,"fform",
-#   given_tol)$sim_stat[,1],type="s",col="grey",ylim=c(-2,2));par(new=TRUE)
-# }
-# plot(a,type="s",col="red",ylim=c(-2,2))
-
-##############################################################
-# link function
-# a=W_t.z(beta_hat_wb,X_wb,D_wb,Z_wb,"linkf")$obs_stat
-# for(i in 1:30){
-#   plot(What_t.z(beta_hat_wb,std_hat_wb,X_wb,D_wb,Z_wb,"linkf",
-#   given_tol)$sim_stat,type="s",col="grey",ylim=c(-2,2));par(new=TRUE)
-# }
-# plot(a,type="s",col="red",ylim=c(-2,2))
-
-##############################################################
-
 #-------------------------------------------------------------
 #--------------------------SIMULATION-------------------------
 #-------------------------------------------------------------
@@ -1269,7 +1235,7 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   
   dataset_What=list(NA)
   for(k in 1:path){
-    dataset_What[[k]]=What_omni(b,std,Time,Delta,Covari,tol)$sim_stat
+    dataset_What[[k]]=What_omni(b,std,Time,Delta,Covari,tol)
     if(k%%path_check==0) {
       cat("Sample Path",k,"\n")
     }
@@ -1282,7 +1248,10 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
   # dataset_std.What
   
-  dataset_W=W_omni(b,Time,Delta,Covari)$obs_stat
+  dataset_W_omni=W_omni(b,Time,Delta,Covari)
+  # dataset_W_omni
+  
+  dataset_W=dataset_W_omni$obs_stat_omni
   # dataset_W
   
   dataset_std.W=dataset_W/std.boot
@@ -1322,9 +1291,15 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   std.p_value=length(which((max_path_std.What>max_path_std.W)*1==1))/path
   # std.p_value
   
-  result=list(dataset_What=dataset_What,dataset_std.What=dataset_std.What,
-              dataset_W=dataset_W,dataset_std.W=dataset_std.W,
-              std.boot=std.boot,p_value=p_value,std.p_value=std.p_value)
+  result=list(Time,Delta,Covari,dataset_W_omni$Resid,
+              dataset_W,dataset_What,
+              dataset_std.W,dataset_std.What,
+              std.boot,p_value,std.p_value)
+
+  names(result)=c("Time","Delta","Covari","Resid",
+                  "dataset_W","dataset_What",
+                  "dataset_std.W","dataset_std.What",
+                  "std.boot","p_value","std.p_value")
   # result
   
   return(result)
@@ -1341,7 +1316,7 @@ sample_path_fform=function(path,b,std,Time,Delta,Covari,tol){
   #------------------------SAMPLE PATH------------------------
   dataset_What=list(NA)
   for(k in 1:path){
-    dataset_What[[k]]=What_fform(b,std,Time,Delta,Covari,tol)$sim_stat
+    dataset_What[[k]]=What_fform(b,std,Time,Delta,Covari,tol)
     if(k%%path_check==0) {
       cat("Sample Path",k,"\n")
     }
@@ -1354,7 +1329,10 @@ sample_path_fform=function(path,b,std,Time,Delta,Covari,tol){
   dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
   # dataset_std.What
   
-  dataset_W=W_fform(b,Time,Delta,Covari)$obs_stat
+  dataset_W_fform=W_fform(b,Time,Delta,Covari)
+  # dataset_W_fform
+  
+  dataset_W=dataset_W_fform$obs_stat_fform
   # dataset_W
   
   dataset_std.W=dataset_W/std.boot
@@ -1394,9 +1372,15 @@ sample_path_fform=function(path,b,std,Time,Delta,Covari,tol){
   std.p_value=length(which((max_path_std.What>max_path_std.W)*1==1))/path
   # std.p_value
   
-  result=list(dataset_What=dataset_What,dataset_std.What=dataset_std.What,
-              dataset_W=dataset_W,dataset_std.W=dataset_std.W,
-              std.boot=std.boot,p_value=p_value,std.p_value=std.p_value)
+  result=list(Time,Delta,Covari,dataset_W_fform$Resid,
+              dataset_W,dataset_What,
+              dataset_std.W,dataset_std.What,
+              std.boot,p_value,std.p_value)
+  
+  names(result)=c("Time","Delta","Covari","Resid",
+                  "dataset_W","dataset_What",
+                  "dataset_std.W","dataset_std.What",
+                  "std.boot","p_value","std.p_value")
   # result
   
   return(result)
@@ -1413,7 +1397,7 @@ sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
   #------------------------SAMPLE PATH------------------------
   dataset_What=list(NA)
   for(k in 1:path){
-    dataset_What[[k]]=What_linkf(b,std,Time,Delta,Covari,tol)$sim_stat
+    dataset_What[[k]]=What_linkf(b,std,Time,Delta,Covari,tol)
     if(k%%path_check==0) {
       cat("Sample Path",k,"\n")
     }
@@ -1426,7 +1410,10 @@ sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
   dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
   # dataset_std.What
   
-  dataset_W=W_linkf(b,Time,Delta,Covari)$obs_stat
+  dataset_W_linkf=W_linkf(b,Time,Delta,Covari)
+  # dataset_W_linkf
+  
+  dataset_W=dataset_W_linkf$obs_stat_linkf
   # dataset_W
   
   dataset_std.W=dataset_W/std.boot
@@ -1466,285 +1453,277 @@ sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
   std.p_value=length(which((max_path_std.What>max_path_std.W)*1==1))/path
   # std.p_value
   
-  result=list(dataset_What=dataset_What,dataset_std.What=dataset_std.What,
-              dataset_W=dataset_W,dataset_std.W=dataset_std.W,
-              std.boot=std.boot,p_value=p_value,std.p_value=std.p_value)
+  result=list(Time,Delta,Covari,dataset_W_linkf$Resid,
+               dataset_W,dataset_What,
+               dataset_std.W,dataset_std.What,
+               std.boot,p_value,std.p_value)
+  
+  names(result)=c("Time","Delta","Covari","Resid",
+                  "dataset_W","dataset_What",
+                  "dataset_std.W","dataset_std.What",
+                  "std.boot","p_value","std.p_value")
   # result
   
   return(result)
 }
 #sample_path_linkf
 
-sample_path=function(path,b,std,Time,Delta,Covari,test,tol){
-  if(test=="omni"){
+sample_path=function(path,b,std,Time,Delta,Covari,testtype,tol){
+  if(testtype=="omni"){
     return(sample_path_omni(path,b,std,Time,Delta,Covari,tol))
   }
-  if(test=="fform"){
+  if(testtype=="fform"){
     return(sample_path_fform(path,b,std,Time,Delta,Covari,tol))
   }
-  if(test=="linkf"){
+  if(testtype=="linkf"){
     return(sample_path_linkf(path,b,std,Time,Delta,Covari,tol))
   }
-  if(test=="aft"){
-    return(print("NOT YET..."))
-    #return(sample_path_aft(path,b,std,Time,Delta,Covari,tol))
-  }
+  # if(testtype=="aft"){
+  #   return(print("NOT YET..."))
+  #   return(sample_path_aft(path,b,std,Time,Delta,Covari,tol))
+  # }
 }
 #sample_path
-
-##############################################################
-# omnibus test
-#####aft
-# path1=30
-# result_omni_aft=sample_path_omni(path1,beta_hat_ln_aft,std_hat_ln_aft,
-# X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
-# for(i in 1:path1){
-#   plot(result_omni_aft$dataset_std.What[[i]][(n/2),],ylim=c(-3,3),type="s",
-# col="grey");par(new=TRUE)
-# }
-# plot(result_omni_aft$dataset_std.W[(n/2),],ylim=c(-3,3),type="s",col="red")
-
-#####cox
-# path1=30
-# result_omni_cox=sample_path_omni(path1,beta_hat_ln_cox,std_hat_ln_cox,
-# X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
-# for(i in 1:path1){
-#   plot(result_omni_cox$dataset_std.What[[i]][(n/2),],ylim=c(-3,3),type="s",
-#   col="grey");par(new=TRUE)
-# }
-# plot(result_omni_cox$dataset_std.W[(n/2),],ylim=c(-3,3),type="s",col="red")
-
-##############################################################
-# functional form
-#####aft
-# path1=30
-# result_fform_aft=sample_path_fform(path1,beta_hat_ln_aft,std_hat_ln_aft,
-# X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
-# for(i in 1:path1){
-#   plot(result_fform_aft$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
-#   col="grey");par(new=TRUE)
-# }
-# plot(result_fform_aft$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
-#####cox
-# path1=30
-# result_fform_cox=sample_path_fform(path1,beta_hat_ln_cox,std_hat_ln_cox,
-# X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
-# for(i in 1:path1){
-#   plot(result_fform_cox$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
-#   col="grey");par(new=TRUE)
-# }
-# plot(result_fform_cox$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
-
-##############################################################
-# link function
-#####aft
-# path1=30
-# result_linkf_aft=sample_path_linkf(path1,beta_hat_ln_aft,std_hat_ln_aft,
-# X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
-# for(i in 1:path1){
-#   plot(result_linkf_aft$dataset_std.What[[i]],ylim=c(-3,3),type="s",
-#   col="grey");par(new=TRUE)
-# }
-# plot(result_linkf_aft$dataset_std.W,ylim=c(-3,3),type="s",col="red")
-#####cox
-# path1=30
-# result_linkf_cox=sample_path_linkf(path1,beta_hat_ln_cox,std_hat_ln_cox,
-# X_ln_cox,D_ln_cox,Z_ln_cox,0.1)
-# for(i in 1:path1){
-#   plot(result_linkf_cox$dataset_std.What[[i]],ylim=c(-3,3),type="s",
-#   col="grey");par(new=TRUE)
-# }
-# plot(result_linkf_cox$dataset_std.W,ylim=c(-3,3),type="s",col="red")
 
 #-------------------------------------------------------------
 #---------------------------PLOTTING--------------------------
 #-------------------------------------------------------------
-plotting_omni=function(result,path){}
-
-plotting_std.omni=function(result,path){}
-
-plotting_fform=function(result,path){}
-
-plotting_std.fform=function(result,path){}
-
-plotting_linkf=function(result,path){}
-
-plotting_std.linkf=function(result,path){}
-
-
-plotting_asdfasdfasdf=function(result,standardization="standardized",path=50){
+plotting_omni=function(result,path){
   
-  if (standardization==0) {
-    dataset_What=data.frame()
-    for (i in 1:n.path){
-      group=i
-      A=result$dataset_What[,i]
-      AA=data.frame(group,t_i=1:n,What=A)
-      dataset_What=rbind(dataset_What,AA)
-    }
-    #dataset_What
-    
-    dataset_W=data.frame(group,t_i=1:n,W=result$dataset_W)
-    #dataset_W
-    
-    Figure1_W=
-      ggplot()+
-      geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
-      geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
-    #Figure1_W
-    
-    return(Figure1_W)
+  med=ceiling(sqrt(length(result$std.boot))/2)
+  
+  dataset_What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_What[[i]][med,]
+    AA=data.frame(group,t_i=1:n,What=A)
+    dataset_What=rbind(dataset_What,AA)
   }
-  if (standardization==1) {
-    dataset_std.What=data.frame()
-    for (i in 1:n.path){
-      group=i
-      A=result$dataset_std.What[,i]
-      AA=data.frame(group,t_i=1:n,std.What=A)
-      dataset_std.What=rbind(dataset_std.What,AA)
-    }
-    #dataset_std.What
-    
-    dataset_std.W=data.frame(group,t_i=1:n,std.W=result$dataset_std.W)
-    #dataset_std.W
-    
-    Figure1_std.W=
-      ggplot()+
-      geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
-      geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
-    return(Figure1_std.W)
-  }
+  #dataset_What
+  
+  dataset_W=data.frame(group,t_i=1:n,W=result$dataset_W[med,])
+  #dataset_W
+  
+  Figure1_W=
+    ggplot()+
+    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
+  #Figure1_W
+  
+  return(Figure1_W)
 }
 
-plotting=function(result,standardization="standardized",path=50){
-  if(test=="omni"){
+plotting_std.omni=function(result,path){
+  
+  med=ceiling(sqrt(length(result$std.boot))/2)
+  
+  dataset_std.What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_std.What[[i]][med,]
+    AA=data.frame(group,t_i=1:n,std.What=A)
+    dataset_std.What=rbind(dataset_std.What,AA)
+  }
+  #dataset_std.What
+  
+  dataset_std.W=data.frame(group,t_i=1:n,std.W=result$dataset_std.W[med,])
+  #dataset_std.W
+  
+  Figure1_std.W=
+    ggplot()+
+    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
+  #Figure1_std.W
+  
+  return(Figure1_std.W)
+}
+
+plotting_fform=function(result,path){
+
+  dataset_What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_What[[i]]
+    AA=data.frame(group,t_i=1:n,What=A)
+    dataset_What=rbind(dataset_What,AA)
+  }
+  #dataset_What
+  
+  dataset_W=data.frame(group,t_i=1:n,W=result$dataset_W)
+  #dataset_W
+  
+  Figure1_W=
+    ggplot()+
+    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
+  #Figure1_W
+  
+  return(Figure1_W)
+}
+
+plotting_std.fform=function(result,path){
+  
+  dataset_std.What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_std.What[[i]]
+    AA=data.frame(group,t_i=1:n,std.What=A)
+    dataset_std.What=rbind(dataset_std.What,AA)
+  }
+  #dataset_std.What
+  colnames(dataset_std.What)
+  dataset_std.W=data.frame(group,t_i=1:n,std.W=result$dataset_std.W)
+  #dataset_std.W
+  
+  Figure1_std.W=
+    ggplot()+
+    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
+  #Figure1_std.W
+  colnames(dataset_std.What)
+  return(Figure1_std.W)
+}
+
+plotting_linkf=function(result,path){
+  dataset_What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_What[[i]]
+    AA=data.frame(group,t_i=1:n,What=A)
+    dataset_What=rbind(dataset_What,AA)
+  }
+  #dataset_What
+  
+  dataset_W=data.frame(group,t_i=1:n,W=result$dataset_W)
+  #dataset_W
+  
+  Figure1_W=
+    ggplot()+
+    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
+  #Figure1_W
+  
+  return(Figure1_W)
+}
+
+plotting_std.linkf=function(result,path){
+  dataset_std.What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_std.What[[i]]
+    AA=data.frame(group,t_i=1:n,std.What=A)
+    dataset_std.What=rbind(dataset_std.What,AA)
+  }
+  #dataset_std.What
+  
+  dataset_std.W=data.frame(group,t_i=1:n,std.W=result$dataset_std.W)
+  #dataset_std.W
+  
+  Figure1_std.W=
+    ggplot()+
+    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour="grey",alpha=0.5)+
+    geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
+  #Figure1_std.W
+  
+  return(Figure1_std.W)
+}
+
+afttestplot=function(result,standardization="standardized",path=50){
+  
+  testtype=result$testtype
+  
+  if(testtype=="omni"){
     if(standardization=="standardized"){
-      return(plotting_std.omni(result,path=50))
+      return(plotting_std.omni(result,path))
     }
     if(standardization=="unstandardized"){
-      return(plotting_omni(result,path=50))
+      return(plotting_omni(result,path))
     }
   }
-  if(test=="fform"){
+  if(testtype=="fform"){
     if(standardization=="standardized"){
-      return(plotting_std.fform(result,path=50))
+      return(plotting_std.fform(result,path))
     }
     if(standardization=="unstandardized"){
-      return(plotting_fform(result,path=50))
+      return(plotting_fform(result,path))
     }
   }
-  if(test=="linkf"){
+  if(testtype=="linkf"){
     if(standardization=="standardized"){
-      return(plotting_std.linkf(result,path=50))
+      return(plotting_std.linkf(result,path))
     }
     if(standardization=="unstandardized"){
-      return(plotting_linkf(result,path=50))
+      return(plotting_linkf(result,path))
     }
   }
-  # if(test=="aft"){
+  # if(testtype=="aft"){
   #   if(standardization=="standardized"){
-  #     return(plotting_std.aft(result,path=50))
+  #     return(plotting_std.aft(result,path))
   #   }
   #   if(standardization=="unstandardized"){
-  #     return(plotting_aft(result,path=50))
+  #     return(plotting_aft(result,path))
   #   }
   # }
 }
-#plotting
 
-##############################################################
-##############################################################
-##############################################################
-############################미완성############################
-##############################################################
-##############################################################
-##############################################################
-W_aft=function(b,Time,Delta,Covari){
-  #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
-  #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
+afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1){
+
+  varnames=noquote(all.vars(formula))
+  len.var=length(varnames)
   
-  e_i_beta=as.vector(log(Time)+Covari%*%b)
+  Time=dataset[,which(names(dataset)==varnames[1])]
+  Delta=dataset[,which(names(dataset)==varnames[2])]
   
-  order_resid=order(e_i_beta)
+  n=length(Time)
   
-  Time=Time[order_resid]
-  Covari=matrix(Covari[order_resid,],nrow=n)
-  Delta=Delta[order_resid]
-  e_i_beta=e_i_beta[order_resid]
-  
-  # weight function
-  pi_ij_z=list(NA)
-  for(j in 1:p){
-    pi_ij_z[[j]]=Covari[,j]
+  Covari=matrix(dataset[,which(names(dataset)==varnames[3])],nrow=n)
+  if(len.var>=4){
+    for(i in 4:len.var){
+      Covari=cbind(Covari,matrix(dataset[,which(names(dataset)==varnames[i])],nrow=n))
+    }
   }
   
-  N_i_t=list(NA)
-  for(i in 1:n){
-    N_i_t[[i]]=(e_i_beta>=e_i_beta[i])*Delta[i]
+  aftsrr_result=aftgee::aftsrr(formula,method="nonsm")
+  b=-as.vector(aftsrr_result$beta)
+  std=diag(aftsrr_result$covmat$ISMB)
+  
+  if(testtype=="omni"){
+    return(c(list(testtype=testtype),sample_path_omni(path,b,std,Time,Delta,Covari,tol)))
   }
-  #N_i_t
-  
-  Y_i_t=list(NA)
-  for(i in 1:n){
-    Y_i_t[[i]]=(e_i_beta<=e_i_beta[i])*1
+  if(testtype=="fform"){
+    return(c(list(testtype=testtype),sample_path_fform(path,b,std,Time,Delta,Covari,tol)))
   }
-  #Y_i_t
-  
-  N_d_t=Reduce('+',N_i_t)
-  #N_d_t
-  
-  S_0_t=Reduce('+',Y_i_t)
-  #S_0_t
-  
-  S_1_t=Reduce('+',mapply(function(x,y){x%*%t(y)},Y_i_t,as.list(data.frame(t(Covari))),SIMPLIFY=FALSE))
-  #S_1_t
-  
-  E_t=S_1_t/S_0_t
-  #E_t
-  
-  J_t=(S_0_t>0)*1
-  #J_t
-  
-  dN_d_t=diff(c(0,N_d_t))
-  #dN_d_t
-  
-  Lambdahat_0_t=cumsum((J_t/S_0_t)*dN_d_t)
-  #Lambdahat_0_t
-  
-  dLambdahat_0_t=diff(c(0,Lambdahat_0_t))
-  #dLambdahat_0_t
-  
-  Mhat_i_t=mapply("-", N_i_t,lapply(lapply(
-    Y_i_t,"*",dLambdahat_0_t),cumsum), SIMPLIFY = FALSE)
-  #Mhat_i_t
-  
-  pi_ij_z.Mhat_i_t=list(NA)
-  for(j in 1:p){
-    pi_ij_z.Mhat_i_t[[j]]=lapply(Mhat_i_t,function(x){pi_ij_z[[j]]%*%t(x)})
+  if(testtype=="linkf"){
+    return(c(list(testtype=testtype),sample_path_linkf(path,b,std,Time,Delta,Covari,tol)))
   }
-  #pi_ij_z.Mhat_i_t
-  # z by t matrix
-  
-  obs_stat=list(NA)
-  for(j in 1:p){
-    obs_stat[[j]]=Reduce('+',pi_ij_z.Mhat_i_t[[j]])/sqrt(n)
-  }
-  #obs_stat
-  
-  result=list(Time,Delta,Covari,e_i_beta,obs_stat)
-  names(result)=c("Time","Delta","Covari","Resid","obs_stat")
-  
-  return(result)
+  # if(testtype=="aft"){
+  #
+  # }
+  return(print("Check your code"))
 }
-#W_aft()
 
-What_aft=function(b,std,Time,Delta,Covari,tol){}
-#What_aft()
+dataset_cox=data.frame(X_ln_cox,D_ln_cox,Z_ln_cox)
 
-sample_path_aft=function(path,b,std,Time,Delta,Covari,tol){}
-# result_aft=sample_path_aft(1,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,0.1)
+path1=50
+tol1=0.1
 
-plotting_aft=function(result,path){}
+afttest_omni=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"omni",path1,tol1)
+afttestplot(afttest_omni,standardization="unstandardized",path=path1)
+afttestplot(afttest_omni,standardization="standardized",path=path1)
 
-plotting_std.aft=function(result,path){}
+afttest_fform=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"fform",path1,tol1)
+afttestplot(afttest_fform,standardization="unstandardized",path=path1)
+afttestplot(afttest_fform,standardization="standardized",path=path1)
+
+afttest_linkf=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"linkf",path1,tol1)
+afttestplot(afttest_linkf,standardization="unstandardized",path=path1)
+afttestplot(afttest_linkf,standardization="standardized",path=path1)
+
+
 
