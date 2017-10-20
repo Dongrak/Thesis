@@ -715,3 +715,26 @@ afttestplot(afttest_linkf,standardization="standardized",path=path1)
 dev.off()
 
 
+
+
+dataset_cox=data.frame(X_ln_cox,D_ln_cox,Z_ln_cox)
+
+path1=50
+tol1=0.1
+
+afttest_omni=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"omni",path1,tol1)
+afttestplot(afttest_omni,standardization="unstandardized",path=path1)
+afttestplot(afttest_omni,standardization="standardized",path=path1)
+
+afttest_fform=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"fform",path1,tol1)
+afttestplot(afttest_fform,standardization="unstandardized",path=path1)
+afttestplot(afttest_fform,standardization="standardized",path=path1)
+
+afttest_linkf=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"linkf",path1,tol1)
+afttestplot(afttest_linkf,standardization="unstandardized",path=path1)
+afttestplot(afttest_linkf,standardization="standardized",path=path1)
+
+
+
+
+

@@ -1456,8 +1456,9 @@ plotting_omni=function(result,path){
   
   Figure1_W=
     ggplot()+
-    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
+    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato",lwd=1.07)+
+    theme_minimal()
   #Figure1_W
   
   return(Figure1_W)
@@ -1482,8 +1483,9 @@ plotting_std.omni=function(result,path){
   
   Figure1_std.W=
     ggplot()+
-    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
+    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato",lwd=1.07)+
+    theme_minimal()
   #Figure1_std.W
   
   return(Figure1_std.W)
@@ -1496,18 +1498,19 @@ plotting_fform=function(result,path){
   for (i in 1:path){
     group=i
     A=result$dataset_What[[i]]
-    AA=data.frame(group,t_i=1:n,What=A)
+    AA=data.frame(group,z_i=1:n,What=A)
     dataset_What=rbind(dataset_What,AA)
   }
   #dataset_What
   
-  dataset_W=data.frame(group,t_i=1:n,W=result$dataset_W)
+  dataset_W=data.frame(group,z_i=1:n,W=result$dataset_W)
   #dataset_W
   
   Figure1_W=
     ggplot()+
-    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
+    geom_step(data=dataset_What,aes(x=z_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_W,aes(x=z_i,y=W),colour="tomato",lwd=1.07)+
+    theme_minimal()
   #Figure1_W
   
   return(Figure1_W)
@@ -1520,20 +1523,21 @@ plotting_std.fform=function(result,path){
   for (i in 1:path){
     group=i
     A=result$dataset_std.What[[i]]
-    AA=data.frame(group,t_i=1:n,std.What=A)
+    AA=data.frame(group,z_i=1:n,std.What=A)
     dataset_std.What=rbind(dataset_std.What,AA)
   }
   #dataset_std.What
   colnames(dataset_std.What)
-  dataset_std.W=data.frame(group,t_i=1:n,std.W=result$dataset_std.W)
+  dataset_std.W=data.frame(group,z_i=1:n,std.W=result$dataset_std.W)
   #dataset_std.W
   
   Figure1_std.W=
     ggplot()+
-    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
+    geom_step(data=dataset_std.What,aes(x=z_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_std.W,aes(x=z_i,y=std.W),colour="tomato",lwd=1.07)+
+    theme_minimal()
   #Figure1_std.W
-  colnames(dataset_std.What)
+  
   return(Figure1_std.W)
 }
 
@@ -1543,18 +1547,19 @@ plotting_linkf=function(result,path){
   for (i in 1:path){
     group=i
     A=result$dataset_What[[i]]
-    AA=data.frame(group,t_i=1:n,What=A)
+    AA=data.frame(group,z_i=1:n,What=A)
     dataset_What=rbind(dataset_What,AA)
   }
   #dataset_What
   
-  dataset_W=data.frame(group,t_i=1:n,W=result$dataset_W)
+  dataset_W=data.frame(group,z_i=1:n,W=result$dataset_W)
   #dataset_W
   
   Figure1_W=
     ggplot()+
-    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato")
+    geom_step(data=dataset_What,aes(x=z_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_W,aes(x=z_i,y=W),colour="tomato",lwd=1.07)+
+    theme_minimal()
   #Figure1_W
   
   return(Figure1_W)
@@ -1566,23 +1571,27 @@ plotting_std.linkf=function(result,path){
   for (i in 1:path){
     group=i
     A=result$dataset_std.What[[i]]
-    AA=data.frame(group,t_i=1:n,std.What=A)
+    AA=data.frame(group,z_i=1:n,std.What=A)
     dataset_std.What=rbind(dataset_std.What,AA)
   }
   #dataset_std.What
   
-  dataset_std.W=data.frame(group,t_i=1:n,std.W=result$dataset_std.W)
+  dataset_std.W=data.frame(group,z_i=1:n,std.W=result$dataset_std.W)
   #dataset_std.W
   
   Figure1_std.W=
     ggplot()+
-    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour=adjustcolor("#D3D3D3", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato")
+    geom_step(data=dataset_std.What,aes(x=z_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_std.W,aes(x=z_i,y=std.W),colour="tomato",lwd=1.07)+
+    theme_minimal()
   #Figure1_std.W
   
   return(Figure1_std.W)
 }
 
+#-------------------------------------------------------------
+#---------------------------AFTTEST---------------------------
+#-------------------------------------------------------------
 afttestplot=function(result,standardization="standardized",path=50){
   
   testtype=result$testtype
@@ -1656,23 +1665,4 @@ afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1){
   # }
   return(print("Check your code"))
 }
-
-dataset_cox=data.frame(X_ln_cox,D_ln_cox,Z_ln_cox)
-
-path1=50
-tol1=0.1
-
-afttest_omni=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"omni",path1,tol1)
-afttestplot(afttest_omni,standardization="unstandardized",path=path1)
-afttestplot(afttest_omni,standardization="standardized",path=path1)
-
-afttest_fform=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"fform",path1,tol1)
-afttestplot(afttest_fform,standardization="unstandardized",path=path1)
-afttestplot(afttest_fform,standardization="standardized",path=path1)
-
-afttest_linkf=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"linkf",path1,tol1)
-afttestplot(afttest_linkf,standardization="unstandardized",path=path1)
-afttestplot(afttest_linkf,standardization="standardized",path=path1)
-
-
 
