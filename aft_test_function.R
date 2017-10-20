@@ -85,7 +85,7 @@ W_fform=function(b,Time,Delta,Covari){
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-5*Z_wb);
   
   n=length(Time) # the number of subjects
-  p=length(b) # the number of parametersa
+  p=length(b) # the number of parameters
   
   Covari=matrix(Covari,nrow=n)
   
@@ -107,6 +107,19 @@ W_fform=function(b,Time,Delta,Covari){
   for(j in 1:p){
     pi_ij_z[[j]]=as.list(data.frame(t(matrix(unlist(lapply(pi_i_z,function(x){x[,j]})),nrow=n))))
   }
+  
+  # weight function
+  pi_i_z=list(NA)
+  for(i in 1:n){
+    pi_i_z[[i]]=apply(apply(Covari,2,function(x){(x<=((x[order(x)])[i]))*1}),1,prod)
+  }
+  pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
+  
+  
+  
+  
+  
+  
   
   N_i_t=list(NA)
   for(i in 1:n){
