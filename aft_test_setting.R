@@ -9,18 +9,18 @@ options(max.print=999999)
 options(error=NULL)
 
 # install.packages("ggplot2")
+# install.packages("gridExtra")
 # install.packages("survival")
 # install.packages("aftgee")
 # install.packages("ENmisc")
 # install.packages("plotly")
-# install.packages("gridExtra")
 
 library(ggplot2)
+library(gridExtra)
 library(survival)
 library(aftgee)
-library(ENmisc)
-library(plotly)
-library(gridExtra)
+# library(ENmisc)
+# library(plotly)
 
 #-------------------------------------------------------------
 #------------------------WEIGHT&TOLERANCE---------------------

@@ -1474,13 +1474,6 @@ plotting_omni=function(result,path){
     theme_minimal()
   #Figure1_W
   
-  return(Figure1_W)
-}
-
-plotting_std.omni=function(result,path){
-  
-  med=ceiling(sqrt(length(result$std.boot))/2)
-  
   dataset_std.What=data.frame()
   
   for (i in 1:path){
@@ -1501,7 +1494,7 @@ plotting_std.omni=function(result,path){
     theme_minimal()
   #Figure1_std.W
   
-  return(Figure1_std.W)
+  return(grid.arrange(Figure1_W,Figure1_std.W,ncol=2))
 }
 
 plotting_fform=function(result,path){
@@ -1526,11 +1519,6 @@ plotting_fform=function(result,path){
     theme_minimal()
   #Figure1_W
   
-  return(Figure1_W)
-}
-
-plotting_std.fform=function(result,path){
-  
   dataset_std.What=data.frame()
   
   for (i in 1:path){
@@ -1551,7 +1539,7 @@ plotting_std.fform=function(result,path){
     theme_minimal()
   #Figure1_std.W
   
-  return(Figure1_std.W)
+  return(grid.arrange(Figure1_W,Figure1_std.W,ncol=2))
 }
 
 plotting_linkf=function(result,path){
@@ -1575,10 +1563,6 @@ plotting_linkf=function(result,path){
     theme_minimal()
   #Figure1_W
   
-  return(Figure1_W)
-}
-
-plotting_std.linkf=function(result,path){
   dataset_std.What=data.frame()
   
   for (i in 1:path){
@@ -1598,48 +1582,28 @@ plotting_std.linkf=function(result,path){
     geom_step(data=dataset_std.W,aes(x=z_i,y=std.W),colour="tomato",lwd=1.07)+
     theme_minimal()
   #Figure1_std.W
-  
-  return(Figure1_std.W)
+
+  return(grid.arrange(Figure1_W,Figure1_std.W,ncol=2))
 }
 
 #-------------------------------------------------------------
 #---------------------------AFTTEST---------------------------
 #-------------------------------------------------------------
-afttestplot=function(result,standardization="standardized",path=50){
+afttestplot=function(result,path=50){
   
   testtype=result$testtype
   
   if(testtype=="omni"){
-    if(standardization=="standardized"){
-      return(plotting_std.omni(result,path))
-    }
-    if(standardization=="unstandardized"){
-      return(plotting_omni(result,path))
-    }
+    return(plotting_omni(result,path))
   }
   if(testtype=="fform"){
-    if(standardization=="standardized"){
-      return(plotting_std.fform(result,path))
-    }
-    if(standardization=="unstandardized"){
-      return(plotting_fform(result,path))
-    }
+    return(plotting_fform(result,path))
   }
   if(testtype=="linkf"){
-    if(standardization=="standardized"){
-      return(plotting_std.linkf(result,path))
-    }
-    if(standardization=="unstandardized"){
-      return(plotting_linkf(result,path))
-    }
+    return(plotting_linkf(result,path))
   }
   # if(testtype=="aft"){
-  #   if(standardization=="standardized"){
-  #     return(plotting_std.aft(result,path))
-  #   }
-  #   if(standardization=="unstandardized"){
-  #     return(plotting_aft(result,path))
-  #   }
+  #   return(plotting_aft(result,path))
   # }
 }
 

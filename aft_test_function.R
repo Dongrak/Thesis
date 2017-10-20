@@ -107,20 +107,7 @@ W_fform=function(b,Time,Delta,Covari){
   for(j in 1:p){
     pi_ij_z[[j]]=as.list(data.frame(t(matrix(unlist(lapply(pi_i_z,function(x){x[,j]})),nrow=n))))
   }
-  
-  # weight function
-  pi_i_z=list(NA)
-  for(i in 1:n){
-    pi_i_z[[i]]=apply(apply(Covari,2,function(x){(x<=((x[order(x)])[i]))*1}),1,prod)
-  }
-  pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
-  
-  
-  
-  
-  
-  
-  
+
   N_i_t=list(NA)
   for(i in 1:n){
     N_i_t[[i]]=(e_i_beta>=e_i_beta[i])*Delta[i]
