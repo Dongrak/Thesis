@@ -7,7 +7,7 @@ W_omni=function(b,Time,Delta,Covari){
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
   
   n=length(Time) # the number of subjects
-  p=length(b) # the number of parametersa
+  p=length(b) # the number of parameters
   
   Covari=matrix(Covari,nrow=n)
   
@@ -79,7 +79,7 @@ W_omni=function(b,Time,Delta,Covari){
 }
 #W_omni()
 
-W_fform=function(b,Time,Delta,Covari){
+W_fform=function(b,Time,Delta,Covari,fform=1){
   #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
   #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-5*Z_wb);
@@ -100,14 +100,12 @@ W_fform=function(b,Time,Delta,Covari){
   
   # weight function
   pi_i_z=list(NA)
+  Covari_fform=Covari[,fform]
   for(i in 1:n){
-    pi_i_z[[i]]=apply(Covari,2,function(x){(x<=((x[order(x)])[i]))*1})
+    pi_i_z[[i]]=(Covari_fform<=((Covari_fform[order(Covari_fform)])[i]))*1
   }
-  pi_ij_z=list(NA)
-  for(j in 1:p){
-    pi_ij_z[[j]]=as.list(data.frame(t(matrix(unlist(lapply(pi_i_z,function(x){x[,j]})),nrow=n))))
-  }
-
+  pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
+  
   N_i_t=list(NA)
   for(i in 1:n){
     N_i_t[[i]]=(e_i_beta>=e_i_beta[i])*Delta[i]
@@ -151,16 +149,14 @@ W_fform=function(b,Time,Delta,Covari){
   Mhat_i_inf=unlist(lapply(Mhat_i_t,function(x){x[n]}))
   #Mhat_i_inf
   
-  obs_stat_fform=matrix(unlist(lapply(lapply(pi_ij_z,function(z){mapply(function(x,y){x*y},
-          z,Mhat_i_inf,SIMPLIFY=FALSE)}),function(x){Reduce('+',x)/sqrt(n)})),nrow=n)
+  obs_stat_fform=Reduce('+',mapply("*",pi_i_z,Mhat_i_inf,SIMPLIFY=FALSE))/sqrt(n)
   #obs_stat_fform
-
+  
   result=list(e_i_beta,obs_stat_fform)
   
   names(result)=c("Resid","obs_stat_fform")
   
   return(result)
-
 }
 #W_fform()
 
@@ -170,7 +166,7 @@ W_linkf=function(b,Time,Delta,Covari){
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-5*Z_wb);
   
   n=length(Time) # the number of subjects
-  p=length(b) # the number of parametersa
+  p=length(b) # the number of parameters
   
   Covari=matrix(Covari,nrow=n)
   
@@ -254,7 +250,7 @@ What_omni=function(b,std,Time,Delta,Covari,tol){
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
   
   n=length(Time) # the number of subjects
-  p=length(b) # the number of parametersa
+  p=length(b) # the number of parameters
   
   Covari=matrix(Covari,nrow=n)
   
@@ -564,7 +560,7 @@ What_fform=function(b,std,Time,Delta,Covari,tol){
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
   
   n=length(Time) # the number of subjects
-  p=length(b) # the number of parametersa
+  p=length(b) # the number of parameters
   
   Covari=matrix(Covari,nrow=n)
   
@@ -881,7 +877,7 @@ What_linkf=function(b,std,Time,Delta,Covari,tol){
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
   
   n=length(Time) # the number of subjects
-  p=length(b) # the number of parametersa
+  p=length(b) # the number of parameters
   
   Covari=matrix(Covari,nrow=n)
   
@@ -1437,6 +1433,9 @@ sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
 #-------------------------------------------------------------
 #---------------------------PLOTTING--------------------------
 #-------------------------------------------------------------
+#-------------------------------------------------------------
+#---------------------------PLOTTING--------------------------
+#-------------------------------------------------------------
 plotting_omni=function(result,path){
   
   med=ceiling(sqrt(length(result$std.boot))/2)
@@ -1461,13 +1460,6 @@ plotting_omni=function(result,path){
     theme_minimal()
   #Figure1_W
   
-  return(Figure1_W)
-}
-
-plotting_std.omni=function(result,path){
-  
-  med=ceiling(sqrt(length(result$std.boot))/2)
-  
   dataset_std.What=data.frame()
   
   for (i in 1:path){
@@ -1488,11 +1480,11 @@ plotting_std.omni=function(result,path){
     theme_minimal()
   #Figure1_std.W
   
-  return(Figure1_std.W)
+  return(grid.arrange(Figure1_W,Figure1_std.W,ncol=2))
 }
 
 plotting_fform=function(result,path){
-
+  
   dataset_What=data.frame()
   
   for (i in 1:path){
@@ -1512,11 +1504,6 @@ plotting_fform=function(result,path){
     geom_step(data=dataset_W,aes(x=z_i,y=W),colour="tomato",lwd=1.07)+
     theme_minimal()
   #Figure1_W
-  
-  return(Figure1_W)
-}
-
-plotting_std.fform=function(result,path){
   
   dataset_std.What=data.frame()
   
@@ -1538,7 +1525,7 @@ plotting_std.fform=function(result,path){
     theme_minimal()
   #Figure1_std.W
   
-  return(Figure1_std.W)
+  return(grid.arrange(Figure1_W,Figure1_std.W,ncol=2))
 }
 
 plotting_linkf=function(result,path){
@@ -1562,10 +1549,6 @@ plotting_linkf=function(result,path){
     theme_minimal()
   #Figure1_W
   
-  return(Figure1_W)
-}
-
-plotting_std.linkf=function(result,path){
   dataset_std.What=data.frame()
   
   for (i in 1:path){
@@ -1586,52 +1569,32 @@ plotting_std.linkf=function(result,path){
     theme_minimal()
   #Figure1_std.W
   
-  return(Figure1_std.W)
+  return(grid.arrange(Figure1_W,Figure1_std.W,ncol=2))
 }
 
 #-------------------------------------------------------------
 #---------------------------AFTTEST---------------------------
 #-------------------------------------------------------------
-afttestplot=function(result,standardization="standardized",path=50){
+afttestplot=function(result,path=50){
   
   testtype=result$testtype
   
   if(testtype=="omni"){
-    if(standardization=="standardized"){
-      return(plotting_std.omni(result,path))
-    }
-    if(standardization=="unstandardized"){
-      return(plotting_omni(result,path))
-    }
+    return(plotting_omni(result,path))
   }
   if(testtype=="fform"){
-    if(standardization=="standardized"){
-      return(plotting_std.fform(result,path))
-    }
-    if(standardization=="unstandardized"){
-      return(plotting_fform(result,path))
-    }
+    return(plotting_fform(result,path))
   }
   if(testtype=="linkf"){
-    if(standardization=="standardized"){
-      return(plotting_std.linkf(result,path))
-    }
-    if(standardization=="unstandardized"){
-      return(plotting_linkf(result,path))
-    }
+    return(plotting_linkf(result,path))
   }
   # if(testtype=="aft"){
-  #   if(standardization=="standardized"){
-  #     return(plotting_std.aft(result,path))
-  #   }
-  #   if(standardization=="unstandardized"){
-  #     return(plotting_aft(result,path))
-  #   }
+  #   return(plotting_aft(result,path))
   # }
 }
 
-afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1){
-
+afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1,fform="1st"){
+  
   varnames=noquote(all.vars(formula))
   len.var=length(varnames)
   
@@ -1641,6 +1604,7 @@ afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1){
   n=length(Time)
   
   Covari=matrix(dataset[,which(names(dataset)==varnames[3])],nrow=n)
+  
   if(len.var>=4){
     for(i in 4:len.var){
       Covari=cbind(Covari,matrix(dataset[,which(names(dataset)==varnames[i])],nrow=n))
@@ -1665,4 +1629,5 @@ afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1){
   # }
   return(print("Check your code"))
 }
+
 
