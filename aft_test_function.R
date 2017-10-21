@@ -453,7 +453,7 @@ What_omni=function(b,std,Time,Delta,Covari,tol){
   
   tolerance=tol+1 #initial value
   
-  while (tolerance>tol){
+  # while (tolerance>tol){
     
     phi_i=rnorm(n)
     #phi_i
@@ -493,7 +493,7 @@ What_omni=function(b,std,Time,Delta,Covari,tol){
       tolerance=beta_hat_s_list$value
       #tolerance
     }
-  }
+  # }
   
   e_i_beta_s=as.vector(log(Time)+Covari%*%beta_hat_s)
   
@@ -760,7 +760,7 @@ What_fform=function(b,std,Time,Delta,Covari,tol){
   
   tolerance=tol+1 #initial value
   
-  while (tolerance>tol){
+  # while (tolerance>tol){
     
     phi_i=rnorm(n)
     #phi_i
@@ -810,7 +810,7 @@ What_fform=function(b,std,Time,Delta,Covari,tol){
       tolerance=beta_hat_s_list$value
       #tolerance
     }
-  }
+  # }
   
   e_i_beta_s=as.vector(log(Time)+Covari%*%beta_hat_s)
   
@@ -868,7 +868,8 @@ What_fform=function(b,std,Time,Delta,Covari,tol){
   sim_stat_fform=mapply(function(x,y,z){x-y-z},F.T.,S.T.,T.T.)
   #sim_stat_fform
 
-  return(sim_stat_fform)}
+  return(sim_stat_fform)
+}
 #What_fform()
 
 What_linkf=function(b,std,Time,Delta,Covari,tol){
@@ -1080,7 +1081,7 @@ What_linkf=function(b,std,Time,Delta,Covari,tol){
   
   tolerance=tol+1 #initial value
   
-  while (tolerance>tol){
+  # while (tolerance>tol){
     
     phi_i=rnorm(n)
     #phi_i
@@ -1122,7 +1123,7 @@ What_linkf=function(b,std,Time,Delta,Covari,tol){
       tolerance=beta_hat_s_list$value
       #tolerance
     }
-  }
+  # }
   
   e_i_beta_s=as.vector(log(Time)+Covari%*%beta_hat_s)
   
