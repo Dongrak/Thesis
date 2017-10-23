@@ -68,11 +68,11 @@ lapply(dd,function(x){pmax(x[[j]])})
 # functional form
 # maxmax_What=c(NA)
 # for(i in 1:30){
-#   aa=What_fform(beta_hat_ln_cox,std_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,10000,fform=1)
+#   aa=What_form(beta_hat_ln_cox,std_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,10000,form=1)
 #   maxmax_What[i]=max(abs(aa))
 #   plot(aa,type="s",col="grey",ylim=c(-5,5));par(new=TRUE)
 # }
-# bb=W_fform(beta_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,fform=1)$obs_stat_fform
+# bb=W_form(beta_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,form=1)$obs_stat_form
 # maxmax_W=max(abs(bb))
 # plot(bb,type="s",col="red",ylim=c(-5,5))
 # abline(h=0)
@@ -81,11 +81,11 @@ lapply(dd,function(x){pmax(x[[j]])})
 # link function
 # maxmax_What=c(NA)
 # for(i in 1:30){
-#   aa=What_linkf(beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,10000)
+#   aa=What_link(beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,10000)
 #   maxmax_What[i]=max(abs(aa))
 #   plot(aa,type="s",col="grey",ylim=c(-5,5));par(new=TRUE)
 # }
-# bb=W_linkf(beta_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft)$obs_stat_linkf
+# bb=W_link(beta_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft)$obs_stat_link
 # maxmax_W=max(abs(bb))
 # plot(bb,type="s",col="red",ylim=c(-5,5))
 # abline(h=0)
@@ -134,77 +134,77 @@ lapply(dd,function(x){pmax(x[[j]])})
 # functional form
 #####aft
 # path1=30
-# result_fform_aft=sample_path_fform(path1,beta_hat_ln_aft,std_hat_ln_aft,
+# result_form_aft=sample_path_form(path1,beta_hat_ln_aft,std_hat_ln_aft,
 # X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 # for(i in 1:path1){
-#   plot(result_fform_aft$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
+#   plot(result_form_aft$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
 #   col="grey");par(new=TRUE)
 # }
-# plot(result_fform_aft$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
+# plot(result_form_aft$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
 # for(i in 1:path1){
-#   plot(result_fform_aft$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
+#   plot(result_form_aft$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
 #   col="grey");par(new=TRUE)
 # }
-# plot(result_fform_aft$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
-# plotting_fform(result_fform_aft,"real",30)
-# result_fform_aft$p_value
-# result_fform_aft$std.p_value
+# plot(result_form_aft$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
+# plotting_form(result_form_aft,"real",30)
+# result_form_aft$p_value
+# result_form_aft$std.p_value
 
 #####cox
 # path1=30
-# result_fform_cox=sample_path_fform(path1,beta_hat_ln_cox,std_hat_ln_cox,
+# result_form_cox=sample_path_form(path1,beta_hat_ln_cox,std_hat_ln_cox,
 # X_ln_cox,D_ln_cox,Z_ln_cox,given_tol)
 # for(i in 1:path1){
-#   plot(result_fform_cox$dataset_What[[i]][,1],ylim=c(-3,3),type="s",
+#   plot(result_form_cox$dataset_What[[i]][,1],ylim=c(-3,3),type="s",
 #   col="grey");par(new=TRUE)
 # }
-# plot(result_fform_cox$dataset_W[,1],ylim=c(-3,3),type="s",col="red")
+# plot(result_form_cox$dataset_W[,1],ylim=c(-3,3),type="s",col="red")
 # for(i in 1:path1){
-#   plot(result_fform_cox$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
+#   plot(result_form_cox$dataset_std.What[[i]][,1],ylim=c(-3,3),type="s",
 #   col="grey");par(new=TRUE)
 # }
-# plot(result_fform_cox$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
-# plotting_fform(result_fform_cox,"real",30)
-# result_fform_cox$p_value
-# result_fform_cox$std.p_value
+# plot(result_form_cox$dataset_std.W[,1],ylim=c(-3,3),type="s",col="red")
+# plotting_form(result_form_cox,"real",30)
+# result_form_cox$p_value
+# result_form_cox$std.p_value
 
 ##############################################################
 # link function
 #####aft
 # path1=30
-# result_linkf_aft=sample_path_linkf(path1,beta_hat_ln_aft,std_hat_ln_aft,
+# result_link_aft=sample_path_link(path1,beta_hat_ln_aft,std_hat_ln_aft,
 # X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 # for(i in 1:path1){
-#   plot(result_linkf_aft$dataset_What[[i]],ylim=c(-3,3),type="s",
+#   plot(result_link_aft$dataset_What[[i]],ylim=c(-3,3),type="s",
 #   col="grey");par(new=TRUE)
 # }
-# plot(result_linkf_aft$dataset_W,ylim=c(-3,3),type="s",col="red")
+# plot(result_link_aft$dataset_W,ylim=c(-3,3),type="s",col="red")
 # for(i in 1:path1){
-#   plot(result_linkf_aft$dataset_std.What[[i]],ylim=c(-3,3),type="s",
+#   plot(result_link_aft$dataset_std.What[[i]],ylim=c(-3,3),type="s",
 #   col="grey");par(new=TRUE)
 # }
-# plot(result_linkf_aft$dataset_std.W,ylim=c(-3,3),type="s",col="red")
-# plotting_fform(result_fform_aft,"real",30)
-# result_fform_aft$p_value
-# result_fform_aft$std.p_value
+# plot(result_link_aft$dataset_std.W,ylim=c(-3,3),type="s",col="red")
+# plotting_form(result_form_aft,"real",30)
+# result_form_aft$p_value
+# result_form_aft$std.p_value
 
 #####cox
 # path1=30
-# result_linkf_cox=sample_path_linkf(path1,beta_hat_ln_cox,std_hat_ln_cox,
+# result_link_cox=sample_path_link(path1,beta_hat_ln_cox,std_hat_ln_cox,
 # X_ln_cox,D_ln_cox,Z_ln_cox,given_tol)
 # for(i in 1:path1){
-#   plot(result_linkf_cox$dataset_What[[i]],ylim=c(-3,3),type="s",
+#   plot(result_link_cox$dataset_What[[i]],ylim=c(-3,3),type="s",
 #   col="grey");par(new=TRUE)
 # }
-# plot(result_linkf_cox$dataset_W,ylim=c(-3,3),type="s",col="red")
+# plot(result_link_cox$dataset_W,ylim=c(-3,3),type="s",col="red")
 # for(i in 1:path1){
-#   plot(result_linkf_cox$dataset_std.What[[i]],ylim=c(-3,3),type="s",
+#   plot(result_link_cox$dataset_std.What[[i]],ylim=c(-3,3),type="s",
 #   col="grey");par(new=TRUE)
 # }
-# plot(result_linkf_cox$dataset_std.W,ylim=c(-3,3),type="s",col="red")
-# plotting_linkf(result_linkf_cox,"real",30)
-# result_linkf_cox$p_value
-# result_linkf_cox$std.p_value
+# plot(result_link_cox$dataset_std.W,ylim=c(-3,3),type="s",col="red")
+# plotting_link(result_link_cox,"real",30)
+# result_link_cox$p_value
+# result_link_cox$std.p_value
 
 ##############################################################
 ##############################################################
@@ -303,9 +303,9 @@ plotting_aft=function(result,path){}
 plotting_std.aft=function(result,path){}
 
 # eps파일로 저장하는 코드
-cairo_ps("afttest_linkf_std.eps",onefile=F,
+cairo_ps("afttest_link_std.eps",onefile=F,
          height=4,width=8, fallback_resolution = 600)
-afttestplot(afttest_linkf,standardization="standardized",path=path1)
+afttestplot(afttest_link,standardization="standardized",path=path1)
 dev.off()
 
 
@@ -318,13 +318,13 @@ afttest_omni=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"omni",path1,t
 afttestplot(afttest_omni,standardization="unstandardized",path=path1)
 afttestplot(afttest_omni,standardization="standardized",path=path1)
 
-afttest_fform=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"fform",path1,tol1)
-afttestplot(afttest_fform,standardization="unstandardized",path=path1)
-afttestplot(afttest_fform,standardization="standardized",path=path1)
+afttest_form=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"form",path1,tol1)
+afttestplot(afttest_form,standardization="unstandardized",path=path1)
+afttestplot(afttest_form,standardization="standardized",path=path1)
 
-afttest_linkf=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"linkf",path1,tol1)
-afttestplot(afttest_linkf,standardization="unstandardized",path=path1)
-afttestplot(afttest_linkf,standardization="standardized",path=path1)
+afttest_link=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"link",path1,tol1)
+afttestplot(afttest_link,standardization="unstandardized",path=path1)
+afttestplot(afttest_link,standardization="standardized",path=path1)
 
 
 

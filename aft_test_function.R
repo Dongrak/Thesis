@@ -76,7 +76,7 @@ W_omni=function(b,Time,Delta,Covari){
 }
 #W_omni()
 
-W_fform=function(b,Time,Delta,Covari,fform=1){
+W_form=function(b,Time,Delta,Covari,form=1){
   #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
   #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
@@ -97,9 +97,9 @@ W_fform=function(b,Time,Delta,Covari,fform=1){
   
   # weight function
   pi_i_z=list(NA)
-  Covari_fform=Covari[,fform]
+  Covari_form=Covari[,form]
   for(i in 1:n){
-    pi_i_z[[i]]=(Covari_fform<=((Covari_fform[order(Covari_fform)])[i]))*1
+    pi_i_z[[i]]=(Covari_form<=((Covari_form[order(Covari_form)])[i]))*1
   }
   pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
   
@@ -143,18 +143,18 @@ W_fform=function(b,Time,Delta,Covari,fform=1){
   Mhat_i_inf=unlist(lapply(Mhat_i_t,function(x){x[n]}))
   #Mhat_i_inf
   
-  obs_stat_fform=Reduce('+',mapply('*',pi_i_z,Mhat_i_inf,SIMPLIFY=FALSE))/sqrt(n)
-  #obs_stat_fform
+  obs_stat_form=Reduce('+',mapply('*',pi_i_z,Mhat_i_inf,SIMPLIFY=FALSE))/sqrt(n)
+  #obs_stat_form
   
-  result=list(e_i_beta,obs_stat_fform)
+  result=list(e_i_beta,obs_stat_form)
   
-  names(result)=c("Resid","obs_stat_fform")
+  names(result)=c("Resid","obs_stat_form")
   
   return(result)
 }
-#W_fform()
+#W_form()
 
-W_linkf=function(b,Time,Delta,Covari){
+W_link=function(b,Time,Delta,Covari){
   #b=beta_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg
   #b=beta_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
@@ -220,17 +220,17 @@ W_linkf=function(b,Time,Delta,Covari){
   Mhat_i_inf=unlist(lapply(Mhat_i_t,function(x){x[n]}))
   #Mhat_i_inf
   
-  obs_stat_linkf=(1/sqrt(n))*Reduce('+',mapply(function(x,y){x*y},
+  obs_stat_link=(1/sqrt(n))*Reduce('+',mapply(function(x,y){x*y},
           pi_i_z,Mhat_i_inf,SIMPLIFY=FALSE))
-  #obs_stat_linkf
+  #obs_stat_link
 
-  result=list(e_i_beta,obs_stat_linkf)
+  result=list(e_i_beta,obs_stat_link)
   
-  names(result)=c("Resid","obs_stat_linkf")
+  names(result)=c("Resid","obs_stat_link")
   
   return(result)
 }
-#W_linkf()
+#W_link()
 
 #-------------------------------------------------------------
 #-------------------------REALIZATION-------------------------
@@ -488,9 +488,9 @@ What_omni=function(b,std,Time,Delta,Covari,tol){
 }
 #What_omni()
 
-What_fform=function(b,std,Time,Delta,Covari,tol,fform=1){
-  # b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;fform=1
-  # b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;fform=1
+What_form=function(b,std,Time,Delta,Covari,tol,form=1){
+  # b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;form=1
+  # b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;form=1
   # b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
   
   n=length(Time) # the number of subjects
@@ -509,9 +509,9 @@ What_fform=function(b,std,Time,Delta,Covari,tol,fform=1){
   
   # weight function
   pi_i_z=list(NA)
-  Covari_fform=Covari[,fform]
+  Covari_form=Covari[,form]
   for(i in 1:n){
-    pi_i_z[[i]]=(Covari_fform<=((Covari_fform[order(Covari_fform)])[i]))*1
+    pi_i_z[[i]]=(Covari_form<=((Covari_form[order(Covari_form)])[i]))*1
   }
   pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
   
@@ -740,14 +740,14 @@ What_fform=function(b,std,Time,Delta,Covari,tol,fform=1){
                                  (b-beta_hat_s),SIMPLIFY=FALSE))
   T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,sum)/sqrt(n)
   
-  sim_stat_fform=F.T.-S.T.-T.T.
-  #sim_stat_fform
+  sim_stat_form=F.T.-S.T.-T.T.
+  #sim_stat_form
   
-  return(sim_stat_fform)
+  return(sim_stat_form)
 }
-#What_fform()
+#What_form()
 
-What_linkf=function(b,std,Time,Delta,Covari,tol){
+What_link=function(b,std,Time,Delta,Covari,tol){
   # b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   # b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   # b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
@@ -995,12 +995,12 @@ What_linkf=function(b,std,Time,Delta,Covari,tol){
                                  (b-beta_hat_s),SIMPLIFY=FALSE))
   T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,sum)/sqrt(n)
   
-  sim_stat_linkf=F.T.-S.T.-T.T.
-  #sim_stat_linkf
+  sim_stat_link=F.T.-S.T.-T.T.
+  #sim_stat_link
   
-  return(sim_stat_linkf)
+  return(sim_stat_link)
 }
-#What_linkf()
+#What_link()
 
 #-------------------------------------------------------------
 #--------------------------SIMULATION-------------------------
@@ -1050,21 +1050,7 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   
   max_path_std.W=max(abs(dataset_std.W))
   # max_path_std.W
-  
-  #-----------------------------------------------------------
-  #  p  : the ratio of (What>=W)*1
-  # H_0 : the data follow the assumption of the aft model.
-  #
-  # if p>0.05, cannot reject the null hypothesis. i.e. accept it 
-  # if p=<0.05, reject the null hypothesis.
-  #
-  # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
-  # 0.96이면 당연히 accetp
-  # 0.04이면 당연히 reject
-  # 0.45이면 accetp
-  # p_alpha는 acceptance rate을 구하는 것이다! 
-  #-----------------------------------------------------------
-  
+
   #--------------------------P VALUE--------------------------
   p_value=length(which((max_path_What>max_path_W)*1==1))/path
   # p_value
@@ -1087,7 +1073,7 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
 }
 #sample_path_omni
 
-sample_path_fform=function(path,b,std,Time,Delta,Covari,tol,fform=1){
+sample_path_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
@@ -1097,7 +1083,7 @@ sample_path_fform=function(path,b,std,Time,Delta,Covari,tol,fform=1){
   #------------------------SAMPLE PATH------------------------
   dataset_What=list(NA)
   for(k in 1:path){
-    dataset_What[[k]]=What_fform(b,std,Time,Delta,Covari,tol,fform=1)
+    dataset_What[[k]]=What_form(b,std,Time,Delta,Covari,tol,form=1)
     if(k%%path_check==0) {
       cat("Sample Path",k,"\n")
     }
@@ -1110,10 +1096,10 @@ sample_path_fform=function(path,b,std,Time,Delta,Covari,tol,fform=1){
   dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
   # dataset_std.What
   
-  dataset_W_fform=W_fform(b,Time,Delta,Covari,fform=1)
-  # dataset_W_fform
+  dataset_W_form=W_form(b,Time,Delta,Covari,form=1)
+  # dataset_W_form
   
-  dataset_W=dataset_W_fform$obs_stat_fform
+  dataset_W=dataset_W_form$obs_stat_form
   # dataset_W
   
   dataset_std.W=dataset_W/std.boot
@@ -1132,20 +1118,6 @@ sample_path_fform=function(path,b,std,Time,Delta,Covari,tol,fform=1){
   max_path_std.W=max(abs(dataset_std.W))
   # max_path_std.W
   
-  #-----------------------------------------------------------
-  #  p  : the ratio of (What>=W)*1
-  # H_0 : the data follow the assumption of the aft model.
-  #
-  # if p>0.05, cannot reject the null hypothesis. i.e. accept it 
-  # if p=<0.05, reject the null hypothesis.
-  #
-  # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
-  # 0.96이면 당연히 accetp
-  # 0.04이면 당연히 reject
-  # 0.45이면 accetp
-  # p_alpha는 acceptance rate을 구하는 것이다! 
-  #-----------------------------------------------------------
-  
   #--------------------------P VALUE--------------------------
   p_value=length(which((max_path_What>max_path_W)*1==1))/path
   # p_value
@@ -1153,7 +1125,7 @@ sample_path_fform=function(path,b,std,Time,Delta,Covari,tol,fform=1){
   std.p_value=length(which((max_path_std.What>max_path_std.W)*1==1))/path
   # std.p_value
   
-  result=list(Time,Delta,Covari,dataset_W_fform$Resid,
+  result=list(Time,Delta,Covari,dataset_W_form$Resid,
               dataset_W,dataset_What,
               dataset_std.W,dataset_std.What,
               std.boot,p_value,std.p_value)
@@ -1166,9 +1138,9 @@ sample_path_fform=function(path,b,std,Time,Delta,Covari,tol,fform=1){
   
   return(result)
 }
-#sample_path_fform
+#sample_path_form
 
-sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
+sample_path_link=function(path,b,std,Time,Delta,Covari,tol){
   #path=path;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
   #path=path;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
   #b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
@@ -1178,7 +1150,7 @@ sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
   #------------------------SAMPLE PATH------------------------
   dataset_What=list(NA)
   for(k in 1:path){
-    dataset_What[[k]]=What_linkf(b,std,Time,Delta,Covari,tol)
+    dataset_What[[k]]=What_link(b,std,Time,Delta,Covari,tol)
     if(k%%path_check==0) {
       cat("Sample Path",k,"\n")
     }
@@ -1191,10 +1163,10 @@ sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
   dataset_std.What=lapply(dataset_What,function(x){x/std.boot})
   # dataset_std.What
   
-  dataset_W_linkf=W_linkf(b,Time,Delta,Covari)
-  # dataset_W_linkf
+  dataset_W_link=W_link(b,Time,Delta,Covari)
+  # dataset_W_link
   
-  dataset_W=dataset_W_linkf$obs_stat_linkf
+  dataset_W=dataset_W_link$obs_stat_link
   # dataset_W
   
   dataset_std.W=dataset_W/std.boot
@@ -1213,20 +1185,6 @@ sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
   max_path_std.W=max(abs(dataset_std.W))
   # max_path_std.W
   
-  #-----------------------------------------------------------
-  #  p  : the ratio of (What>=W)*1
-  # H_0 : the data follow the assumption of the aft model.
-  #
-  # if p>0.05, cannot reject the null hypothesis. i.e. accept it 
-  # if p=<0.05, reject the null hypothesis.
-  #
-  # absolute/maximum 기준으로 What이 큰것의 비율(p)이 
-  # 0.96이면 당연히 accetp
-  # 0.04이면 당연히 reject
-  # 0.45이면 accetp
-  # p_alpha는 acceptance rate을 구하는 것이다! 
-  #-----------------------------------------------------------
-  
   #--------------------------P VALUE--------------------------
   p_value=length(which((max_path_What>max_path_W)*1==1))/path
   # p_value
@@ -1234,7 +1192,7 @@ sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
   std.p_value=length(which((max_path_std.What>max_path_std.W)*1==1))/path
   # std.p_value
   
-  result=list(Time,Delta,Covari,dataset_W_linkf$Resid,
+  result=list(Time,Delta,Covari,dataset_W_link$Resid,
                dataset_W,dataset_What,
                dataset_std.W,dataset_std.What,
                std.boot,p_value,std.p_value)
@@ -1247,185 +1205,12 @@ sample_path_linkf=function(path,b,std,Time,Delta,Covari,tol){
   
   return(result)
 }
-#sample_path_linkf
-
-#-------------------------------------------------------------
-#---------------------------PLOTTING--------------------------
-#-------------------------------------------------------------
-plotting_omni=function(result,xindex,path){
-  
-  result_Time=result$Time
-  n=length(result_Time)
-  if (xindex=="rank"){xindex=(1:n)[order(result_Time)]}
-  else {xindex=result_Time}
-  
-  med=ceiling(sqrt(length(result$std.boot))/2)
-  
-  dataset_What=data.frame()
-  
-  for (i in 1:path){
-    group=i
-    A=result$dataset_What[[i]][,med]
-    AA=data.frame(group,t_i=xindex,What=A)
-    dataset_What=rbind(dataset_What,AA)
-  }
-  #dataset_What
-  
-  dataset_W=data.frame(group,t_i=xindex,W=result$dataset_W[,med])
-  #dataset_W
-  
-  Figure1_W=
-    ggplot()+
-    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato",lwd=0.25)+
-    theme_minimal()
-  #Figure1_W
-  
-  dataset_std.What=data.frame()
-  
-  for (i in 1:path){
-    group=i
-    A=result$dataset_std.What[[i]][,med]
-    AA=data.frame(group,t_i=xindex,std.What=A)
-    dataset_std.What=rbind(dataset_std.What,AA)
-  }
-  #dataset_std.What
-  
-  dataset_std.W=data.frame(group,t_i=xindex,std.W=result$dataset_std.W[,med])
-  #dataset_std.W
-  
-  Figure1_std.W=
-    ggplot()+
-    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato",lwd=0.25)+
-    theme_minimal()
-  #Figure1_std.W
-  
-  return(grid.arrange(Figure1_W,Figure1_std.W,nrow=2))
-}
-
-plotting_fform=function(result,xindex,path){
-  
-  result_Covari=result$Covari
-  n=length(result_Covari)
-  if (xindex=="rank"){xindex=(1:n)[order(result_Covari)]}
-  else {xindex=result_Covari}
-  
-  dataset_What=data.frame()
-  
-  for (i in 1:path){
-    group=i
-    A=result$dataset_What[[i]]
-    AA=data.frame(group,z_i=xindex,What=A)
-    dataset_What=rbind(dataset_What,AA)
-  }
-  #dataset_What
-  
-  dataset_W=data.frame(group,z_i=xindex,W=result$dataset_W)
-  #dataset_W
-  
-  Figure1_W=
-    ggplot()+
-    geom_step(data=dataset_What,aes(x=z_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_W,aes(x=z_i,y=W),colour="tomato",lwd=0.25)+
-    theme_minimal()
-  #Figure1_W
-  
-  dataset_std.What=data.frame()
-  
-  for (i in 1:path){
-    group=i
-    A=result$dataset_std.What[[i]]
-    AA=data.frame(group,z_i=xindex,std.What=A)
-    dataset_std.What=rbind(dataset_std.What,AA)
-  }
-  #dataset_std.What
-  
-  dataset_std.W=data.frame(group,z_i=xindex,std.W=result$dataset_std.W)
-  #dataset_std.W
-  
-  Figure1_std.W=
-    ggplot()+
-    geom_step(data=dataset_std.What,aes(x=z_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_std.W,aes(x=z_i,y=std.W),colour="tomato",lwd=0.25)+
-    theme_minimal()
-  #Figure1_std.W
-  
-  return(grid.arrange(Figure1_W,Figure1_std.W,nrow=2))
-}
-
-plotting_linkf=function(result,xindex,path){
-  
-  result_Covari=result$Covari
-  n=length(result_Covari)
-  if (xindex=="rank"){xindex=(1:n)[order(result_Covari)]}
-  else {xindex=result_Covari}
-  
-  dataset_What=data.frame()
-  
-  for (i in 1:path){
-    group=i
-    A=result$dataset_What[[i]]
-    AA=data.frame(group,z_i=xindex,What=A)
-    dataset_What=rbind(dataset_What,AA)
-  }
-  #dataset_What
-  
-  dataset_W=data.frame(group,z_i=xindex,W=result$dataset_W)
-  #dataset_W
-  
-  Figure1_W=
-    ggplot()+
-    geom_step(data=dataset_What,aes(x=z_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_W,aes(x=z_i,y=W),colour="tomato",lwd=0.25)+
-    theme_minimal()
-  #Figure1_W
-  
-  dataset_std.What=data.frame()
-  
-  for (i in 1:path){
-    group=i
-    A=result$dataset_std.What[[i]]
-    AA=data.frame(group,z_i=xindex,std.What=A)
-    dataset_std.What=rbind(dataset_std.What,AA)
-  }
-  #dataset_std.What
-  
-  dataset_std.W=data.frame(group,z_i=xindex,std.W=result$dataset_std.W)
-  #dataset_std.W
-  
-  Figure1_std.W=
-    ggplot()+
-    geom_step(data=dataset_std.What,aes(x=z_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_std.W,aes(x=z_i,y=std.W),colour="tomato",lwd=0.25)+
-    theme_minimal()
-  #Figure1_std.W
-  
-  return(grid.arrange(Figure1_W,Figure1_std.W,nrow=2))
-}
+#sample_path_link
 
 #-------------------------------------------------------------
 #---------------------------AFTTEST---------------------------
 #-------------------------------------------------------------
-afttestplot=function(result,index,path=50){
-  
-  testtype=result$testtype
-  
-  if(testtype=="omni"){
-    return(plotting_omni(result,xindex,path))
-  }
-  if(testtype=="fform"){
-    return(plotting_fform(result,xindex,path))
-  }
-  if(testtype=="linkf"){
-    return(plotting_linkf(result,xindex,path))
-  }
-  # if(testtype=="aft"){
-  #   return(plotting_aft(result,path))
-  # }
-}
-
-afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1,ftnform){
+afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1,ftn.form){
   
   varnames=noquote(all.vars(formula))
   len.var=length(varnames)
@@ -1443,9 +1228,10 @@ afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1,ftnform){
     }
   }
   
-  if(testtype=="fform"){
-    if(is.na(ftnform)){print("Check your code ftnform")}
-    else{fform=which(varnames==ftnform[1])-2}
+  if(testtype=="form"){
+    if(length(which(varnames==ftn.form[1]))==0){return(print("Check your code"))}
+    if(is.na(ftn.form)){form=1}
+    else{form=which(varnames==ftn.form[1])-2}
   }
   
   aftsrr_result=aftgee::aftsrr(formula,method="nonsm")
@@ -1455,11 +1241,11 @@ afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1,ftnform){
   if(testtype=="omni"){
     return(c(list(testtype=testtype),sample_path_omni(path,b,std,Time,Delta,Covari,tol)))
   }
-  if(testtype=="fform"){
-    return(c(list(testtype=testtype),sample_path_fform(path,b,std,Time,Delta,Covari,tol,fform)))
+  if(testtype=="form"){
+    return(c(list(testtype=testtype),sample_path_form(path,b,std,Time,Delta,Covari,tol,form)))
   }
-  if(testtype=="linkf"){
-    return(c(list(testtype=testtype),sample_path_linkf(path,b,std,Time,Delta,Covari,tol)))
+  if(testtype=="link"){
+    return(c(list(testtype=testtype),sample_path_link(path,b,std,Time,Delta,Covari,tol)))
   }
   # if(testtype=="aft"){
   #
@@ -1467,4 +1253,186 @@ afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1,ftnform){
   return(print("Check your code"))
 }
 
+#-------------------------------------------------------------
+#---------------------------PLOTTING--------------------------
+#-------------------------------------------------------------
+plotting_omni=function(result,xaxix,path){
+  
+  result_Time=result$Time
+  n=length(result_Time)
+  if (xaxix=="rank"){xaxix=(1:n)[order(result_Time)]}
+  else {xaxix=result_Time}
+  
+  med=ceiling(sqrt(length(result$std.boot))/2)
+  
+  dataset_What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_What[[i]][,med]
+    AA=data.frame(group,t_i=xaxix,What=A)
+    dataset_What=rbind(dataset_What,AA)
+  }
+  #dataset_What
+  
+  dataset_W=data.frame(group,t_i=xaxix,W=result$dataset_W[,med])
+  #dataset_W
+  
+  Figure1_W=
+    ggplot()+
+    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato",lwd=0.25)+
+    theme_minimal()
+  #Figure1_W
+  
+  dataset_std.What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_std.What[[i]][,med]
+    AA=data.frame(group,t_i=xaxix,std.What=A)
+    dataset_std.What=rbind(dataset_std.What,AA)
+  }
+  #dataset_std.What
+  
+  dataset_std.W=data.frame(group,t_i=xaxix,std.W=result$dataset_std.W[,med])
+  #dataset_std.W
+  
+  Figure1_std.W=
+    ggplot()+
+    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato",lwd=0.25)+
+    theme_minimal()
+  #Figure1_std.W
+  
+  return(grid.arrange(Figure1_W,Figure1_std.W,nrow=2))
+}
 
+plotting_form=function(result,xaxix,path){
+  
+  result_Covari=result$Covari
+  n=length(result_Covari)
+  if (xaxix=="rank"){xaxix=(1:n)[order(result_Covari)]}
+  else {xaxix=result_Covari}
+  
+  dataset_What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_What[[i]]
+    AA=data.frame(group,z_i=xaxix,What=A)
+    dataset_What=rbind(dataset_What,AA)
+  }
+  #dataset_What
+  
+  dataset_W=data.frame(group,z_i=xaxix,W=result$dataset_W)
+  #dataset_W
+  
+  Figure1_W=
+    ggplot()+
+    geom_step(data=dataset_What,aes(x=z_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_W,aes(x=z_i,y=W),colour="tomato",lwd=0.25)+
+    theme_minimal()
+  #Figure1_W
+  
+  dataset_std.What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_std.What[[i]]
+    AA=data.frame(group,z_i=xaxix,std.What=A)
+    dataset_std.What=rbind(dataset_std.What,AA)
+  }
+  #dataset_std.What
+  
+  dataset_std.W=data.frame(group,z_i=xaxix,std.W=result$dataset_std.W)
+  #dataset_std.W
+  
+  Figure1_std.W=
+    ggplot()+
+    geom_step(data=dataset_std.What,aes(x=z_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_std.W,aes(x=z_i,y=std.W),colour="tomato",lwd=0.25)+
+    theme_minimal()
+  #Figure1_std.W
+  
+  return(grid.arrange(Figure1_W,Figure1_std.W,nrow=2))
+}
+
+plotting_link=function(result,xaxix,path){
+  
+  result_Covari=result$Covari
+  n=length(result_Covari)
+  if (xaxix=="rank"){xaxix=(1:n)[order(result_Covari)]}
+  else {xaxix=result_Covari}
+  
+  dataset_What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_What[[i]]
+    AA=data.frame(group,z_i=xaxix,What=A)
+    dataset_What=rbind(dataset_What,AA)
+  }
+  #dataset_What
+  
+  dataset_W=data.frame(group,z_i=xaxix,W=result$dataset_W)
+  #dataset_W
+  
+  Figure1_W=
+    ggplot()+
+    geom_step(data=dataset_What,aes(x=z_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_W,aes(x=z_i,y=W),colour="tomato",lwd=0.25)+
+    theme_minimal()
+  #Figure1_W
+  
+  dataset_std.What=data.frame()
+  
+  for (i in 1:path){
+    group=i
+    A=result$dataset_std.What[[i]]
+    AA=data.frame(group,z_i=xaxix,std.What=A)
+    dataset_std.What=rbind(dataset_std.What,AA)
+  }
+  #dataset_std.What
+  
+  dataset_std.W=data.frame(group,z_i=xaxix,std.W=result$dataset_std.W)
+  #dataset_std.W
+  
+  Figure1_std.W=
+    ggplot()+
+    geom_step(data=dataset_std.What,aes(x=z_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_std.W,aes(x=z_i,y=std.W),colour="tomato",lwd=0.25)+
+    theme_minimal()
+  #Figure1_std.W
+  
+  return(grid.arrange(Figure1_W,Figure1_std.W,nrow=2))
+}
+
+afttestplot=function(result,xaxix,path=50){
+  
+  testtype=result$testtype
+  
+  if(testtype=="omni"){
+    return(plotting_omni(result,xaxix,path))
+  }
+  if(testtype=="form"){
+    return(plotting_form(result,xaxix,path))
+  }
+  if(testtype=="link"){
+    return(plotting_link(result,xaxix,path))
+  }
+  # if(testtype=="aft"){
+  #   return(plotting_aft(result,path))
+  # }
+}
+
+#-------------------------------------------------------------
+#---------------------------EXERCISE--------------------------
+#-------------------------------------------------------------
+dataset_aft=data.frame(X_ln_aft,D_ln_aft,Z_ln_aft)
+asdf=afttest(Surv(X_ln_aft,D_ln_aft)~Z_ln_aft,dataset_aft,"form",30,0.1,"Z_ln_cox")
+afttestplot(asdf,"rank",30)
+
+as.numeric(integer(0))==0
+is.numeric(integer(0))
+length(integer(0))+3
