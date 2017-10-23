@@ -47,20 +47,15 @@ V_wb_C=log(beta_wb_C)+log(qgamma(runif(n),alpha_wb_C,1))/sigma_wb_C
 T_wb=exp(-Z%*%beta_0+V_wb_T)
 C_wb=exp(-Z%*%beta_0+V_wb_C)
 X_wb=C_wb*(T_wb>C_wb)+T_wb*(T_wb<=C_wb) # observed failure time
-D_wb=0*(T_wb>C_wb)+1*(T_wb<=C_wb)       # delta 0:censored & 1:observed
-
-D_wb=D_wb[order(X_wb)]
-Z_wb=Z[order(X_wb)]
-X_wb=X_wb[order(X_wb)]
-X_wb
-length(which(D_wb==0))/n
+D_wb=0*(T_wb>C_wb)+1*(T_wb<=C_wb)
+Z_wb=Z # delta 0:censored & 1:observed
 
 #---------------GNERALIZED GUMBELL DISTRIBUTION---------------
 # T ~ Generalized Gamma(alpha,beta,sigma) if. V ~ Generalized Gumbell(beta,sigma)
 # alpha : shape // beta : scale // sigma : rate parameter of generaized gamma
 alpha_gg_T=100;alpha_gg_C=110    # alpha must be greater than one whne not weibull
-beta_gg_T=0.1;beta_gg_C=0.1       # gamma distribution
-sigma_gg_T=1;sigma_gg_C=1       #
+beta_gg_T=0.1;beta_gg_C=0.1      # gamma distribution
+sigma_gg_T=1;sigma_gg_C=1        #
 
 V_gg_T=log(beta_gg_T)+log(qgamma(runif(n),alpha_gg_T,1))/sigma_gg_T
 V_gg_C=log(beta_gg_C)+log(qgamma(runif(n),alpha_gg_C,1))/sigma_gg_C
@@ -68,20 +63,15 @@ T_gg=exp(-Z%*%beta_0+V_gg_T)
 C_gg=exp(-Z%*%beta_0+V_gg_C)
 X_gg=C_gg*(T_gg>C_gg)+T_gg*(T_gg<=C_gg) # observed failure time
 D_gg=0*(T_gg>C_gg)+1*(T_gg<=C_gg)       # delta 0:censored & 1:observed
-
-D_gg=D_gg[order(X_gg)]
-Z_gg=Z[order(X_gg)]
-X_gg=X_gg[order(X_gg)]
-X_gg
-length(which(D_gg==0))/n
+Z_gg=Z 
 
 #------------WEIBULL DISTRIBUTION(FUNCTIONAL FORM)------------
 Z_f=matrix(c(Z,Z^2), nrow = n, ncol = 2)
 beta_f=c(beta_0,gamma_0)
 
 alpha_wb_f_T=1;alpha_wb_f_C=1     # alpha must be one when weibull
-beta_wb_f_T=10;beta_wb_f_C=12     #
-sigma_wb_f_T=10;sigma_wb_f_C=12   #
+beta_wb_f_T=10;beta_wb_f_C=12     # 
+sigma_wb_f_T=10;sigma_wb_f_C=12   # 
 
 V_wb_f_T=log(beta_wb_f_T)+log(qgamma(runif(n),alpha_wb_f_T,1))/sigma_wb_f_T
 V_wb_f_C=log(beta_wb_f_C)+log(qgamma(runif(n),alpha_wb_f_C,1))/sigma_wb_f_C
@@ -89,11 +79,7 @@ T_wb_f=exp(-Z_f%*%beta_f+V_wb_f_T)
 C_wb_f=exp(-Z_f%*%beta_f+V_wb_f_C)
 X_wb_f=C_wb_f*(T_wb_f>C_wb_f)+T_wb_f*(T_wb_f<=C_wb_f) # observed failure time
 D_wb_f=0*(T_wb_f>C_wb_f)+1*(T_wb_f<=C_wb_f)       # delta 0:censored & 1:observed
-
-D_wb_f=D_wb_f[order(X_wb_f)]
-Z_wb_f=Z[order(X_wb_f)]
-X_wb_f=X_wb_f[order(X_wb_f)]
-#length(which(D_wb_f==0))/n
+Z_wb_f=Z_f
 
 #-------------------------------------------------------------
 #-------------Estimate Beta_hat_wb by using Aftgee------------
