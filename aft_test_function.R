@@ -1430,9 +1430,5 @@ afttestplot=function(result,xaxix,path=50){
 #---------------------------EXERCISE--------------------------
 #-------------------------------------------------------------
 dataset_cox=data.frame(X_ln_cox,D_ln_cox,Z_ln_cox)
-asdf1=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"form",30,0.1,"Z_ln_cox")
+asdf1=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"form",50,0.1,"Z_ln_cox")
 afttestplot(asdf1,"real",30)
-
-as.numeric(integer(0))==0
-is.numeric(integer(0))
-length(integer(0))+3
