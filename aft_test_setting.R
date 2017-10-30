@@ -12,6 +12,8 @@ options(error=NULL)
 # install.packages("gridExtra")
 # install.packages("survival")
 # install.packages("aftgee")
+# install.packages("Rcpp")
+# install.packages("RcppArmadillo")
 # install.packages("ENmisc")
 # install.packages("plotly")
 
@@ -19,6 +21,8 @@ library(ggplot2)
 library(gridExtra)
 library(survival)
 library(aftgee)
+library(Rcpp)
+library(RcppArmadillo)
 # library(ENmisc)
 # library(plotly)
 
@@ -115,6 +119,12 @@ X_ln_cox=C_ln_cox*(T_ln_cox > C_ln_cox)+T_ln_cox*(T_ln_cox<=C_ln_cox)
 D_ln_cox=0*(T_ln_cox > C_ln_cox)+1*(T_ln_cox <= C_ln_cox)
 Z_ln_cox=Z
 
+T_ln_aft_f=as.vector(exp(-beta_0*Z-gamma_0*(Z^2))*qlnorm(runif(n),5,1))
+C_ln_aft_f=as.vector(exp(-beta_0*Z-gamma_0*(Z^2))*qlnorm(runif(n),6.5,1))
+X_ln_aft_f=C_ln_aft_f*(T_ln_aft_f>C_ln_aft_f)+T_ln_aft_f*(T_ln_aft_f<=C_ln_aft_f)
+D_ln_aft_f=0*(T_ln_aft_f>C_ln_aft_f)+1*(T_ln_aft_f<=C_ln_aft_f)
+Z_ln_aft_f=Z
+
 #------------Estimate Beta_hat_wb_f by using Aftgee-----------
 aftsrr_beta_ln_aft=aftsrr(Surv(X_ln_aft,D_ln_aft)~Z_ln_aft,method="nonsm")
 beta_hat_ln_aft=-as.vector(aftsrr_beta_ln_aft$beta);beta_hat_ln_aft
@@ -123,3 +133,7 @@ std_hat_ln_aft=diag(aftsrr_beta_ln_aft$covmat$ISMB);std_hat_ln_aft
 aftsrr_beta_ln_cox=aftsrr(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,method="nonsm")
 beta_hat_ln_cox=-as.vector(aftsrr_beta_ln_cox$beta);beta_hat_ln_cox
 std_hat_ln_cox=diag(aftsrr_beta_ln_cox$covmat$ISMB);std_hat_ln_cox
+
+aftsrr_beta_ln_aft_f=aftsrr(Surv(X_ln_aft_f,D_ln_aft_f)~Z_ln_aft_f,method="nonsm")
+beta_hat_ln_aft_f=-as.vector(aftsrr_beta_ln_aft_f$beta);beta_hat_ln_aft_f
+std_hat_ln_aft_f=diag(aftsrr_beta_ln_aft_f$covmat$ISMB);std_hat_ln_aft_f

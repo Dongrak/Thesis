@@ -65,7 +65,7 @@ W_omni=function(b,Time,Delta,Covari){
     Y_i_t,'*',dLambdahat_0_t),cumsum), SIMPLIFY = FALSE)
   #Mhat_i_t
   
-  obs_stat_omni=Reduce('+',mapply(function(x,y){x%*%t(y)},pi_i_z,Mhat_i_t,SIMPLIFY=FALSE))/sqrt(n)
+  obs_stat_omni=Reduce('+',mapply(function(x,y){x%*%t(y)},Mhat_i_t,pi_i_z,SIMPLIFY=FALSE))/sqrt(n)
   #obs_stat_omni
   
   result=list(e_i_beta,obs_stat_omni)
@@ -409,13 +409,13 @@ What_omni=function(b,std,Time,Delta,Covari,tol){
   #phi_i
   
   U_pi_phi_t.z=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
-                                                        pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*Reduce('+',mapply('*',
-                                                                                                                                 dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,cumsum)/n
+    pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*Reduce('+',mapply('*',
+    dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,cumsum)/n
   #U_pi_phi_t.z
   
   U_phi_inf=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
-                                                     as.list(data.frame(t(Covari))),SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_1_t*
-                    Reduce('+',mapply('*',dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
+    as.list(data.frame(t(Covari))),SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_1_t*
+    Reduce('+',mapply('*',dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
   #U_phi_inf
   
   if(p==1){
@@ -477,8 +477,8 @@ What_omni=function(b,std,Time,Delta,Covari,tol){
   
   F.T.=(1/sqrt(n))*U_pi_phi_t.z
   S.T.=sqrt(n)*Reduce('+',mapply('*',mapply('+',fhat_t.z,mapply(function(x){apply(x,2,
-                                                                                  cumsum)},lapply(ghat_t.z,'*',dLambdahat_0_t),SIMPLIFY=FALSE),SIMPLIFY=FALSE),
-                                 (b-beta_hat_s),SIMPLIFY=FALSE))
+    cumsum)},lapply(ghat_t.z,'*',dLambdahat_0_t),SIMPLIFY=FALSE),SIMPLIFY=FALSE),
+    (b-beta_hat_s),SIMPLIFY=FALSE))
   T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,cumsum)/sqrt(n)
   
   sim_stat_omni=F.T.-S.T.-T.T.
@@ -1054,7 +1054,7 @@ sample_path_omni=function(path,b,std,Time,Delta,Covari,tol){
   #--------------------------P VALUE--------------------------
   p_value=length(which((max_path_What>max_path_W)*1==1))/path
   # p_value
-  
+  matrix(c(1,3,2,6,5,6,7,8,9),nrow=3)
   std.p_value=length(which((max_path_std.What>max_path_std.W)*1==1))/path
   # std.p_value
   
@@ -1269,13 +1269,13 @@ plotting_omni=function(result,xaxix,path){
   
   for (i in 1:path){
     group=i
-    A=result$dataset_What[[i]][,med]
+    A=result$app_path[[i]][,med]
     AA=data.frame(group,t_i=xaxix,What=A)
     dataset_What=rbind(dataset_What,AA)
   }
   #dataset_What
   
-  dataset_W=data.frame(group,t_i=xaxix,W=result$dataset_W[,med])
+  dataset_W=data.frame(group,t_i=xaxix,W=result$obs_path[,med])
   #dataset_W
   
   Figure1_W=
@@ -1289,13 +1289,13 @@ plotting_omni=function(result,xaxix,path){
   
   for (i in 1:path){
     group=i
-    A=result$dataset_std.What[[i]][,med]
+    A=result$app_std.path[[i]][,med]
     AA=data.frame(group,t_i=xaxix,std.What=A)
     dataset_std.What=rbind(dataset_std.What,AA)
   }
   #dataset_std.What
   
-  dataset_std.W=data.frame(group,t_i=xaxix,std.W=result$dataset_std.W[,med])
+  dataset_std.W=data.frame(group,t_i=xaxix,std.W=result$obs_std.path[,med])
   #dataset_std.W
   
   Figure1_std.W=
@@ -1319,13 +1319,13 @@ plotting_form=function(result,xaxix,path){
   
   for (i in 1:path){
     group=i
-    A=result$dataset_What[[i]]
+    A=result$app_path[[i]]
     AA=data.frame(group,z_i=xaxix,What=A)
     dataset_What=rbind(dataset_What,AA)
   }
   #dataset_What
   
-  dataset_W=data.frame(group,z_i=xaxix,W=result$dataset_W)
+  dataset_W=data.frame(group,z_i=xaxix,W=result$obs_path)
   #dataset_W
   
   Figure1_W=
@@ -1339,13 +1339,13 @@ plotting_form=function(result,xaxix,path){
   
   for (i in 1:path){
     group=i
-    A=result$dataset_std.What[[i]]
+    A=result$app_std.path[[i]]
     AA=data.frame(group,z_i=xaxix,std.What=A)
     dataset_std.What=rbind(dataset_std.What,AA)
   }
   #dataset_std.What
   
-  dataset_std.W=data.frame(group,z_i=xaxix,std.W=result$dataset_std.W)
+  dataset_std.W=data.frame(group,z_i=xaxix,std.W=result$obs_std.path)
   #dataset_std.W
   
   Figure1_std.W=
@@ -1369,13 +1369,13 @@ plotting_link=function(result,xaxix,path){
   
   for (i in 1:path){
     group=i
-    A=result$dataset_What[[i]]
+    A=result$app_path[[i]]
     AA=data.frame(group,z_i=xaxix,What=A)
     dataset_What=rbind(dataset_What,AA)
   }
   #dataset_What
   
-  dataset_W=data.frame(group,z_i=xaxix,W=result$dataset_W)
+  dataset_W=data.frame(group,z_i=xaxix,W=result$obs_path)
   #dataset_W
   
   Figure1_W=
@@ -1389,13 +1389,13 @@ plotting_link=function(result,xaxix,path){
   
   for (i in 1:path){
     group=i
-    A=result$dataset_std.What[[i]]
+    A=result$app_std.path[[i]]
     AA=data.frame(group,z_i=xaxix,std.What=A)
     dataset_std.What=rbind(dataset_std.What,AA)
   }
   #dataset_std.What
   
-  dataset_std.W=data.frame(group,z_i=xaxix,std.W=result$dataset_std.W)
+  dataset_std.W=data.frame(group,z_i=xaxix,std.W=result$obs_std.path)
   #dataset_std.W
   
   Figure1_std.W=
@@ -1429,6 +1429,6 @@ afttestplot=function(result,xaxix,path=50){
 #-------------------------------------------------------------
 #---------------------------EXERCISE--------------------------
 #-------------------------------------------------------------
-dataset_cox=data.frame(X_ln_cox,D_ln_cox,Z_ln_cox)
-asdf1=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"form",50,0.1,"Z_ln_cox")
-afttestplot(asdf1,"real",30)
+# dataset_cox=data.frame(X_ln_cox,D_ln_cox,Z_ln_cox)
+# asdf1=afttest(Surv(X_ln_cox,D_ln_cox)~Z_ln_cox,dataset_cox,"form",50,0.1,"Z_ln_cox")
+# afttestplot(asdf1,"real",30)
