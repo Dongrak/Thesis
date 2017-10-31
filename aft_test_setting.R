@@ -38,6 +38,7 @@ n=200
 beta_0=1
 gamma_0=0.1
 Z=matrix(rnorm(n,3,1),nrow=n)
+Z1=matrix(rexp(n,5),nrow=n)
 
 #---------------------WEIBULL DISTRIBUTION--------------------
 # T ~ Generalized Gamma(alpha=1,beta,sigma) i.e. Weibull ~ (beta,sigma)
@@ -125,6 +126,14 @@ X_ln_aft_f=C_ln_aft_f*(T_ln_aft_f>C_ln_aft_f)+T_ln_aft_f*(T_ln_aft_f<=C_ln_aft_f
 D_ln_aft_f=0*(T_ln_aft_f>C_ln_aft_f)+1*(T_ln_aft_f<=C_ln_aft_f)
 Z_ln_aft_f=Z
 
+T_ln_aft_l=as.vector(exp(-beta_0*sqrt(Z)-gamma_0*(Z1^2))*qlnorm(runif(n),5,1))
+C_ln_aft_l=as.vector(exp(-beta_0*sqrt(Z)-gamma_0*(Z1^2))*qlnorm(runif(n),6.5,1))
+X_ln_aft_l=C_ln_aft_l*(T_ln_aft_l>C_ln_aft_l)+T_ln_aft_l*(T_ln_aft_l<=C_ln_aft_l)
+D_ln_aft_l=0*(T_ln_aft_l>C_ln_aft_l)+1*(T_ln_aft_l<=C_ln_aft_l)
+Z1_ln_aft_l=Z
+Z2_ln_aft_l=Z1
+Z_ln_aft_l=cbind(Z1_ln_aft_l,Z2_ln_aft_l)
+
 #------------Estimate Beta_hat_wb_f by using Aftgee-----------
 aftsrr_beta_ln_aft=aftsrr(Surv(X_ln_aft,D_ln_aft)~Z_ln_aft,method="nonsm")
 beta_hat_ln_aft=-as.vector(aftsrr_beta_ln_aft$beta);beta_hat_ln_aft
@@ -137,3 +146,7 @@ std_hat_ln_cox=diag(aftsrr_beta_ln_cox$covmat$ISMB);std_hat_ln_cox
 aftsrr_beta_ln_aft_f=aftsrr(Surv(X_ln_aft_f,D_ln_aft_f)~Z_ln_aft_f,method="nonsm")
 beta_hat_ln_aft_f=-as.vector(aftsrr_beta_ln_aft_f$beta);beta_hat_ln_aft_f
 std_hat_ln_aft_f=diag(aftsrr_beta_ln_aft_f$covmat$ISMB);std_hat_ln_aft_f
+
+aftsrr_beta_ln_aft_l=aftsrr(Surv(X_ln_aft_l,D_ln_aft_l)~Z1_ln_aft_l+Z2_ln_aft_l,method="nonsm")
+beta_hat_ln_aft_l=-as.vector(aftsrr_beta_ln_aft_l$beta);beta_hat_ln_aft_l
+std_hat_ln_aft_l=diag(aftsrr_beta_ln_aft_l$covmat$ISMB);std_hat_ln_aft_l

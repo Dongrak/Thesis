@@ -651,7 +651,7 @@ What_form=function(b,std,Time,Delta,Covari,tol,form=1){
     #S_1_t_U
     
     U_inf_U=apply(S_0_t_U*Reduce('+',mapply(function(x,y){x%*%t(y)},dN_i_t_U,
-                                            as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))-S_1_t_U*Reduce('+',dN_i_t_U),2,sum)/n
+      as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))-S_1_t_U*Reduce('+',dN_i_t_U),2,sum)/n
     #U_inf_U
     
     return(U_inf_U)

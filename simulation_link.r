@@ -53,26 +53,26 @@ simulation_link=function(simulation,n,path,alpha,tol){
     # ------------------------DATA GENERATE------------------------
     # -------------------------------------------------------------
     # n=500
-    beta_0=1
-    gamma_0=0.1
-    Z1=matrix(abs(rnorm(n,3,1)),nrow=n)
-    Z2=matrix(rnorm(n,1,1),nrow=n)
+    beta_0=2
+    gamma_0=1
+    Z=matrix(abs(rnorm(n,3,1)),nrow=n)
+    Z1=matrix(rexp(n,5),nrow=n)
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------
-    T_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*Z2)*qlnorm(runif(n),5,1))
-    C_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*Z2)*qlnorm(runif(n),6.5,1))
+    T_ln_aft=as.vector(exp(-beta_0*Z-gamma_0*Z1)*qlnorm(runif(n),5,1))
+    C_ln_aft=as.vector(exp(-beta_0*Z-gamma_0*Z1)*qlnorm(runif(n),6.5,1))
     X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
     D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
-    Z1_ln_aft=Z1
-    Z2_ln_aft=Z2
+    Z1_ln_aft=Z
+    Z2_ln_aft=Z1
     Z_ln_aft=cbind(Z1_ln_aft,Z2_ln_aft)
     
-    T_ln_aft_l=as.vector(exp(-beta_0*sqrt(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),5,1))
-    C_ln_aft_l=as.vector(exp(-beta_0*sqrt(Z1)-gamma_0*(Z2^2))*qlnorm(runif(n),6.5,1))
+    T_ln_aft_l=as.vector(exp(-beta_0*sqrt(Z)-gamma_0*(Z1^2))*qlnorm(runif(n),5,1))
+    C_ln_aft_l=as.vector(exp(-beta_0*sqrt(Z)-gamma_0*(Z1^2))*qlnorm(runif(n),6.5,1))
     X_ln_aft_l=C_ln_aft_l*(T_ln_aft_l>C_ln_aft_l)+T_ln_aft_l*(T_ln_aft_l<=C_ln_aft_l)
     D_ln_aft_l=0*(T_ln_aft_l>C_ln_aft_l)+1*(T_ln_aft_l<=C_ln_aft_l)
-    Z1_ln_aft_l=Z1
-    Z2_ln_aft_l=Z2
+    Z1_ln_aft_l=Z
+    Z2_ln_aft_l=Z1
     Z_ln_aft_l=cbind(Z1_ln_aft_l,Z2_ln_aft_l)
     
     #------------Estimate Beta_hat_ln_aft by using Aftgee-----------

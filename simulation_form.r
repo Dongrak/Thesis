@@ -62,17 +62,11 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
     pi_i_z[[i]]=(Covari_form<=((Covari_form[order(Covari_form)])[i]))*1
   }
   pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
-  
-  N_i_t=list(NA)
-  for(j in 1:n){
-    N_i_t[[j]]=(e_i_beta>=e_i_beta[j])*Delta[j]
-  }
+ 
+  N_i_t=sapply(1:n,function(j){(e_i_beta>=e_i_beta[j])*Delta[j]},simplify=F)
   #N_i_t
   
-  Y_i_t=list(NA)
-  for(j in 1:n){
-    Y_i_t[[j]]=(e_i_beta<=e_i_beta[j])*1
-  }
+  Y_i_t=sapply(1:n,function(j){(e_i_beta<=e_i_beta[j])*1},simplify=F)
   #Y_i_t
   
   N_d_t=Reduce('+',N_i_t)
@@ -183,19 +177,10 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
     Delta_U=Delta_U[order_resid_U]
     e_i_beta_U=e_i_beta_U[order_resid_U]
     
-    N_i_t_U=list(NA)
-    for(j in 1:n){
-      N_i_t_U[[j]]=(e_i_beta_U>=e_i_beta_U[j])*Delta_U[j]
-    }
+    N_i_t_U=sapply(1:n,function(j){(e_i_beta_U>=e_i_beta_U[j])*Delta_U[j]},simplify=F)
     #N_i_t_U
     
-    dN_i_t_U=lapply(N_i_t_U,function(x){diff(c(0,x))})
-    #dN_i_t_U
-    
-    Y_i_t_U=list(NA)
-    for(j in 1:n){
-      Y_i_t_U[[j]]=(e_i_beta_U<=e_i_beta_U[j])*1
-    }
+    Y_i_t_U=sapply(1:n,function(j){(e_i_beta_U<=e_i_beta_U[j])*1},simplify=F)
     #Y_i_t_U
     
     S_0_t_U=Reduce('+',Y_i_t_U)
@@ -203,6 +188,9 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
     
     S_1_t_U=Reduce('+',mapply(function(x,y){x%*%t(y)},Y_i_t_U,as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))
     #S_1_t_U
+    
+    dN_i_t_U=lapply(N_i_t_U,function(x){diff(c(0,x))})
+    #dN_i_t_U
     
     U_inf_U=apply(S_0_t_U*Reduce('+',mapply(function(x,y){x%*%t(y)},dN_i_t_U,
                                             as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))-S_1_t_U*Reduce('+',dN_i_t_U),2,sum)/n
@@ -273,16 +261,10 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
     Delta_s=Delta[order_resid_s]
     e_i_beta_s=e_i_beta_s[order_resid_s]
     
-    N_i_t_s=list(NA)
-    for(j in 1:n){
-      N_i_t_s[[j]]=(e_i_beta_s>=e_i_beta_s[j])*Delta_s[j]
-    }
+    N_i_t_s=sapply(1:n,function(j){(e_i_beta_s>=e_i_beta_s[j])*Delta_s[j]},simplify=F)
     #N_i_t_s
     
-    Y_i_t_s=list(NA)
-    for(j in 1:n){
-      Y_i_t_s[[j]]=(e_i_beta_s<=e_i_beta_s[j])*1
-    }
+    Y_i_t_s=sapply(1:n,function(j){(e_i_beta_s<=e_i_beta_s[j])*1},simplify=F)
     #Y_i_t_s
     
     N_d_t_s=Reduce('+',N_i_t_s)
