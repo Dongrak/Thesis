@@ -291,6 +291,7 @@ simulation_result_fform=c(simulation_result_fform1,simulation_result_fform2,
 prob.table_fform(simulation_result_fform)
 save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_fform_n500p150sim500")
 date()
+
 #-------------------------------------------------------------
 #------------------------LINK FUNCTION------------------------
 #-------------------------------------------------------------

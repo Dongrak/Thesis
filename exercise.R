@@ -2,25 +2,15 @@ order_Covari_form=order(Covari[,form])
 pi_i_z=sapply(1:n,function(j){c(rep(0,(which(order_Covari_form==j)-1)),
                                 rep(1,(n+1-which(order_Covari_form==j))))},simplify=F)
 
-pi_i_z1=sapply(1:n,function(j){apply(apply(Covari,2,
-  function(x){(x<=((x[order(x)])[j]))*1}),1,prod)},simplify=F)
-
-sapply(1:n,function(j){c(rep(0,(which(order_Covari_form==j)-1)),
-                         rep(1,(n+1-which(order_Covari_form==j))))},simplify=F)
-
-order_Covari[,j]
 order_Covari=apply(Covari,2,function(x){order(x)}) 
-sapply(1:n,function(j){sapply(1:p,function(i){c(rep(0,(which(order_Covari[,i]==j)-1)),
-                    rep(1,(n+1-which(order_Covari[,i]==j))))})},simplify=F)
 
+k=167
+length(which(pi_i_z1[[k]]==pi_i_z[[k]]))
 
 
 pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
 
 aa=matrix(c(1,3,9,7,5,2,8,6),nrow=4)
-
-
-
 
 aa=matrix(c(2:5,3,1,4,5),nrow=4)
 bb=as.list(data.frame(t(aa)))
