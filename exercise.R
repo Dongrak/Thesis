@@ -10,7 +10,9 @@ length(which(pi_i_z1[[k]]==pi_i_z[[k]]))
 
 pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
 
-aa=matrix(c(1,3,9,7,5,2,8,6),nrow=4)
+aa=matrix(c(1,3,9,7,5,2,8,6),nrow=4);aa
+which(aa==max(aa),arr.ind=TRUE)
+aa[1:2,]
 
 aa=matrix(c(2:5,3,1,4,5),nrow=4)
 bb=as.list(data.frame(t(aa)))

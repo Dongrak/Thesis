@@ -34,11 +34,10 @@ path=200
 given_tol=0.1
 
 #------------------------DATA GENERATION----------------------
-n=200
+n=250
 beta_0=1
 gamma_0=0.1
 Z=matrix(rnorm(n,3,1),nrow=n)
-Z1=matrix(rexp(n,5),nrow=n)
 
 #---------------------WEIBULL DISTRIBUTION--------------------
 # T ~ Generalized Gamma(alpha=1,beta,sigma) i.e. Weibull ~ (beta,sigma)
@@ -126,12 +125,15 @@ X_ln_aft_f=C_ln_aft_f*(T_ln_aft_f>C_ln_aft_f)+T_ln_aft_f*(T_ln_aft_f<=C_ln_aft_f
 D_ln_aft_f=0*(T_ln_aft_f>C_ln_aft_f)+1*(T_ln_aft_f<=C_ln_aft_f)
 Z_ln_aft_f=Z
 
-T_ln_aft_l=as.vector(exp(-beta_0*sqrt(Z)-gamma_0*(Z1^2))*qlnorm(runif(n),5,1))
-C_ln_aft_l=as.vector(exp(-beta_0*sqrt(Z)-gamma_0*(Z1^2))*qlnorm(runif(n),6.5,1))
+Z1=matrix(rexp(n,5),nrow=n)
+Z2=matrix(rnorm(n,3,1),nrow=n)
+
+T_ln_aft_l=as.vector(exp(-beta_0*(Z1^2)-gamma_0*sqrt(Z2))*qlnorm(runif(n),5,1))
+C_ln_aft_l=as.vector(exp(-beta_0*(Z1^2)-gamma_0*sqrt(Z2))*qlnorm(runif(n),6.5,1))
 X_ln_aft_l=C_ln_aft_l*(T_ln_aft_l>C_ln_aft_l)+T_ln_aft_l*(T_ln_aft_l<=C_ln_aft_l)
 D_ln_aft_l=0*(T_ln_aft_l>C_ln_aft_l)+1*(T_ln_aft_l<=C_ln_aft_l)
-Z1_ln_aft_l=Z
-Z2_ln_aft_l=Z1
+Z1_ln_aft_l=Z1
+Z2_ln_aft_l=Z2
 Z_ln_aft_l=cbind(Z1_ln_aft_l,Z2_ln_aft_l)
 
 #------------Estimate Beta_hat_wb_f by using Aftgee-----------

@@ -56,13 +56,9 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   e_i_beta=e_i_beta[order_resid]
   
   # weight function
-  pi_i_z=list(NA)
-  Covari_form=Covari[,form]
-  for(i in 1:n){
-    pi_i_z[[i]]=(Covari_form<=((Covari_form[order(Covari_form)])[i]))*1
-  }
-  pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
- 
+  order_Covari_form=order(Covari[,form])
+  pi_i_z=sapply(1:n,function(j){c(rep(0,(which(order_Covari_form==j)-1)),rep(1,(n+1-which(order_Covari_form==j))))},simplify=F)
+  
   N_i_t=sapply(1:n,function(j){(e_i_beta>=e_i_beta[j])*Delta[j]},simplify=F)
   #N_i_t
   
@@ -200,10 +196,6 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   }
   #U_beta()
   
-  # tolerance=tol+1 #initial value
-  
-  # while (tolerance>tol){
-  
   #------------------------SAMPLE PATH-----------------------
   
   app_path=list(NA)
@@ -216,43 +208,47 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
       cat("Sample Path",k,"\n")
     }
     
-    phi_i=rnorm(n)
-    #phi_i
+    tolerance=tol+1 #initial value
     
-    U_pi_phi_inf.z=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
-                                                            pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*Reduce('+',mapply('*',
-                                                                                                                                     dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
-    #U_pi_phi_inf.z
-    
-    U_phi_inf=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
-                                                       as.list(data.frame(t(Covari))),SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_1_t*
-                      Reduce('+',mapply('*',dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
-    #U_phi_inf
-    
-    if(p==1){
-      beta_hat_s_list=optimize(function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)},
-                               c(b-5*std,b+5*std),tol = 1e-16)
-      #beta_hat_s_list
+    while (tolerance>tol){
       
-      beta_hat_s=beta_hat_s_list$minimum
-      #beta_hat_s
+      phi_i=rnorm(n)
+      #phi_i
       
-      tolerance=beta_hat_s_list$objective
-      #tolerance
+      U_pi_phi_inf.z=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
+                                                              pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*Reduce('+',mapply('*',
+                                                                                                                                       dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
+      #U_pi_phi_inf.z
       
+      U_phi_inf=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
+                                                         as.list(data.frame(t(Covari))),SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_1_t*
+                        Reduce('+',mapply('*',dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
+      #U_phi_inf
+      
+      if(p==1){
+        beta_hat_s_list=optimize(function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)},
+                                 c(b-5*std,b+5*std),tol = 1e-16)
+        #beta_hat_s_list
+        
+        beta_hat_s=beta_hat_s_list$minimum
+        #beta_hat_s
+        
+        tolerance=beta_hat_s_list$objective
+        #tolerance
+        
+      }
+      
+      if(p>1){
+        beta_hat_s_list=optim(b,function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)})
+        #beta_hat_s_list
+        
+        beta_hat_s=beta_hat_s_list$par
+        #beta_hat_s
+        
+        tolerance=beta_hat_s_list$value
+        #tolerance
+      }
     }
-    
-    if(p>1){
-      beta_hat_s_list=optim(b,function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)})
-      #beta_hat_s_list
-      
-      beta_hat_s=beta_hat_s_list$par
-      #beta_hat_s
-      
-      tolerance=beta_hat_s_list$value
-      #tolerance
-    }
-    # }
     
     e_i_beta_s=as.vector(log(Time)+Covari%*%beta_hat_s)
     

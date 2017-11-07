@@ -949,7 +949,7 @@ plotting_omni=function(result,xaxix,path){
   n=length(result_Time)
   if (xaxix=="rank"){xaxix=(1:n)[order(result_Time)]}
   else if (xaxix=="real"){xaxix=result_Time}
-  else if (xaxix=result_log_Time)
+  else (xaxix=result_Time)
   
   med=ceiling(sqrt(length(result$std.boot))/2)
   

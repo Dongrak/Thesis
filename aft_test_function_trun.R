@@ -18,6 +18,7 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   e_i_beta=e_i_beta[order_resid]
   
   # weight function
+  order_Covari=apply(Covari,2,function(x){order(x)})
   pi_i_z=sapply(1:n,function(j){apply(sapply(1:p,function(i){c(rep(0,(which(
     order_Covari[,i]==j)-1)),rep(1,(n+1-which(order_Covari[,i]==j))))}),1,prod)},simplify=F)
   
@@ -154,7 +155,6 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   #U_beta()
   
   #------------------------SAMPLE PATH-----------------------
-  
   app_path=list(NA)
   
   path_check=ceiling(path/2)
@@ -242,13 +242,13 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
     #app_path
   }
   
-  std.boot=matrix(apply(mapply(function(x){as.vector(x)},app_path),1,sd),nrow=n)
+  std.boot=matrix(apply(mapply(function(x){as.vector(x)},app_path),1,sd),nrow=trun)
   # std.boot
   
   app_std.path=lapply(app_path,function(x){x/std.boot})
   # app_std.path
   
-  obs_std.path=obs_path/std.boot
+  obs_std.path=obs_path[truncation,]/std.boot
   # obs_std.path
   
   #-----------------------MAXIMUM VALUE-----------------------
@@ -602,19 +602,14 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
   e_i_beta=e_i_beta[order_resid]
   
   # weight function
+  order_Covari=apply(Covari,2,function(x){order(x)})
   pi_i_z=sapply(1:n,function(j){apply(sapply(1:p,function(i){c(rep(0,(which(
     order_Covari[,i]==j)-1)),rep(1,(n+1-which(order_Covari[,i]==j))))}),1,prod)},simplify=F)
   
-  N_i_t=list(NA)
-  for(j in 1:n){
-    N_i_t[[j]]=(e_i_beta>=e_i_beta[j])*Delta[j]
-  }
+  N_i_t=sapply(1:n,function(j){(e_i_beta>=e_i_beta[j])*Delta[j]},simplify=F)
   #N_i_t
   
-  Y_i_t=list(NA)
-  for(j in 1:n){
-    Y_i_t[[j]]=(e_i_beta<=e_i_beta[j])*1
-  }
+  Y_i_t=sapply(1:n,function(j){(e_i_beta<=e_i_beta[j])*1},simplify=F)
   #Y_i_t
   
   N_d_t=Reduce('+',N_i_t)
@@ -724,19 +719,10 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
     Delta_U=Delta_U[order_resid_U]
     e_i_beta_U=e_i_beta_U[order_resid_U]
     
-    N_i_t_U=list(NA)
-    for(j in 1:n){
-      N_i_t_U[[j]]=(e_i_beta_U>=e_i_beta_U[j])*Delta_U[j]
-    }
+    N_i_t_U=sapply(1:n,function(j){(e_i_beta_U>=e_i_beta_U[j])*Delta_U[j]},simplify=F)
     #N_i_t_U
     
-    dN_i_t_U=lapply(N_i_t_U,function(x){diff(c(0,x))})
-    #dN_i_t_U
-    
-    Y_i_t_U=list(NA)
-    for(j in 1:n){
-      Y_i_t_U[[j]]=(e_i_beta_U<=e_i_beta_U[j])*1
-    }
+    Y_i_t_U=sapply(1:n,function(j){(e_i_beta_U<=e_i_beta_U[j])*1},simplify=F)
     #Y_i_t_U
     
     S_0_t_U=Reduce('+',Y_i_t_U)
@@ -744,6 +730,9 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
     
     S_1_t_U=Reduce('+',mapply(function(x,y){x%*%t(y)},Y_i_t_U,as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))
     #S_1_t_U
+    
+    dN_i_t_U=lapply(N_i_t_U,function(x){diff(c(0,x))})
+    #dN_i_t_U
     
     U_inf_U=apply(S_0_t_U*Reduce('+',mapply(function(x,y){x%*%t(y)},dN_i_t_U,
                                             as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))-S_1_t_U*Reduce('+',dN_i_t_U),2,sum)/n
@@ -812,16 +801,10 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
     Delta_s=Delta[order_resid_s]
     e_i_beta_s=e_i_beta_s[order_resid_s]
     
-    N_i_t_s=list(NA)
-    for(j in 1:n){
-      N_i_t_s[[j]]=(e_i_beta_s>=e_i_beta_s[j])*Delta_s[j]
-    }
+    N_i_t_s=sapply(1:n,function(j){(e_i_beta_s>=e_i_beta_s[j])*Delta_s[j]},simplify=F)
     #N_i_t_s
     
-    Y_i_t_s=list(NA)
-    for(j in 1:n){
-      Y_i_t_s[[j]]=(e_i_beta_s<=e_i_beta_s[j])*1
-    }
+    Y_i_t_s=sapply(1:n,function(j){(e_i_beta_s<=e_i_beta_s[j])*1},simplify=F)
     #Y_i_t_s
     
     N_d_t_s=Reduce('+',N_i_t_s)
