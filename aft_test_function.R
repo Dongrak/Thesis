@@ -21,6 +21,7 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   e_i_beta=e_i_beta[order_resid]
   
   # weight function
+  order_Covari=apply(Covari,2,function(x){order(x)}) 
   pi_i_z=sapply(1:n,function(j){apply(sapply(1:p,function(i){c(rep(0,(which(
     order_Covari[,i]==j)-1)),rep(1,(n+1-which(order_Covari[,i]==j))))}),1,prod)},simplify=F)
   

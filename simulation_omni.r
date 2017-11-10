@@ -206,10 +206,6 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   }
   #U_beta()
   
-  # tolerance=tol+1 #initial value
-  
-  # while (tolerance>tol){
-  
   #------------------------SAMPLE PATH-----------------------
   
   app_path=list(NA)
@@ -221,6 +217,10 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
     if(k%%path_check==0) {
       cat("Sample Path",k,"\n")
     }
+    
+    tolerance=tol+1 #initial value
+
+    while (tolerance>tol){
     
     phi_i=rnorm(n)
     #phi_i
@@ -256,7 +256,7 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
       tolerance=beta_hat_s_list$value
       #tolerance
     }
-    # }
+    }
     
     e_i_beta_s=as.vector(log(Time)+Covari%*%beta_hat_s)
     
@@ -459,7 +459,9 @@ save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_om
 date()
 simulation_result_omni=c(simulation_result_omni1,simulation_result_omni2,
                          simulation_result_omni3,simulation_result_omni4,
-                         simulation_result_omni5)
+                         simulation_result_omni5,simulation_result_omni6,
+                         simulation_result_omni7,simulation_result_omni8,
+                         simulation_result_omni9,simulation_result_omni10)
 prob.table_omni(simulation_result_omni)
 save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p150sim500")
 date()
