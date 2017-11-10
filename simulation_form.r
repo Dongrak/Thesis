@@ -445,8 +445,7 @@ prob.table_form(simulation_result_form5)
 save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p150sim100")
 date()
 simulation_result_form=c(simulation_result_form1,simulation_result_form2,
-                          simulation_result_form3,simulation_result_form4,
-                          simulation_result_form5)
+                          simulation_result_form3,simulation_result_form4)
 prob.table_form(simulation_result_form)
 save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p150sim500")
 date()

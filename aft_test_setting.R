@@ -23,8 +23,8 @@ library(survival)
 library(aftgee)
 library(Rcpp)
 library(RcppArmadillo)
-# library(ENmisc)
-# library(plotly)
+library(ENmisc)
+library(plotly)
 
 #-------------------------------------------------------------
 #------------------------WEIGHT&TOLERANCE---------------------

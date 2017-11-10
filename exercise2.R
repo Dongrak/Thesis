@@ -1,7 +1,9 @@
-aa=afttest_omni(250,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+aa=afttest_omni(100,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 aa$p_value
 aa$std.p_value
-# plotting_omni(aa,"rank",50)
+plotting_omni(aa,"rank",100)
+plot_ly(z=aa$app_path[[1]][1:248,1:250],type="surface")
+plot_ly(z=aa$obs_std.path,type="surface")
 
 aaa=afttest_omni(500,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 aaa$p_value
