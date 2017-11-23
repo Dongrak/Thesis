@@ -33,6 +33,12 @@ n=250
 path=1000
 alpha=0.05
 
+beta_0=1
+
+gamma_0=0.1
+# gamma_0=0.3
+# gamma_0=0.5
+
 given_tol=1
 
 #-------------------------------------------------------------
@@ -192,7 +198,7 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   
   app_path=list(NA)
   
-  co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
+  co=detectCores(logical=FALSE)-1 # number of core if logical is False else it means thread
   registerDoParallel(co)
   cl=makeCluster(co)
   app_path=foreach(k=1:path,.inorder=FALSE) %dopar% {
@@ -352,7 +358,6 @@ simulation_omni=function(simulation,n,path,alpha,tol){
     # ------------------------DATA GENERATE------------------------
     # -------------------------------------------------------------
     # n=200
-    beta_0=1
     Z=matrix(rnorm(n,3,1),nrow=n)
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------

@@ -12,11 +12,11 @@ options(error=NULL)
 # install.packages("gridExtra")
 # install.packages("survival")
 # install.packages("aftgee")
+# install.packages("doParallel")
 # install.packages("Rcpp")
 # install.packages("RcppArmadillo")
 # install.packages("ENmisc")
 # install.packages("plotly")
-# install.packages("doParallel")
 
 library(ggplot2)
 library(gridExtra)
@@ -31,7 +31,7 @@ library(doParallel)
 #-------------------------------------------------------------
 #------------------------WEIGHT&TOLERANCE---------------------
 #-------------------------------------------------------------
-path=250
+path=200
 given_tol=1
 
 #------------------------DATA GENERATION----------------------

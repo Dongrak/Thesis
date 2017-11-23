@@ -155,7 +155,7 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   
   app_path=list(NA)
   
-  co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
+  co=detectCores(logical=FALSE)-1 # number of core if logical is False else it means thread
   registerDoParallel(co)
   cl=makeCluster(co)
   app_path=foreach(k=1:path,.inorder=FALSE) %dopar% {
@@ -452,7 +452,7 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   
   app_path=list(NA)
   
-  co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
+  co=detectCores(logical=FALSE)-1 # number of core if logical is False else it means thread
   registerDoParallel(co)
   cl=makeCluster(co)
   app_path=foreach(k=1:path,.inorder=FALSE) %dopar% {
@@ -751,7 +751,7 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
   
   app_path=list(NA)
   
-  co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
+  co=detectCores(logical=FALSE)-1 # number of core if logical is False else it means thread
   registerDoParallel(co)
   cl=makeCluster(co)
   app_path=foreach(k=1:path,.inorder=FALSE) %dopar% {

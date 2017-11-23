@@ -12,11 +12,11 @@ options(error=NULL)
 # install.packages("gridExtra")
 # install.packages("survival")
 # install.packages("aftgee")
+# install.packages("doParallel")
 # install.packages("Rcpp")
 # install.packages("RcppArmadillo")
 # install.packages("ENmisc")
 # install.packages("plotly")
-# install.packages("doParallel")
 
 library(ggplot2)
 library(gridExtra)
@@ -28,10 +28,16 @@ library(doParallel)
 # library(ENmisc)
 # library(plotly)
 
-simulation=100
+simulation=50
 n=250
 path=200
 alpha=0.05
+
+beta_0=1
+
+gamma_0=0.1
+# gamma_0=0.3
+# gamma_0=0.5
 
 given_tol=1
 
@@ -196,7 +202,7 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   
   app_path=list(NA)
   
-  co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
+  co=detectCores(logical=FALSE)-1 # number of core if logical is False else it means thread
   registerDoParallel(co)
   cl=makeCluster(co)
   app_path=foreach(k=1:path,.inorder=FALSE) %dopar% {
@@ -358,8 +364,6 @@ simulation_form=function(simulation,n,path,alpha,tol){
     # ------------------------DATA GENERATE------------------------
     # -------------------------------------------------------------
     # n=200
-    beta_0=1
-    gamma_0=0.5
     Z=matrix(rnorm(n,3,1),nrow=n)
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------
