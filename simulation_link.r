@@ -360,8 +360,6 @@ simulation_link=function(simulation,n,path,alpha,tol){
     # ------------------------DATA GENERATE------------------------
     # -------------------------------------------------------------
     # n=500
-    beta_0=2
-    gamma_0=0.5
     Z1=matrix(rnorm(n,3,1),nrow=n)
     Z2=matrix(runif(n),nrow=n)
 
