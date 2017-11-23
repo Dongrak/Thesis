@@ -29,7 +29,7 @@ library(doParallel)
 # library(plotly)
 
 simulation=100
-n=250
+n=500
 path=200
 alpha=0.05
 
@@ -444,43 +444,43 @@ prob.table_link=function(simul_result){
 date()
 simulation_result_link1=simulation_link(simulation,n,path,alpha,given_tol)
 prob.table_link(simulation_result_link1)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim100gam0")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n500p200sim100gam01")
 date()
 simulation_result_link2=simulation_link(simulation,n,path,alpha,given_tol)
 prob.table_link(simulation_result_link2)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim200gam0")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n500p200sim200gam01")
 date()
 simulation_result_link3=simulation_link(simulation,n,path,alpha,given_tol)
 prob.table_link(simulation_result_link3)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim300gam0")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n500p200sim300gam01")
 date()
 simulation_result_link4=simulation_link(simulation,n,path,alpha,given_tol)
 prob.table_link(simulation_result_link4)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim400gam0")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n500p200sim400gam01")
 date()
 simulation_result_link5=simulation_link(simulation,n,path,alpha,given_tol)
 prob.table_link(simulation_result_link5)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim500gam0")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n500p200sim500gam01")
 date()
 simulation_result_link6=simulation_link(simulation,n,path,alpha,given_tol)
 prob.table_link(simulation_result_link6)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim600gam0")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n500p200sim600gam01")
 date()
 simulation_result_link7=simulation_link(simulation,n,path,alpha,given_tol)
 prob.table_link(simulation_result_link7)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim700gam0")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n500p200sim700gam01")
 date()
 simulation_result_link8=simulation_link(simulation,n,path,alpha,given_tol)
 prob.table_link(simulation_result_link8)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim800gam0")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n500p200sim800gam01")
 date()
 simulation_result_link9=simulation_link(simulation,n,path,alpha,given_tol)
 prob.table_link(simulation_result_link9)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim900gam0")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n500p200sim900gam01")
 date()
 simulation_result_link0=simulation_link(simulation,n,path,alpha,given_tol)
 prob.table_link(simulation_result_link0)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim1000gam0")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n500p200sim1000gam01")
 date()
 simulation_result_link=c(simulation_result_link1,simulation_result_link2,
                          simulation_result_link3,simulation_result_link4,
@@ -488,7 +488,7 @@ simulation_result_link=c(simulation_result_link1,simulation_result_link2,
                          simulation_result_link7,simulation_result_link8,
                          simulation_result_link9,simulation_result_link0)
 prob.table_link(simulation_result_link)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim1000gam0")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n500p200sim1000gam01")
 date()
 
 
