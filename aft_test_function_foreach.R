@@ -83,7 +83,7 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   #ghat_0_t
   
   ghat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Covari[,j],
-    SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
+                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
   #ghat_t.z
   
   #-----------------------------f0----------------------------
@@ -108,7 +108,7 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   #fhat_0_t
   
   fhat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Delta*Covari[,j],
-    SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
+                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
   #fhat_t.z
   
   #-----------------------------------------------------------
@@ -155,13 +155,16 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   
   app_path=list(NA)
   
-  path_check=ceiling(path/2)
-  
-  app_path=sapply(1:path,function(k){
-       
-    if(k%%path_check==0) {
-      cat("Sample Path",k,"\n")
-    }
+  co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
+  registerDoParallel(co)
+  cl=makeCluster(co)
+  app_path=foreach(k=1:path,.inorder=FALSE) %dopar% {
+    
+    # path_check=ceiling(path/2)
+    # for (k inC 1:path){
+    # if(k%%path_check==0) {
+    #   cat("Sample Path",k,"\n")
+    # }
     
     # tolerance=tol+1 #initial value
     
@@ -238,11 +241,11 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
     T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,cumsum)/sqrt(n)
     
     app_path=F.T.-S.T.-T.T.
-    
-    return(app_path)
-    
-  },simplify=F)
-  #app_path
+    # app_path[[k]]=F.T.-S.T.-T.T.
+    #app_path
+  }
+  stopCluster(cl)
+  closeAllConnections()
   
   std.boot=matrix(apply(mapply(function(x){as.vector(x)},app_path),1,sd),nrow=n)
   # std.boot
@@ -273,17 +276,20 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   std.p_value=length(which((max_app_std.path>max_obs_std.path)*1==1))/path
   # std.p_value
   
-  result=list(Time,Delta,Covari,e_i_beta,std.boot,
-              app_path,app_std.path,
-              obs_path,obs_std.path,
-              p_value,std.p_value)
+  # result=list(Time,Delta,Covari,e_i_beta,std.boot,
+  #             app_path,app_std.path,
+  #             obs_path,obs_std.path,
+  #             p_value,std.p_value)
+  # 
+  # names(result)=c("Time","Delta","Covari","Resid","std.boot",
+  #                 "app_path","app_std.path",
+  #                 "obs_path","obs_std.path",
+  #                 "p_value","std.p_value")
   
-  names(result)=c("Time","Delta","Covari","Resid","std.boot",
-                  "app_path","app_std.path",
-                  "obs_path","obs_std.path",
-                  "p_value","std.p_value")
+  result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
   # result
   
+  rm(list=(ls()[ls()!="result"]));gc();
   return(result)
 }
 #afttest_omni()
@@ -446,18 +452,21 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   
   app_path=list(NA)
   
-  path_check=ceiling(path/2)
-  
-  app_path=sapply(1:path,function(k){
+  co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
+  registerDoParallel(co)
+  cl=makeCluster(co)
+  app_path=foreach(k=1:path,.inorder=FALSE) %dopar% {
     
-    if(k%%path_check==0) {
-      cat("Sample Path",k,"\n")
-    }
+    # path_check=ceiling(path/2)
+    # for (k inC 1:path){
+    # if(k%%path_check==0) {
+    #   cat("Sample Path",k,"\n")
+    # }
     
     # tolerance=tol+1 #initial value
     
     # while (tolerance>tol){
-    
+      
       phi_i=rnorm(n)
       #phi_i
       
@@ -531,11 +540,11 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
     T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,sum)/sqrt(n)
     
     app_path=F.T.-S.T.-T.T.
-    
-    return(app_path)
-    
-  },simplify=F)
-  #app_path
+    # app_path[[k]]=F.T.-S.T.-T.T.
+    #app_path
+  }
+  stopCluster(cl)
+  closeAllConnections()
   
   std.boot=apply(mapply(function(x){as.vector(x)},app_path),1,sd)
   # std.boot
@@ -566,17 +575,20 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   std.p_value=length(which((max_app_std.path>max_obs_std.path)*1==1))/path
   # std.p_value
   
-  result=list(Time,Delta,Covari,e_i_beta,std.boot,
-              app_path,app_std.path,
-              obs_path,obs_std.path,
-              p_value,std.p_value)
+  # result=list(Time,Delta,Covari,e_i_beta,std.boot,
+  #             app_path,app_std.path,
+  #             obs_path,obs_std.path,
+  #             p_value,std.p_value)
+  # 
+  # names(result)=c("Time","Delta","Covari","Resid","std.boot",
+  #                 "app_path","app_std.path",
+  #                 "obs_path","obs_std.path",
+  #                 "p_value","std.p_value")
   
-  names(result)=c("Time","Delta","Covari","Resid","std.boot",
-                  "app_path","app_std.path",
-                  "obs_path","obs_std.path",
-                  "p_value","std.p_value")
+  result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
   # result
   
+  rm(list=(ls()[ls()!="result"]));gc();
   return(result)
 }
 #afttest_form()
@@ -739,13 +751,16 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
   
   app_path=list(NA)
   
-  path_check=ceiling(path/2)
-  
-  app_path=sapply(1:path,function(k){
+  co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
+  registerDoParallel(co)
+  cl=makeCluster(co)
+  app_path=foreach(k=1:path,.inorder=FALSE) %dopar% {
     
-    if(k%%path_check==0) {
-      cat("Sample Path",k,"\n")
-    }
+    # path_check=ceiling(path/2)
+    # for (k inC 1:path){
+    # if(k%%path_check==0) {
+    #   cat("Sample Path",k,"\n")
+    # }
     
     # tolerance=tol+1 #initial value
     
@@ -801,7 +816,6 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
     #Y_i_t_s
     
     N_d_t_s=Reduce('+',N_i_t_s)
-    #N_d_s
     
     S_0_t_s=Reduce('+',Y_i_t_s)
     #S_0_t_s
@@ -822,11 +836,11 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
     T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,sum)/sqrt(n)
     
     app_path=F.T.-S.T.-T.T.
-    
-    return(app_path)
-    
-  },simplify=F)
-  #app_path
+    # app_path[[k]]=F.T.-S.T.-T.T.
+    #app_path
+  }
+  stopCluster(cl)
+  closeAllConnections()
   
   std.boot=apply(mapply(function(x){as.vector(x)},app_path),1,sd)
   # std.boot
@@ -857,17 +871,20 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
   std.p_value=length(which((max_app_std.path>max_obs_std.path)*1==1))/path
   # std.p_value
   
-  result=list(Time,Delta,Covari,e_i_beta,std.boot,
-              app_path,app_std.path,
-              obs_path,obs_std.path,
-              p_value,std.p_value)
+  # result=list(Time,Delta,Covari,e_i_beta,std.boot,
+  #             app_path,app_std.path,
+  #             obs_path,obs_std.path,
+  #             p_value,std.p_value)
+  # 
+  # names(result)=c("Time","Delta","Covari","Resid","std.boot",
+  #                 "app_path","app_std.path",
+  #                 "obs_path","obs_std.path",
+  #                 "p_value","std.p_value")
   
-  names(result)=c("Time","Delta","Covari","Resid","std.boot",
-                  "app_path","app_std.path",
-                  "obs_path","obs_std.path",
-                  "p_value","std.p_value")
+  result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
   # result
   
+  rm(list=(ls()[ls()!="result"]));gc();
   return(result)
 }
 #afttest_link()

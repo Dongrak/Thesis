@@ -16,30 +16,32 @@ options(error=NULL)
 # install.packages("RcppArmadillo")
 # install.packages("ENmisc")
 # install.packages("plotly")
+# install.packages("doParallel")
 
 library(ggplot2)
 library(gridExtra)
 library(survival)
 library(aftgee)
-library(Rcpp)
-library(RcppArmadillo)
+library(doParallel)
+# library(Rcpp)
+# library(RcppArmadillo)
 # library(ENmisc)
 # library(plotly)
 
-simulation=20
+simulation=100
 n=250
 path=200
 alpha=0.05
 
-given_tol=0.1
+given_tol=1
 
 #-------------------------------------------------------------
 #-----------------------TEST STATISTICS-----------------------
 #-------------------------------------------------------------
 afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
-  # path=200;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;form=1
-  # path=200;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;form=1
-  # path=200;b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
+  # path=200;b=beta_hat_ln_aft;std=std_hat_ln_aft;Time=X_ln_aft;Delta=D_ln_aft;Covari=Z_ln_aft;tol=given_tol;
+  # path=200;b=beta_hat_ln_cox;std=std_hat_ln_cox;Time=X_ln_cox;Delta=D_ln_cox;Covari=Z_ln_cox;tol=given_tol;
+  # path=200;b=c(1.3,1.1);Covari=c(Z_ln_aft,Z_ln_aft^2-4*Z_ln_aft);
   
   n=length(Time) # the number of subjects
   p=length(b) # the number of parameters
@@ -118,11 +120,8 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
                     bandwidth = 1.06*sd(dGhat_0_t)*n^(-0.2),x.points=e_i_beta)$y)
   #ghat_0_t
   
-  ghat_t.z=list(NA)
-  for(j in 1:p){
-    ghat_t.z[[j]]=Reduce('+',lapply(mapply('*',pi_i_z,Covari[,j],SIMPLIFY=FALSE),
-                                    function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n
-  }
+  ghat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Covari[,j],
+                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
   #ghat_t.z
   
   #-----------------------------f0----------------------------
@@ -146,11 +145,8 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   fhat_0_t=predict(loess(den.f$y~den.f$x),e_i_beta)
   #fhat_0_t
   
-  fhat_t.z=list(NA)
-  for(j in 1:p){
-    fhat_t.z[[j]]=Reduce('+',lapply(mapply('*',pi_i_z,Delta*Covari[,j],SIMPLIFY=FALSE),
-                                    function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n
-  }
+  fhat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Delta*Covari[,j],
+                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
   #fhat_t.z
   
   fhat_inf.z=lapply(fhat_t.z,function(x){x[n,]})
@@ -200,55 +196,58 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   
   app_path=list(NA)
   
-  path_check=ceiling(path/2)
-  
-  for (k in 1:path){
+  co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
+  registerDoParallel(co)
+  cl=makeCluster(co)
+  app_path=foreach(k=1:path,.inorder=FALSE) %dopar% {
     
-    if(k%%path_check==0) {
-      cat("Sample Path",k,"\n")
+    # path_check=ceiling(path/2)
+    # for (k inC 1:path){
+    # if(k%%path_check==0) {
+    #   cat("Sample Path",k,"\n")
+    # }
+    
+    # tolerance=tol+1 #initial value
+    
+    # while (tolerance>tol){
+    
+    phi_i=rnorm(n)
+    #phi_i
+    
+    U_pi_phi_inf.z=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
+                                                            pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*Reduce('+',mapply('*',
+                                                                                                                                     dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
+    #U_pi_phi_inf.z
+    
+    U_phi_inf=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
+                                                       as.list(data.frame(t(Covari))),SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_1_t*
+                      Reduce('+',mapply('*',dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
+    #U_phi_inf
+    
+    if(p==1){
+      beta_hat_s_list=optimize(function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)},
+                               c(b-5*std,b+5*std),tol = 1e-16)
+      #beta_hat_s_list
+      
+      beta_hat_s=beta_hat_s_list$minimum
+      #beta_hat_s
+      
+      tolerance=beta_hat_s_list$objective
+      #tolerance
+      
     }
     
-    tolerance=tol+1 #initial value
-    
-    while (tolerance>tol){
+    if(p>1){
+      beta_hat_s_list=optim(b,function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)})
+      #beta_hat_s_list
       
-      phi_i=rnorm(n)
-      #phi_i
+      beta_hat_s=beta_hat_s_list$par
+      #beta_hat_s
       
-      U_pi_phi_inf.z=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
-                                                              pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*Reduce('+',mapply('*',
-                                                                                                                                       dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
-      #U_pi_phi_inf.z
-      
-      U_phi_inf=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
-                                                         as.list(data.frame(t(Covari))),SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_1_t*
-                        Reduce('+',mapply('*',dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
-      #U_phi_inf
-      
-      if(p==1){
-        beta_hat_s_list=optimize(function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)},
-                                 c(b-5*std,b+5*std),tol = 1e-16)
-        #beta_hat_s_list
-        
-        beta_hat_s=beta_hat_s_list$minimum
-        #beta_hat_s
-        
-        tolerance=beta_hat_s_list$objective
-        #tolerance
-        
-      }
-      
-      if(p>1){
-        beta_hat_s_list=optim(b,function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)})
-        #beta_hat_s_list
-        
-        beta_hat_s=beta_hat_s_list$par
-        #beta_hat_s
-        
-        tolerance=beta_hat_s_list$value
-        #tolerance
-      }
+      tolerance=beta_hat_s_list$value
+      #tolerance
     }
+    # }
     
     e_i_beta_s=as.vector(log(Time)+Covari%*%beta_hat_s)
     
@@ -284,9 +283,12 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
                                    (b-beta_hat_s),SIMPLIFY=FALSE))
     T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,sum)/sqrt(n)
     
-    app_path[[k]]=F.T.-S.T.-T.T.
+    app_path=F.T.-S.T.-T.T.
+    # app_path[[k]]=F.T.-S.T.-T.T.
     #app_path
   }
+  stopCluster(cl)
+  closeAllConnections()
   
   std.boot=apply(mapply(function(x){as.vector(x)},app_path),1,sd)
   # std.boot
@@ -317,17 +319,20 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   std.p_value=length(which((max_app_std.path>max_obs_std.path)*1==1))/path
   # std.p_value
   
-  result=list(Time,Delta,Covari,e_i_beta,std.boot,
-              app_path,app_std.path,
-              obs_path,obs_std.path,
-              p_value,std.p_value)
+  # result=list(Time,Delta,Covari,e_i_beta,std.boot,
+  #             app_path,app_std.path,
+  #             obs_path,obs_std.path,
+  #             p_value,std.p_value)
+  # 
+  # names(result)=c("Time","Delta","Covari","Resid","std.boot",
+  #                 "app_path","app_std.path",
+  #                 "obs_path","obs_std.path",
+  #                 "p_value","std.p_value")
   
-  names(result)=c("Time","Delta","Covari","Resid","std.boot",
-                  "app_path","app_std.path",
-                  "obs_path","obs_std.path",
-                  "p_value","std.p_value")
+  result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
   # result
   
+  rm(list=(ls()[ls()!="result"]));gc();
   return(result)
 }
 #afttest_form()
@@ -340,16 +345,21 @@ simulation_form=function(simulation,n,path,alpha,tol){
   
   result=list(NA)
   
-  for(k in 1:simulation){
+  # co=detectCores(logical=FALSE)-1 # number of core if logical is False else it means thread
+  # registerDoParallel(co)
+  # cl=makeCluster(co) 
+  # result=foreach(k=1:simulation,.packages=c('aftgee','survival','doParallel'),.export='afttest_form',.inorder=FALSE) %dopar% {
+  for (k in 1:simulation) {
     if(k%%1==0) {
       cat("simulation",k,"\n")
     }
+    
     # -------------------------------------------------------------
     # ------------------------DATA GENERATE------------------------
     # -------------------------------------------------------------
     # n=200
     beta_0=1
-    gamma_0=0.1
+    gamma_0=0.5
     Z=matrix(rnorm(n,3,1),nrow=n)
     
     #-------------------LOG NORMAL DISTRIBUTION-------------------
@@ -396,9 +406,13 @@ simulation_form=function(simulation,n,path,alpha,tol){
     p_value=list(p_mean,p_alpha)
     #p_value
     
-    #result[[k]]=list(result_ln_aft,result_ln_cox,p_value)
+    # result[[k]]=list(result_ln_aft,result_ln_aft_f,p_value)
     result[[k]]=list(p_value)
+    # result=list(p_value)
   }
+  # stopClustCer(cl)
+  
+  rm(list=(ls()[ls()!="result"]));gc();
   return(result)
 }
 #simulation_form
@@ -426,27 +440,49 @@ prob.table_form=function(simul_result){
 date()
 simulation_result_form1=simulation_form(simulation,n,path,alpha,given_tol)
 prob.table_form(simulation_result_form1)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p150sim100")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p200sim100")
 date()
 simulation_result_form2=simulation_form(simulation,n,path,alpha,given_tol)
 prob.table_form(simulation_result_form2)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p150sim100")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p200sim200")
 date()
 simulation_result_form3=simulation_form(simulation,n,path,alpha,given_tol)
 prob.table_form(simulation_result_form3)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p150sim100")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p200sim300")
 date()
 simulation_result_form4=simulation_form(simulation,n,path,alpha,given_tol)
 prob.table_form(simulation_result_form4)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p150sim100")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p200sim400")
 date()
 simulation_result_form5=simulation_form(simulation,n,path,alpha,given_tol)
 prob.table_form(simulation_result_form5)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p150sim100")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p200sim500")
+date()
+simulation_result_form6=simulation_form(simulation,n,path,alpha,given_tol)
+prob.table_form(simulation_result_form6)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p200sim600")
+date()
+simulation_result_form7=simulation_form(simulation,n,path,alpha,given_tol)
+prob.table_form(simulation_result_form7)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p200sim700")
+date()
+simulation_result_form8=simulation_form(simulation,n,path,alpha,given_tol)
+prob.table_form(simulation_result_form8)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p200sim800")
+date()
+simulation_result_form9=simulation_form(simulation,n,path,alpha,given_tol)
+prob.table_form(simulation_result_form9)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p200sim900")
+date()
+simulation_result_form0=simulation_form(simulation,n,path,alpha,given_tol)
+prob.table_form(simulation_result_form0)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p200sim1000")
 date()
 simulation_result_form=c(simulation_result_form1,simulation_result_form2,
-                          simulation_result_form3,simulation_result_form4)
+                         simulation_result_form3,simulation_result_form4,
+                         simulation_result_form5,simulation_result_form6,
+                         simulation_result_form7,simulation_result_form8,
+                         simulation_result_form9,simulation_result_form0)
 prob.table_form(simulation_result_form)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p150sim500")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_form_n250p200sim1000")
 date()
-

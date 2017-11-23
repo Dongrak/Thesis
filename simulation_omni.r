@@ -10,8 +10,9 @@ options(error=NULL)
 
 # install.packages("ggplot2")
 # install.packages("gridExtra")
-# install.packages("survival") 
+# install.packages("survival")
 # install.packages("aftgee")
+# install.packages("doParallel")
 # install.packages("Rcpp")
 # install.packages("RcppArmadillo")
 # install.packages("ENmisc")
@@ -21,25 +22,26 @@ library(ggplot2)
 library(gridExtra)
 library(survival)
 library(aftgee)
-library(Rcpp)
-library(RcppArmadillo)
+library(doParallel)
+# library(Rcpp)
+# library(RcppArmadillo)
 # library(ENmisc)
 # library(plotly)
 
 simulation=50
 n=250
-path=200
+path=1000
 alpha=0.05
 
-given_tol=0.1
+given_tol=1
 
 #-------------------------------------------------------------
 #-----------------------TEST STATISTICS-----------------------
 #-------------------------------------------------------------
 afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
-  # path=200;b=beta_hat_gg;std=std_hat_gg;Time=X_gg;Delta=D_gg;Covari=Z_gg;tol=given_tol;
-  # path=200;b=beta_hat_wb;std=std_hat_wb;Time=X_wb;Delta=D_wb;Covari=Z_wb;tol=given_tol;
-  # path=200;b=c(1.3,1.1);Covari=c(Z_wb,Z_wb^2-Z_wb);
+  # path=200;b=beta_hat_ln_aft;std=std_hat_ln_aft;Time=X_ln_aft;Delta=D_ln_aft;Covari=Z_ln_aft;tol=given_tol;
+  # path=200;b=beta_hat_ln_cox;std=std_hat_ln_cox;Time=X_ln_cox;Delta=D_ln_cox;Covari=Z_ln_cox;tol=given_tol;
+  # path=200;b=c(1.3,1.1);Covari=c(Z_ln_aft,Z_ln_aft^2-4*Z_ln_aft);
   
   n=length(Time) # the number of subjects
   p=length(b) # the number of parameters
@@ -56,22 +58,14 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   e_i_beta=e_i_beta[order_resid]
   
   # weight function
-  pi_i_z=list(NA)
-  for(i in 1:n){
-    pi_i_z[[i]]=apply(apply(Covari,2,function(x){(x<=((x[order(x)])[i]))*1}),1,prod)
-  }
-  pi_i_z=as.list(data.frame(t(matrix(unlist(pi_i_z),nrow=n))))
+  order_Covari=apply(Covari,2,function(x){order(x)}) 
+  pi_i_z=sapply(1:n,function(j){apply(sapply(1:p,function(i){c(rep(0,(which(
+    order_Covari[,i]==j)-1)),rep(1,(n+1-which(order_Covari[,i]==j))))}),1,prod)},simplify=F)
   
-  N_i_t=list(NA)
-  for(j in 1:n){
-    N_i_t[[j]]=(e_i_beta>=e_i_beta[j])*Delta[j]
-  }
+  N_i_t=sapply(1:n,function(j){(e_i_beta>=e_i_beta[j])*Delta[j]},simplify=F)
   #N_i_t
   
-  Y_i_t=list(NA)
-  for(j in 1:n){
-    Y_i_t[[j]]=(e_i_beta<=e_i_beta[j])*1
-  }
+  Y_i_t=sapply(1:n,function(j){(e_i_beta<=e_i_beta[j])*1},simplify=F)
   #Y_i_t
   
   N_d_t=Reduce('+',N_i_t)
@@ -125,11 +119,8 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
                     bandwidth = 1.06*sd(dGhat_0_t)*n^(-0.2),x.points=e_i_beta)$y)
   #ghat_0_t
   
-  ghat_t.z=list(NA)
-  for(j in 1:p){
-    ghat_t.z[[j]]=Reduce('+',lapply(mapply('*',pi_i_z,Covari[,j],SIMPLIFY=FALSE),
-                                    function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n
-  }
+  ghat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Covari[,j],
+                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
   #ghat_t.z
   
   #-----------------------------f0----------------------------
@@ -153,11 +144,8 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   fhat_0_t=predict(loess(den.f$y~den.f$x),e_i_beta)
   #fhat_0_t
   
-  fhat_t.z=list(NA)
-  for(j in 1:p){
-    fhat_t.z[[j]]=Reduce('+',lapply(mapply('*',pi_i_z,Delta*Covari[,j],SIMPLIFY=FALSE),
-                                    function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n
-  }
+  fhat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Delta*Covari[,j],
+                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
   #fhat_t.z
   
   #-----------------------------------------------------------
@@ -177,19 +165,10 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
     Delta_U=Delta_U[order_resid_U]
     e_i_beta_U=e_i_beta_U[order_resid_U]
     
-    N_i_t_U=list(NA)
-    for(j in 1:n){
-      N_i_t_U[[j]]=(e_i_beta_U>=e_i_beta_U[j])*Delta_U[j]
-    }
+    N_i_t_U=sapply(1:n,function(j){(e_i_beta_U>=e_i_beta_U[j])*Delta_U[j]},simplify=F)
     #N_i_t_U
     
-    dN_i_t_U=lapply(N_i_t_U,function(x){diff(c(0,x))})
-    #dN_i_t_U
-    
-    Y_i_t_U=list(NA)
-    for(j in 1:n){
-      Y_i_t_U[[j]]=(e_i_beta_U<=e_i_beta_U[j])*1
-    }
+    Y_i_t_U=sapply(1:n,function(j){(e_i_beta_U<=e_i_beta_U[j])*1},simplify=F)
     #Y_i_t_U
     
     S_0_t_U=Reduce('+',Y_i_t_U)
@@ -197,6 +176,9 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
     
     S_1_t_U=Reduce('+',mapply(function(x,y){x%*%t(y)},Y_i_t_U,as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))
     #S_1_t_U
+    
+    dN_i_t_U=lapply(N_i_t_U,function(x){diff(c(0,x))})
+    #dN_i_t_U
     
     U_inf_U=apply(S_0_t_U*Reduce('+',mapply(function(x,y){x%*%t(y)},dN_i_t_U,
                                             as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))-S_1_t_U*Reduce('+',dN_i_t_U),2,sum)/n
@@ -210,19 +192,22 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   
   app_path=list(NA)
   
-  path_check=ceiling(path/2)
-  
-  for (k in 1:path){
+  co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
+  registerDoParallel(co)
+  cl=makeCluster(co)
+  app_path=foreach(k=1:path,.inorder=FALSE) %dopar% {
     
-    if(k%%path_check==0) {
-      cat("Sample Path",k,"\n")
-    }
+    # path_check=ceiling(path/2)
+    # for (k inC 1:path){
+    # if(k%%path_check==0) {
+    #   cat("Sample Path",k,"\n")
+    # }
     
-    tolerance=tol+1 #initial value
-
-    while (tolerance>tol){
+    # tolerance=tol+1 #initial value
     
-    phi_i=rnorm(n)
+    # while (tolerance>tol){
+    
+    phi_i=rnorm(n)  
     #phi_i
     
     U_pi_phi_t.z=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
@@ -256,7 +241,7 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
       tolerance=beta_hat_s_list$value
       #tolerance
     }
-    }
+    # }
     
     e_i_beta_s=as.vector(log(Time)+Covari%*%beta_hat_s)
     
@@ -265,16 +250,10 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
     Delta_s=Delta[order_resid_s]
     e_i_beta_s=e_i_beta_s[order_resid_s]
     
-    N_i_t_s=list(NA)
-    for(j in 1:n){
-      N_i_t_s[[j]]=(e_i_beta_s>=e_i_beta_s[j])*Delta_s[j]
-    }
+    N_i_t_s=sapply(1:n,function(j){(e_i_beta_s>=e_i_beta_s[j])*Delta_s[j]},simplify=F)
     #N_i_t_s
     
-    Y_i_t_s=list(NA)
-    for(j in 1:n){
-      Y_i_t_s[[j]]=(e_i_beta_s<=e_i_beta_s[j])*1
-    }
+    Y_i_t_s=sapply(1:n,function(j){(e_i_beta_s<=e_i_beta_s[j])*1},simplify=F)
     #Y_i_t_s
     
     N_d_t_s=Reduce('+',N_i_t_s)
@@ -298,9 +277,12 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
                                    (b-beta_hat_s),SIMPLIFY=FALSE))
     T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,cumsum)/sqrt(n)
     
-    app_path[[k]]=F.T.-S.T.-T.T.
+    app_path=F.T.-S.T.-T.T.
+    # app_path[[k]]=F.T.-S.T.-T.T.
     #app_path
   }
+  stopCluster(cl)
+  closeAllConnections()
   
   std.boot=matrix(apply(mapply(function(x){as.vector(x)},app_path),1,sd),nrow=n)
   # std.boot
@@ -331,17 +313,20 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   std.p_value=length(which((max_app_std.path>max_obs_std.path)*1==1))/path
   # std.p_value
   
-  result=list(Time,Delta,Covari,e_i_beta,std.boot,
-              app_path,app_std.path,
-              obs_path,obs_std.path,
-              p_value,std.p_value)
+  # result=list(Time,Delta,Covari,e_i_beta,std.boot,
+  #             app_path,app_std.path,
+  #             obs_path,obs_std.path,
+  #             p_value,std.p_value)
+  # 
+  # names(result)=c("Time","Delta","Covari","Resid","std.boot",
+  #                 "app_path","app_std.path",
+  #                 "obs_path","obs_std.path",
+  #                 "p_value","std.p_value")
   
-  names(result)=c("Time","Delta","Covari","Resid","std.boot",
-                  "app_path","app_std.path",
-                  "obs_path","obs_std.path",
-                  "p_value","std.p_value")
+  result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
   # result
   
+  rm(list=(ls()[ls()!="result"]));gc();
   return(result)
 }
 #afttest_omni()
@@ -353,11 +338,16 @@ simulation_omni=function(simulation,n,path,alpha,tol){
   #simulation=simulation;n=n;path=path;alpha=alpha;tol=given_tol;
   
   result=list(NA)
-  
-  for(k in 1:simulation){
+
+  # co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
+  # registerDoParallel(co)
+  # cl=makeCluster(co)
+  # result=foreach(k=1:simulation,.packages=c('aftgee','survival','doParallel'),.export='afttest_omni',.inorder=FALSE) %dopar% {
+  for (k in 1:simulation) {
     if(k%%1==0) {
       cat("simulation",k,"\n")
     }
+    
     # -------------------------------------------------------------
     # ------------------------DATA GENERATE------------------------
     # -------------------------------------------------------------
@@ -409,9 +399,13 @@ simulation_omni=function(simulation,n,path,alpha,tol){
     p_value=list(p_mean,p_alpha)
     #p_value
     
-    #result[[k]]=list(result_ln_aft,result_ln_cox,p_value)
+    # result[[k]]=list(result_ln_aft,result_ln_cox,p_value)
     result[[k]]=list(p_value)
+    # result=list(p_value)
   }
+  # stopClustCer(cl)
+  
+  rm(list=(ls()[ls()!="result"]));gc();
   return(result)
 }
 #simulation_omni
@@ -439,29 +433,49 @@ prob.table_omni=function(simul_result){
 date()
 simulation_result_omni1=simulation_omni(simulation,n,path,alpha,given_tol)
 prob.table_omni(simulation_result_omni1)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p150sim100")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim50")
 date()
 simulation_result_omni2=simulation_omni(simulation,n,path,alpha,given_tol)
 prob.table_omni(simulation_result_omni2)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p150sim100")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim100")
 date()
 simulation_result_omni3=simulation_omni(simulation,n,path,alpha,given_tol)
 prob.table_omni(simulation_result_omni3)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p150sim100")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim150")
 date()
 simulation_result_omni4=simulation_omni(simulation,n,path,alpha,given_tol)
 prob.table_omni(simulation_result_omni4)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p150sim100")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim200")
 date()
 simulation_result_omni5=simulation_omni(simulation,n,path,alpha,given_tol)
 prob.table_omni(simulation_result_omni5)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p150sim100")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim250")
+date()
+simulation_result_omni6=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni6)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim300")
+date()
+simulation_result_omni7=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni7)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim350")
+date()
+simulation_result_omni8=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni8)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim400")
+date()
+simulation_result_omni9=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni9)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim450")
+date()
+simulation_result_omni0=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni0)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim500")
 date()
 simulation_result_omni=c(simulation_result_omni1,simulation_result_omni2,
                          simulation_result_omni3,simulation_result_omni4,
                          simulation_result_omni5,simulation_result_omni6,
                          simulation_result_omni7,simulation_result_omni8,
-                         simulation_result_omni9,simulation_result_omni10)
+                         simulation_result_omni9,simulation_result_omni0)
 prob.table_omni(simulation_result_omni)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p150sim500")
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim500")
 date()

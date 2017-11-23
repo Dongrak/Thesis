@@ -16,95 +16,96 @@ options(error=NULL)
 # install.packages("RcppArmadillo")
 # install.packages("ENmisc")
 # install.packages("plotly")
+# install.packages("doParallel")
 
 library(ggplot2)
 library(gridExtra)
 library(survival)
 library(aftgee)
-library(Rcpp)
-library(RcppArmadillo)
-library(ENmisc)
-library(plotly)
+library(doParallel)
+# library(Rcpp)
+# library(RcppArmadillo)
+# library(ENmisc)
+# library(plotly)
 
 #-------------------------------------------------------------
 #------------------------WEIGHT&TOLERANCE---------------------
 #-------------------------------------------------------------
-path=200
-
-given_tol=0.1
+path=250
+given_tol=1
 
 #------------------------DATA GENERATION----------------------
 n=250
 beta_0=1
-gamma_0=0.1
+gamma_0=0.5
 Z=matrix(rnorm(n,3,1),nrow=n)
 
 #---------------------WEIBULL DISTRIBUTION--------------------
 # T ~ Generalized Gamma(alpha=1,beta,sigma) i.e. Weibull ~ (beta,sigma)
 # alpha : shape // beta : scale // sigma : rate parameter of generaized gamma
-alpha_wb_T=1;alpha_wb_C=1     # alpha must be one when weibull
-beta_wb_T=100;beta_wb_C=101       #
-sigma_wb_T=100;sigma_wb_C=100     #
-
-V_wb_T=log(beta_wb_T)+log(qgamma(runif(n),alpha_wb_T,1))/sigma_wb_T
-V_wb_C=log(beta_wb_C)+log(qgamma(runif(n),alpha_wb_C,1))/sigma_wb_C
-T_wb=exp(-Z%*%beta_0+V_wb_T)
-C_wb=exp(-Z%*%beta_0+V_wb_C)
-X_wb=C_wb*(T_wb>C_wb)+T_wb*(T_wb<=C_wb) # observed failure time
-D_wb=0*(T_wb>C_wb)+1*(T_wb<=C_wb)
-Z_wb=Z # delta 0:censored & 1:observed
+# alpha_wb_T=1;alpha_wb_C=1     # alpha must be one when weibull
+# beta_wb_T=100;beta_wb_C=101       #
+# sigma_wb_T=100;sigma_wb_C=100     #
+# 
+# V_wb_T=log(beta_wb_T)+log(qgamma(runif(n),alpha_wb_T,1))/sigma_wb_T
+# V_wb_C=log(beta_wb_C)+log(qgamma(runif(n),alpha_wb_C,1))/sigma_wb_C
+# T_wb=exp(-Z%*%beta_0+V_wb_T)
+# C_wb=exp(-Z%*%beta_0+V_wb_C)
+# X_wb=C_wb*(T_wb>C_wb)+T_wb*(T_wb<=C_wb) # observed failure time
+# D_wb=0*(T_wb>C_wb)+1*(T_wb<=C_wb)
+# Z_wb=Z # delta 0:censored & 1:observed
 
 #---------------GNERALIZED GUMBELL DISTRIBUTION---------------
 # T ~ Generalized Gamma(alpha,beta,sigma) if. V ~ Generalized Gumbell(beta,sigma)
 # alpha : shape // beta : scale // sigma : rate parameter of generaized gamma
-alpha_gg_T=100;alpha_gg_C=110    # alpha must be greater than one whne not weibull
-beta_gg_T=0.1;beta_gg_C=0.1      # gamma distribution
-sigma_gg_T=1;sigma_gg_C=1        #
-
-V_gg_T=log(beta_gg_T)+log(qgamma(runif(n),alpha_gg_T,1))/sigma_gg_T
-V_gg_C=log(beta_gg_C)+log(qgamma(runif(n),alpha_gg_C,1))/sigma_gg_C
-T_gg=exp(-Z%*%beta_0+V_gg_T)
-C_gg=exp(-Z%*%beta_0+V_gg_C)
-X_gg=C_gg*(T_gg>C_gg)+T_gg*(T_gg<=C_gg) # observed failure time
-D_gg=0*(T_gg>C_gg)+1*(T_gg<=C_gg)       # delta 0:censored & 1:observed
-Z_gg=Z 
+# alpha_gg_T=100;alpha_gg_C=110    # alpha must be greater than one whne not weibull
+# beta_gg_T=0.1;beta_gg_C=0.1      # gamma distribution
+# sigma_gg_T=1;sigma_gg_C=1        #
+# 
+# V_gg_T=log(beta_gg_T)+log(qgamma(runif(n),alpha_gg_T,1))/sigma_gg_T
+# V_gg_C=log(beta_gg_C)+log(qgamma(runif(n),alpha_gg_C,1))/sigma_gg_C
+# T_gg=exp(-Z%*%beta_0+V_gg_T)
+# C_gg=exp(-Z%*%beta_0+V_gg_C)
+# X_gg=C_gg*(T_gg>C_gg)+T_gg*(T_gg<=C_gg) # observed failure time
+# D_gg=0*(T_gg>C_gg)+1*(T_gg<=C_gg)       # delta 0:censored & 1:observed
+# Z_gg=Z 
 
 #------------WEIBULL DISTRIBUTION(FUNCTIONAL FORM)------------
-Z_f=matrix(c(Z,Z^2), nrow = n, ncol = 2)
-beta_f=c(beta_0,gamma_0)
-
-alpha_wb_f_T=1;alpha_wb_f_C=1     # alpha must be one when weibull
-beta_wb_f_T=10;beta_wb_f_C=12     # 
-sigma_wb_f_T=10;sigma_wb_f_C=12   # 
-
-V_wb_f_T=log(beta_wb_f_T)+log(qgamma(runif(n),alpha_wb_f_T,1))/sigma_wb_f_T
-V_wb_f_C=log(beta_wb_f_C)+log(qgamma(runif(n),alpha_wb_f_C,1))/sigma_wb_f_C
-T_wb_f=exp(-Z_f%*%beta_f+V_wb_f_T)
-C_wb_f=exp(-Z_f%*%beta_f+V_wb_f_C)
-X_wb_f=C_wb_f*(T_wb_f>C_wb_f)+T_wb_f*(T_wb_f<=C_wb_f) # observed failure time
-D_wb_f=0*(T_wb_f>C_wb_f)+1*(T_wb_f<=C_wb_f)       # delta 0:censored & 1:observed
-Z_wb_f=Z_f
+# Z_f=matrix(c(Z,Z^2), nrow = n, ncol = 2)
+# beta_f=c(beta_0,gamma_0)
+# 
+# alpha_wb_f_T=1;alpha_wb_f_C=1     # alpha must be one when weibull
+# beta_wb_f_T=10;beta_wb_f_C=12     # 
+# sigma_wb_f_T=10;sigma_wb_f_C=12   # 
+# 
+# V_wb_f_T=log(beta_wb_f_T)+log(qgamma(runif(n),alpha_wb_f_T,1))/sigma_wb_f_T
+# V_wb_f_C=log(beta_wb_f_C)+log(qgamma(runif(n),alpha_wb_f_C,1))/sigma_wb_f_C
+# T_wb_f=exp(-Z_f%*%beta_f+V_wb_f_T)
+# C_wb_f=exp(-Z_f%*%beta_f+V_wb_f_C)
+# X_wb_f=C_wb_f*(T_wb_f>C_wb_f)+T_wb_f*(T_wb_f<=C_wb_f) # observed failure time
+# D_wb_f=0*(T_wb_f>C_wb_f)+1*(T_wb_f<=C_wb_f)       # delta 0:censored & 1:observed
+# Z_wb_f=Z_f
 
 #-------------------------------------------------------------
 #-------------Estimate Beta_hat_wb by using Aftgee------------
 #-------------------------------------------------------------
-aftsrr_beta_wb=aftsrr(Surv(X_wb,D_wb)~Z_wb,method="nonsm")
-beta_hat_wb=-as.vector(aftsrr_beta_wb$beta);beta_hat_wb
-std_hat_wb=diag(aftsrr_beta_wb$covmat$ISMB);std_hat_wb
+# aftsrr_beta_wb=aftsrr(Surv(X_wb,D_wb)~Z_wb,method="nonsm")
+# beta_hat_wb=-as.vector(aftsrr_beta_wb$beta);beta_hat_wb
+# std_hat_wb=diag(aftsrr_beta_wb$covmat$ISMB);std_hat_wb
 
 #-------------------------------------------------------------
 #------------Estimate Beta_hat_gev by using Aftgee------------
 #-------------------------------------------------------------
-aftsrr_beta_gg=aftsrr(Surv(X_gg,D_gg)~Z_gg,method="nonsm")
-beta_hat_gg=-as.vector(aftsrr_beta_gg$beta);beta_hat_gg
-std_hat_gg=diag(aftsrr_beta_gg$covmat$ISMB);std_hat_gg
+# aftsrr_beta_gg=aftsrr(Surv(X_gg,D_gg)~Z_gg,method="nonsm")
+# beta_hat_gg=-as.vector(aftsrr_beta_gg$beta);beta_hat_gg
+# std_hat_gg=diag(aftsrr_beta_gg$covmat$ISMB);std_hat_gg
 
 #-------------------------------------------------------------
 #------------Estimate Beta_hat_wb_f by using Aftgee-----------
 #-------------------------------------------------------------
-aftsrr_beta_wb_f=aftsrr(Surv(X_wb_f,D_wb_f)~Z_wb_f,method="nonsm")
-beta_hat_wb_f=-as.vector(aftsrr_beta_wb_f$beta);beta_hat_wb_f
-std_hat_wb_f=diag(aftsrr_beta_wb_f$covmat$ISMB);std_hat_wb_f
+# aftsrr_beta_wb_f=aftsrr(Surv(X_wb_f,D_wb_f)~Z_wb_f,method="nonsm")
+# beta_hat_wb_f=-as.vector(aftsrr_beta_wb_f$beta);beta_hat_wb_f
+# std_hat_wb_f=diag(aftsrr_beta_wb_f$covmat$ISMB);std_hat_wb_f
 
 #-------------------LOG NORMAL DISTRIBUTION-------------------
 T_ln_aft=as.vector(exp(-beta_0*Z)*qlnorm(runif(n),5,1))
@@ -125,8 +126,8 @@ X_ln_aft_f=C_ln_aft_f*(T_ln_aft_f>C_ln_aft_f)+T_ln_aft_f*(T_ln_aft_f<=C_ln_aft_f
 D_ln_aft_f=0*(T_ln_aft_f>C_ln_aft_f)+1*(T_ln_aft_f<=C_ln_aft_f)
 Z_ln_aft_f=Z
 
-Z1=matrix(rexp(n,5),nrow=n)
-Z2=matrix(rnorm(n,3,1),nrow=n)
+Z1=matrix(rnorm(n,3,1),nrow=n)
+Z2=matrix(runif(n),nrow=n)
 
 T_ln_aft_l=as.vector(exp(-beta_0*(Z1^2)-gamma_0*sqrt(Z2))*qlnorm(runif(n),5,1))
 C_ln_aft_l=as.vector(exp(-beta_0*(Z1^2)-gamma_0*sqrt(Z2))*qlnorm(runif(n),6.5,1))
