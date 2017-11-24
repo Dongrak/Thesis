@@ -35,17 +35,16 @@ alpha=0.05
 
 beta_0=1
 
-gamma_0=0.1
+# gamma_0=0.1
 # gamma_0=0.3
-# gamma_0=0.5
+gamma_0=0.5
 
 given_tol=1
 
-given_tol=1
 #-------------------------------------------------------------
 #-----------------------TEST STATISTICS-----------------------
 #-------------------------------------------------------------
-afttest_link=function(path,b,std,Time,Delta,Covari,tol){
+afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   # path=200;b=beta_hat_ln_aft;std=std_hat_ln_aft;Time=X_ln_aft;Delta=D_ln_aft;Covari=Z_ln_aft;tol=given_tol;
   # path=200;b=beta_hat_ln_cox;std=std_hat_ln_cox;Time=X_ln_cox;Delta=D_ln_cox;Covari=Z_ln_cox;tol=given_tol;
   # path=200;b=c(1.3,1.1);Covari=c(Z_ln_aft,Z_ln_aft^2-4*Z_ln_aft);
@@ -101,10 +100,8 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
     Y_i_t,'*',dLambdahat_0_t),cumsum),SIMPLIFY=FALSE)
   #Mhat_i_t
   
-  Mhat_i_inf=unlist(lapply(Mhat_i_t,function(x){x[n]}))
-  #Mhat_i_inf
-  
-  obs_path=Reduce('+',mapply('*',pi_i_z,Mhat_i_inf,SIMPLIFY=FALSE))/sqrt(n)
+  obs_path=Reduce('+',mapply(function(x,y){x%*%t(y)},
+                             Mhat_i_t,pi_i_z,SIMPLIFY=FALSE))/sqrt(n)
   #obs_path
   
   S_pi_t.z=Reduce('+',mapply(function(x,y){x%*%t(y)},Y_i_t,pi_i_z,SIMPLIFY=FALSE))
@@ -157,8 +154,6 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
                                                            SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
   #fhat_t.z
   
-  fhat_inf.z=lapply(fhat_t.z,function(x){x[n,]})
-  
   #-----------------------------------------------------------
   #--------Find Beta_hat_star by using optimize function------
   #-----------------------------------------------------------
@@ -182,14 +177,14 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
     Y_i_t_U=sapply(1:n,function(j){(e_i_beta_U<=e_i_beta_U[j])*1},simplify=F)
     #Y_i_t_U
     
-    dN_i_t_U=lapply(N_i_t_U,function(x){diff(c(0,x))})
-    #dN_i_t_U
-    
     S_0_t_U=Reduce('+',Y_i_t_U)
     #S_0_t_U
     
     S_1_t_U=Reduce('+',mapply(function(x,y){x%*%t(y)},Y_i_t_U,as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))
     #S_1_t_U
+    
+    dN_i_t_U=lapply(N_i_t_U,function(x){diff(c(0,x))})
+    #dN_i_t_U
     
     U_inf_U=apply(S_0_t_U*Reduce('+',mapply(function(x,y){x%*%t(y)},dN_i_t_U,
                                             as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))-S_1_t_U*Reduce('+',dN_i_t_U),2,sum)/n
@@ -218,13 +213,13 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
     
     # while (tolerance>tol){
     
-    phi_i=rnorm(n)
+    phi_i=rnorm(n)  
     #phi_i
     
-    U_pi_phi_inf.z=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
-                                                            pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*Reduce('+',mapply('*',
-                                                                                                                                     dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
-    #U_pi_phi_inf.z
+    U_pi_phi_t.z=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
+                                                          pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*Reduce('+',mapply('*',
+                                                                                                                                   dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,cumsum)/n
+    #U_pi_phi_t.z
     
     U_phi_inf=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
                                                        as.list(data.frame(t(Covari))),SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_1_t*
@@ -268,6 +263,7 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
     #Y_i_t_s
     
     N_d_t_s=Reduce('+',N_i_t_s)
+    #N_d_s_s_t_s
     
     S_0_t_s=Reduce('+',Y_i_t_s)
     #S_0_t_s
@@ -281,11 +277,11 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
     Lambdahat_0_t_s=cumsum((J_t_s/S_0_t_s)*dN_d_t_s)
     #Lambdahat_0_t_s
     
-    F.T.=U_pi_phi_inf.z/sqrt(n)
-    S.T.=sqrt(n)*Reduce('+',mapply('*',mapply('+',fhat_inf.z,mapply(function(x){apply(x,2,sum)},
-                                                                    lapply(ghat_t.z,'*',dLambdahat_0_t),SIMPLIFY=FALSE),SIMPLIFY=FALSE),
+    F.T.=(1/sqrt(n))*U_pi_phi_t.z
+    S.T.=sqrt(n)*Reduce('+',mapply('*',mapply('+',fhat_t.z,mapply(function(x){apply(x,2,
+                                                                                    cumsum)},lapply(ghat_t.z,'*',dLambdahat_0_t),SIMPLIFY=FALSE),SIMPLIFY=FALSE),
                                    (b-beta_hat_s),SIMPLIFY=FALSE))
-    T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,sum)/sqrt(n)
+    T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,cumsum)/sqrt(n)
     
     app_path=F.T.-S.T.-T.T.
     # app_path[[k]]=F.T.-S.T.-T.T.
@@ -294,7 +290,7 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
   stopCluster(cl)
   closeAllConnections()
   
-  std.boot=apply(mapply(function(x){as.vector(x)},app_path),1,sd)
+  std.boot=matrix(apply(mapply(function(x){as.vector(x)},app_path),1,sd),nrow=n)
   # std.boot
   
   app_std.path=lapply(app_path,function(x){x/std.boot})
@@ -339,80 +335,76 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
   rm(list=(ls()[ls()!="result"]));gc();
   return(result)
 }
-#afttest_link()
+#afttest_omni()
 
 #-------------------------------------------------------------
-#------------------------LINK FUNCTION------------------------
+#--------------------------SIMULATION-------------------------
 #-------------------------------------------------------------
-simulation_link=function(simulation,n,path,alpha,tol){
+simulation_omni=function(simulation,n,path,alpha,tol){
   #simulation=simulation;n=n;path=path;alpha=alpha;tol=given_tol;
   
   result=list(NA)
   
-  # co=detectCores(logical=FALSE)-1 # number of core if logical is False else it means thread
+  # co=detectCores(logical=FALSE)-2 # number of core if logical is False else it means thread
   # registerDoParallel(co)
-  # cl=makeCluster(co) 
-  # result=foreach(k=1:simulation,.packages=c('aftgee','survival','doParallel'),.export='afttest_link',.inorder=FALSE) %dopar% {
+  # cl=makeCluster(co)
+  # result=foreach(k=1:simulation,.packages=c('aftgee','survival','doParallel'),.export='afttest_omni',.inorder=FALSE) %dopar% {
   for (k in 1:simulation) {
     if(k%%1==0) {
       cat("simulation",k,"\n")
     }
-  
+    
     # -------------------------------------------------------------
     # ------------------------DATA GENERATE------------------------
     # -------------------------------------------------------------
-    # n=500
-    Z1=matrix(rnorm(n,3,1),nrow=n)
-    Z2=matrix(runif(n),nrow=n)
-
+    # n=200
+    Z=matrix(rnorm(n,3,1),nrow=n)
+    
     #-------------------LOG NORMAL DISTRIBUTION-------------------
-    T_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*Z2)*qlnorm(runif(n),5,1))
-    C_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*Z2)*qlnorm(runif(n),6.5,1))
+    T_ln_aft=as.vector(exp(-beta_0*Z)*qlnorm(runif(n),5,1))
+    C_ln_aft=as.vector(exp(-beta_0*Z)*qlnorm(runif(n),6.5,1))
     X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
     D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
-    Z1_ln_aft=Z1
-    Z2_ln_aft=Z2
-    Z_ln_aft=cbind(Z1_ln_aft,Z2_ln_aft)
+    Z_ln_aft=Z
     
-    T_ln_aft_l=as.vector(exp(-beta_0*(Z1^2)-gamma_0*sqrt(Z2))*qlnorm(runif(n),5,1))
-    C_ln_aft_l=as.vector(exp(-beta_0*(Z1^2)-gamma_0*sqrt(Z2))*qlnorm(runif(n),6.5,1))
-    X_ln_aft_l=C_ln_aft_l*(T_ln_aft_l>C_ln_aft_l)+T_ln_aft_l*(T_ln_aft_l<=C_ln_aft_l)
-    D_ln_aft_l=0*(T_ln_aft_l>C_ln_aft_l)+1*(T_ln_aft_l<=C_ln_aft_l)
-    Z1_ln_aft_l=Z1
-    Z2_ln_aft_l=Z2
-    Z_ln_aft_l=cbind(Z1_ln_aft_l,Z2_ln_aft_l)
+    T_ln_aft_f=as.vector(exp(-beta_0*Z-gamma_0*(Z^2))*qlnorm(runif(n),5,1))
+    C_ln_aft_f=as.vector(exp(-beta_0*Z-gamma_0*(Z^2))*qlnorm(runif(n),6.5,1))
+    X_ln_aft_f=C_ln_aft_f*(T_ln_aft_f>C_ln_aft_f)+T_ln_aft_f*(T_ln_aft_f<=C_ln_aft_f)
+    D_ln_aft_f=0*(T_ln_aft_f>C_ln_aft_f)+1*(T_ln_aft_f<=C_ln_aft_f)
+    Z_ln_aft_f=Z
     
-    #------------Estimate Beta_hat_ln_aft by using Aftgee-----------
-    aftsrr_beta_ln_aft=aftsrr(Surv(X_ln_aft,D_ln_aft)~Z1_ln_aft+Z2_ln_aft,method="nonsm")
+    #------------Estimate Beta_hat_ln_aft_f by using Aftgee-----------
+    aftsrr_beta_ln_aft=aftsrr(Surv(X_ln_aft,D_ln_aft)~Z_ln_aft,method="nonsm")
     beta_hat_ln_aft=-as.vector(aftsrr_beta_ln_aft$beta);beta_hat_ln_aft
     std_hat_ln_aft=diag(aftsrr_beta_ln_aft$covmat$ISMB);std_hat_ln_aft
     
-    aftsrr_beta_ln_aft_l=aftsrr(Surv(X_ln_aft_l,D_ln_aft_l)~Z1_ln_aft_l+Z2_ln_aft_l,method="nonsm")
-    beta_hat_ln_aft_l=-as.vector(aftsrr_beta_ln_aft_l$beta);beta_hat_ln_aft_l
-    std_hat_ln_aft_l=diag(aftsrr_beta_ln_aft_l$covmat$ISMB);std_hat_ln_aft_l
+    aftsrr_beta_ln_aft_f=aftsrr(Surv(X_ln_aft_f,D_ln_aft_f)~Z_ln_aft_f,method="nonsm")
+    beta_hat_ln_aft_f=-as.vector(aftsrr_beta_ln_aft_f$beta);beta_hat_ln_aft_f
+    std_hat_ln_aft_f=diag(aftsrr_beta_ln_aft_f$covmat$ISMB);std_hat_ln_aft_f
     
     # result_ln_aft
-    result_ln_aft=afttest_link(path,beta_hat_ln_aft,std_hat_ln_aft,
-                                    X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+    result_ln_aft=afttest_form(path,beta_hat_ln_aft,std_hat_ln_aft,
+                               X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
     
-    result_ln_aft_l=afttest_link(path,beta_hat_ln_aft_l,std_hat_ln_aft_l,
-                                      X_ln_aft_l,D_ln_aft_l,Z_ln_aft_l,given_tol)
+    # result_ln_aft_f
+    result_ln_aft_f=afttest_form(path,beta_hat_ln_aft_f,std_hat_ln_aft_f,
+                                 X_ln_aft_f,D_ln_aft_f,Z_ln_aft_f,given_tol)
     
     p_mean=rbind(c(result_ln_aft$p_value,result_ln_aft$std.p_value),
-                 c(result_ln_aft_l$p_value,result_ln_aft_l$std.p_value))
+                 c(result_ln_aft_f$p_value,result_ln_aft_f$std.p_value))
     colnames(p_mean)=c("W","std.W")
-    rownames(p_mean)=c("p_ln_aft_mean","p_ln_aft_l_mean")
+    rownames(p_mean)=c("p_ln_aft_mean","p_ln_aft_f_mean")
     #p_mean
     
     p_alpha=(p_mean>=alpha)*1
     colnames(p_alpha)=c("W","std.W")
-    rownames(p_alpha)=c("p_ln_aft_alpha","p_ln_aft_l_alpha")
+    rownames(p_alpha)=c("p_ln_aft_alpha","p_ln_aft_f_alpha")
     #p_alpha
     
     p_value=list(p_mean,p_alpha)
     #p_value
     
-    # result[[k]]=list(result_ln_aft,result_ln_aft_l,p_value)
+    # result[[k]]=list(result_ln_aft,result_ln_aft_f,p_value)
     result[[k]]=list(p_value)
     # result=list(p_value)
   }
@@ -421,9 +413,9 @@ simulation_link=function(simulation,n,path,alpha,tol){
   rm(list=(ls()[ls()!="result"]));gc();
   return(result)
 }
-#simulation_link
+#simulation_omni
 
-prob.table_link=function(simul_result){
+prob.table_omni=function(simul_result){
   simul=length(simul_result)
   
   p_mean_set=list(NA)
@@ -441,56 +433,54 @@ prob.table_link=function(simul_result){
   
   return(list(p_mean,p_alpha))
 }
-#prob.table_link
+#prob.table_omni
 
 date()
-simulation_result_link1=simulation_link(simulation,n,path,alpha,given_tol)
-prob.table_link(simulation_result_link1)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim100gam01")
+simulation_result_omni1=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni1)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim100gam05")
 date()
-simulation_result_link2=simulation_link(simulation,n,path,alpha,given_tol)
-prob.table_link(simulation_result_link2)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim200gam01")
+simulation_result_omni2=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni2)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim200gam05")
 date()
-simulation_result_link3=simulation_link(simulation,n,path,alpha,given_tol)
-prob.table_link(simulation_result_link3)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim300gam01")
+simulation_result_omni3=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni3)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim300gam05")
 date()
-simulation_result_link4=simulation_link(simulation,n,path,alpha,given_tol)
-prob.table_link(simulation_result_link4)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim400gam01")
+simulation_result_omni4=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni4)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim400gam05")
 date()
-simulation_result_link5=simulation_link(simulation,n,path,alpha,given_tol)
-prob.table_link(simulation_result_link5)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim500gam01")
+simulation_result_omni5=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni5)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim500gam05")
 date()
-simulation_result_link6=simulation_link(simulation,n,path,alpha,given_tol)
-prob.table_link(simulation_result_link6)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim600gam01")
+simulation_result_omni6=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni6)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim600gam05")
 date()
-simulation_result_link7=simulation_link(simulation,n,path,alpha,given_tol)
-prob.table_link(simulation_result_link7)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim700gam01")
+simulation_result_omni7=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni7)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim700gam05")
 date()
-simulation_result_link8=simulation_link(simulation,n,path,alpha,given_tol)
-prob.table_link(simulation_result_link8)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim800gam01")
+simulation_result_omni8=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni8)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim800gam05")
 date()
-simulation_result_link9=simulation_link(simulation,n,path,alpha,given_tol)
-prob.table_link(simulation_result_link9)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim900gam01")
+simulation_result_omni9=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni9)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim900gam05")
 date()
-simulation_result_link0=simulation_link(simulation,n,path,alpha,given_tol)
-prob.table_link(simulation_result_link0)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim1000gam01")
+simulation_result_omni0=simulation_omni(simulation,n,path,alpha,given_tol)
+prob.table_omni(simulation_result_omni0)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim1000gam05")
 date()
-simulation_result_link=c(simulation_result_link1,simulation_result_link2,
-                         simulation_result_link3,simulation_result_link4,
-                         simulation_result_link5,simulation_result_link6,
-                         simulation_result_link7,simulation_result_link8,
-                         simulation_result_link9,simulation_result_link0)
-prob.table_link(simulation_result_link)
-save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_link_n250p200sim1000gam01")
+simulation_result_omni=c(simulation_result_omni1,simulation_result_omni2,
+                         simulation_result_omni3,simulation_result_omni4,
+                         simulation_result_omni5,simulation_result_omni6,
+                         simulation_result_omni7,simulation_result_omni8,
+                         simulation_result_omni9,simulation_result_omni0)
+prob.table_omni(simulation_result_omni)
+save.image("C:\\Users\\WOOJUNG\\Desktop\\simulation_result\\simulation_result_omni_n250p1000sim1000gam05")
 date()
-
-
