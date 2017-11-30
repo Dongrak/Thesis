@@ -276,18 +276,18 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   std.p_value=length(which((max_app_std.path>max_obs_std.path)*1==1))/path
   # std.p_value
   
-  result=list(Time,Delta,Covari,e_i_beta,std.boot,
-              app_path,app_std.path,
-              obs_path,obs_std.path,
-              p_value,std.p_value)
-
-  names(result)=c("Time","Delta","Covari","Resid","std.boot",
-                  "app_path","app_std.path",
-                  "obs_path","obs_std.path",
-                  "p_value","std.p_value")
+  # result=list(Time,Delta,Covari,e_i_beta,std.boot,
+  #             app_path,app_std.path,
+  #             obs_path,obs_std.path,
+  #             p_value,std.p_value)
+  # 
+  # names(result)=c("Time","Delta","Covari","Resid","std.boot",
+  #                 "app_path","app_std.path",
+  #                 "obs_path","obs_std.path",
+  #                 "p_value","std.p_value")
   
-  # result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
-  # result
+  result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
+  result
   
   rm(list=(ls()[ls()!="result"]));gc();
   return(result)
