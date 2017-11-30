@@ -35,7 +35,7 @@ path=200
 given_tol=1
 
 #------------------------DATA GENERATION----------------------
-n=250
+n=500
 beta_0=1
 gamma_0=0.5
 Z=matrix(rnorm(n,3,1),nrow=n)
