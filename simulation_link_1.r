@@ -30,18 +30,19 @@ library(doParallel)
 
 simulation=100
 n=250
-path=1000
+path=200
 alpha=0.05
 
 beta_0=1
 
 gamma_0=0.1
+# gamma_0=0.2
 # gamma_0=0.3
+# gamma_0=0.4
 # gamma_0=0.5
 
 given_tol=1
 
-given_tol=1
 #-------------------------------------------------------------
 #-----------------------TEST STATISTICS-----------------------
 #-------------------------------------------------------------
@@ -361,33 +362,27 @@ simulation_link=function(simulation,n,path,alpha,tol){
     # -------------------------------------------------------------
     # ------------------------DATA GENERATE------------------------
     # -------------------------------------------------------------
-    # n=500
-    Z1=matrix(rnorm(n,3,1),nrow=n)
-    Z2=matrix(runif(n),nrow=n)
+    Z=matrix(runif(n,0,5),nrow=n)
 
     #-------------------LOG NORMAL DISTRIBUTION-------------------
-    T_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*Z2)*qlnorm(runif(n),5,1))
-    C_ln_aft=as.vector(exp(-beta_0*Z1-gamma_0*Z2)*qlnorm(runif(n),6.5,1))
+    T_ln_aft=as.vector(exp(-gamma_0*Z)*qlnorm(runif(n),5,1))
+    C_ln_aft=as.vector(exp(-gamma_0*Z)*qlnorm(runif(n),6.5,1))
     X_ln_aft=C_ln_aft*(T_ln_aft>C_ln_aft)+T_ln_aft*(T_ln_aft<=C_ln_aft)
     D_ln_aft=0*(T_ln_aft>C_ln_aft)+1*(T_ln_aft<=C_ln_aft)
-    Z1_ln_aft=Z1
-    Z2_ln_aft=Z2
-    Z_ln_aft=cbind(Z1_ln_aft,Z2_ln_aft)
-    
-    T_ln_aft_l=as.vector(exp(-beta_0*(Z1^2)-gamma_0*sqrt(Z2))*qlnorm(runif(n),5,1))
-    C_ln_aft_l=as.vector(exp(-beta_0*(Z1^2)-gamma_0*sqrt(Z2))*qlnorm(runif(n),6.5,1))
+    Z_ln_aft=Z
+
+    T_ln_aft_l=as.vector((1+gamma_0*Z)*qlnorm(runif(n),5,1))
+    C_ln_aft_l=as.vector((1+gamma_0*Z)*qlnorm(runif(n),6.5,1))
     X_ln_aft_l=C_ln_aft_l*(T_ln_aft_l>C_ln_aft_l)+T_ln_aft_l*(T_ln_aft_l<=C_ln_aft_l)
     D_ln_aft_l=0*(T_ln_aft_l>C_ln_aft_l)+1*(T_ln_aft_l<=C_ln_aft_l)
-    Z1_ln_aft_l=Z1
-    Z2_ln_aft_l=Z2
-    Z_ln_aft_l=cbind(Z1_ln_aft_l,Z2_ln_aft_l)
+    Z_ln_aft_l=Z
     
     #------------Estimate Beta_hat_ln_aft by using Aftgee-----------
-    aftsrr_beta_ln_aft=aftsrr(Surv(X_ln_aft,D_ln_aft)~Z1_ln_aft+Z2_ln_aft,method="nonsm")
+    aftsrr_beta_ln_aft=aftsrr(Surv(X_ln_aft,D_ln_aft)~Z_ln_aft,method="nonsm")
     beta_hat_ln_aft=-as.vector(aftsrr_beta_ln_aft$beta);beta_hat_ln_aft
     std_hat_ln_aft=diag(aftsrr_beta_ln_aft$covmat$ISMB);std_hat_ln_aft
     
-    aftsrr_beta_ln_aft_l=aftsrr(Surv(X_ln_aft_l,D_ln_aft_l)~Z1_ln_aft_l+Z2_ln_aft_l,method="nonsm")
+    aftsrr_beta_ln_aft_l=aftsrr(Surv(X_ln_aft_l,D_ln_aft_l)~Z_ln_aft_l,method="nonsm")
     beta_hat_ln_aft_l=-as.vector(aftsrr_beta_ln_aft_l$beta);beta_hat_ln_aft_l
     std_hat_ln_aft_l=diag(aftsrr_beta_ln_aft_l$covmat$ISMB);std_hat_ln_aft_l
     
@@ -416,7 +411,7 @@ simulation_link=function(simulation,n,path,alpha,tol){
     result[[k]]=list(p_value)
     # result=list(p_value)
   }
-  # stopClustCer(cl)
+        # stopClustCer(cl)
   
   rm(list=(ls()[ls()!="result"]));gc();
   return(result)

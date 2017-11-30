@@ -30,13 +30,15 @@ library(doParallel)
 
 simulation=100
 n=250
-path=1000
+path=200
 alpha=0.05
 
 beta_0=1
 
 gamma_0=0.1
+# gamma_0=0.2
 # gamma_0=0.3
+# gamma_0=0.4
 # gamma_0=0.5
 
 given_tol=1
