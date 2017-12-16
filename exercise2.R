@@ -1,100 +1,111 @@
-aa=afttest_omni(200,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+aa=afttest_omni(200,beta_hat_ln_aft,se_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 aa$p_value
 aa$std.p_value
+
+cairo_ps("afttest_omni_aft_unstd.eps",onefile=F,
+         height=4,width=8, fallback_resolution = 600)
+plotting_omni(aa,100,"unstd")
+dev.off()
+
+cairo_ps("afttest_omni_aft_std.eps",onefile=F,
+         height=4,width=8, fallback_resolution = 600)
+plotting_omni(aa,100,"std")
+dev.off()
+
 # plotting_omni(aa,"rank",30)
 # plot_ly(z=aa$app_path[[1]],type="surface")
 # plot_ly(z=aa$obs_std.path,type="surface")
 
-aaa=afttest_omni(500,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+aaa=afttest_omni(500,beta_hat_ln_aft,se_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 aaa$p_value
 aaa$std.p_value
+plotting_omni(aaa,100,"unstd")
+plotting_omni(aaa,100,"std")
 # plotting_omni(aaa,"rank",50)
 
-aaaa=afttest_omni(1000,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+aaaa=afttest_omni(1000,beta_hat_ln_aft,se_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 aaaa$p_value
 aaaa$std.p_value
+plotting_omni(aaaa,100,"unstd")
+plotting_omni(aaaa,100,"std")
 # plotting_omni(aaaa,"rank",50)
 
-aaaaa=afttest_omni(1500,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+aaaaa=afttest_omni(1500,beta_hat_ln_aft,se_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 aaaaa$p_value
 aaaaa$std.p_value
 # plotting_omni(aaaaa,"rank",50)
 
-aaaaaa=afttest_omni(2000,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+aaaaaa=afttest_omni(2000,beta_hat_ln_aft,se_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 aaaaaa$p_value
 aaaaaa$std.p_value
 # plotting_omni(aaaaaa,"rank",50)
 
-aaaaaaa=afttest_omni(2500,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+aaaaaaa=afttest_omni(2500,beta_hat_ln_aft,se_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 aaaaaaa$p_value
 aaaaaaa$std.p_value
 # plotting_omni(aaaaaa,"rank",50)
 
-aaaaaaaa=afttest_omni(3000,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+aaaaaaaa=afttest_omni(3000,beta_hat_ln_aft,se_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 aaaaaaaa$p_value
 aaaaaaaa$std.p_value
 # plotting_omni(aaaaaa,"rank",50)
 
-
-
-
-
-
-
-bb=afttest_omni(250,beta_hat_ln_cox,std_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,given_tol)
+bb=afttest_omni(200,beta_hat_ln_cox,se_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,given_tol)
 bb$p_value
 bb$std.p_value
 # plotting_omni(bb,"rank",50)
 
-bbb=afttest_omni(500,beta_hat_ln_cox,std_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,given_tol)
+bbb=afttest_omni(500,beta_hat_ln_cox,se_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,given_tol)
 bbb$p_value
 bbb$std.p_value
 # plotting_omni(bbb,"rank",50)
 
-bbbb=afttest_omni(1000,beta_hat_ln_cox,std_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,given_tol)
+bbbb=afttest_omni(1000,beta_hat_ln_cox,se_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,given_tol)
 bbbb$p_value
 bbbb$std.p_value
+plotting_omni(bbbb,100,"unstd")
+plotting_omni(bbbb,100,"std")
 # plotting_omni(bbbb,"rank",50)
 
-bbbbb=afttest_omni(1500,beta_hat_ln_cox,std_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,given_tol)
+bbbbb=afttest_omni(1500,beta_hat_ln_cox,se_hat_ln_cox,X_ln_cox,D_ln_cox,Z_ln_cox,given_tol)
 bbbbb$p_value
 bbbbb$std.p_value
 # plotting_omni(bbbbb,"rank",50)
 # plot_ly(z=bbbbb$app_path[[1]],type="surface")
 # plot_ly(z=bbbbb$obs_std.path,type="surface")
 
-cc=afttest_form(30,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+cc=afttest_form(200,beta_hat_ln_aft,se_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 cc$p_value
 cc$std.p_value
 # plotting_form(cc,"rank",50)
 
-ccc=afttest_form(500,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+ccc=afttest_form(500,beta_hat_ln_aft,se_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 ccc$p_value
 ccc$std.p_value
 # plotting_form(ccc,"rank",50)
 
-cccc=afttest_form(1000,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+cccc=afttest_form(1000,beta_hat_ln_aft,se_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 cccc$p_value
 cccc$std.p_value
 # plotting_form(cccc,"rank",50)
 
-ccccc=afttest_form(1500,beta_hat_ln_aft,std_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
+ccccc=afttest_form(1500,beta_hat_ln_aft,se_hat_ln_aft,X_ln_aft,D_ln_aft,Z_ln_aft,given_tol)
 ccccc$p_value
 ccccc$std.p_value
 # plotting_form(ccccc,"rank",50)
 
 
-dd=afttest_form(100,beta_hat_ln_aft_f,std_hat_ln_aft_f,X_ln_aft_f,D_ln_aft_f,Z_ln_aft_f,given_tol)
+dd=afttest_form(200,beta_hat_ln_aft_f,se_hat_ln_aft_f,X_ln_aft_f,D_ln_aft_f,Z_ln_aft_f,given_tol)
 dd$p_value
 dd$std.p_value
 # plotting_form(dd,"rank",50)
 
-ee=afttest_link(30,beta_hat_ln_aft_l,std_hat_ln_aft_l,X_ln_aft_l,D_ln_aft_l,Z_ln_aft_l,given_tol)
+ee=afttest_link(30,beta_hat_ln_aft_l,se_hat_ln_aft_l,X_ln_aft_l,D_ln_aft_l,Z_ln_aft_l,given_tol)
 ee$p_value
 ee$std.p_value
 # plotting_link(ee,"rank",50)
 
-ff=afttest_link(250,beta_hat_ln_aft_f,std_hat_ln_aft_f,X_ln_aft_f,D_ln_aft_f,Z_ln_aft_f,given_tol)
+ff=afttest_link(250,beta_hat_ln_aft_f,se_hat_ln_aft_f,X_ln_aft_f,D_ln_aft_f,Z_ln_aft_f,given_tol)
 ff$p_value
 ff$std.p_value
 # plotting_link(ff,"rank",50)

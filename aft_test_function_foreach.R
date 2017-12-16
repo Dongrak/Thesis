@@ -1,9 +1,9 @@
 #-------------------------------------------------------------
 #---------------------------AFTTEST---------------------------
 #-------------------------------------------------------------
-afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
-  # path=200;b=beta_hat_ln_aft;std=std_hat_ln_aft;Time=X_ln_aft;Delta=D_ln_aft;Covari=Z_ln_aft;tol=given_tol;
-  # path=200;b=beta_hat_ln_cox;std=std_hat_ln_cox;Time=X_ln_cox;Delta=D_ln_cox;Covari=Z_ln_cox;tol=given_tol;
+afttest_omni=function(path,b,se,Time,Delta,Covari,tol){
+  # path=200;b=beta_hat_ln_aft;se=se_hat_ln_aft;Time=X_ln_aft;Delta=D_ln_aft;Covari=Z_ln_aft;tol=given_tol;
+  # path=200;b=beta_hat_ln_cox;se=se_hat_ln_cox;Time=X_ln_cox;Delta=D_ln_cox;Covari=Z_ln_cox;tol=given_tol;
   # path=200;b=c(1.3,1.1);Covari=c(Z_ln_aft,Z_ln_aft^2-4*Z_ln_aft);
   
   n=length(Time) # the number of subjects
@@ -20,11 +20,17 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   Delta=Delta[order_resid]
   e_i_beta=e_i_beta[order_resid]
   
+  # # weight function
+  # beta_cova=as.vector(Covari%*%b)
+  # order_beta_cova=order(beta_cova)
+  # pi_i_z=sapply(1:n,function(j){c(rep(0,(which(order_beta_cova==j)-1)),
+  #                                 rep(1,(n+1-which(order_beta_cova==j))))},simplify=F)
+  
   # weight function
-  order_Covari=apply(Covari,2,function(x){order(x)}) 
+  order_Covari=apply(Covari,2,function(x){order(x)})
   pi_i_z=sapply(1:n,function(j){apply(sapply(1:p,function(i){c(rep(0,(which(
     order_Covari[,i]==j)-1)),rep(1,(n+1-which(order_Covari[,i]==j))))}),1,prod)},simplify=F)
-  
+
   N_i_t=sapply(1:n,function(j){(e_i_beta>=e_i_beta[j])*Delta[j]},simplify=F)
   #N_i_t
   
@@ -60,7 +66,7 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   obs_path=Reduce('+',mapply(function(x,y){x%*%t(y)},
                              Mhat_i_t,pi_i_z,SIMPLIFY=FALSE))/sqrt(n)
   #obs_path
-  
+
   S_pi_t.z=Reduce('+',mapply(function(x,y){x%*%t(y)},Y_i_t,pi_i_z,SIMPLIFY=FALSE))
   #S_pi_t.z
   
@@ -72,18 +78,15 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   #-----------------------------------------------------------
   
   #-----------------------------g0----------------------------
-  Ghat_0_t=1-exp(-Lambdahat_0_t)
-  #Ghat_0_t
+  den.g=density(exp(e_i_beta))
+  #den.g
   
-  dGhat_0_t=diff(c(0,Ghat_0_t))
-  #dGhat_0_t
-  
-  ghat_0_t=(ksmooth(e_i_beta,dGhat_0_t,"normal",
-                    bandwidth = 1.06*sd(dGhat_0_t)*n^(-0.2),x.points=e_i_beta)$y)
+  ghat_0_t=predict(loess(den.g$y~den.g$x),exp(e_i_beta))
+  ghat_0_t[is.na(ghat_0_t)]=0
   #ghat_0_t
   
   ghat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Covari[,j],
-                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
+    SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
   #ghat_t.z
   
   #-----------------------------f0----------------------------
@@ -93,23 +96,26 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   dFhat_0_e=diff(c(0,Fhat_0_e))
   #dFhat_0_e
   
-  Condi.Ehat=(cumsum(e_i_beta*dFhat_0_e))/(1-Fhat_0_e)
+  Condi.Ehat=sapply(1:n,function(j){sum(c(rep(0,j),rep(1,n-j))*e_i_beta*dFhat_0_e)/(1-Fhat_0_e[j])})
+  Condi.Ehat[is.nan(Condi.Ehat)]=0
   #Condi.Ehat
   
   rhat_i=Delta*e_i_beta+(1-Delta)*Condi.Ehat
-  rhat_i[is.nan(rhat_i)]=0
   #rhat_i
   
-  den.f=ksmooth(rhat_i,dFhat_0_e,"normal",
-                bandwidth = 1.06*sd(dFhat_0_e)*n^(-0.2),x.points=rhat_i)
+  den.f=density(exp(rhat_i))
   #den.f
   
-  fhat_0_t=predict(loess(den.f$y~den.f$x),e_i_beta)
+  fhat_0_t=predict(loess(den.f$y~den.f$x),exp(e_i_beta))
+  fhat_0_t[is.na(fhat_0_t)]=0
   #fhat_0_t
   
   fhat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Delta*Covari[,j],
-                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
+    SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},fhat_0_t*Time))/n},simplify=F)
   #fhat_t.z
+  
+  fhat_inf.z=lapply(fhat_t.z,function(x){x[n,]})
+  #fhat_inf.z
   
   #-----------------------------------------------------------
   #--------Find Beta_hat_star by using optimize function------
@@ -143,8 +149,8 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
     dN_i_t_U=lapply(N_i_t_U,function(x){diff(c(0,x))})
     #dN_i_t_U
     
-    U_inf_U=apply(S_0_t_U*Reduce('+',mapply(function(x,y){x%*%t(y)},dN_i_t_U,
-                                            as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))-S_1_t_U*Reduce('+',dN_i_t_U),2,sum)/n
+    U_inf_U=apply(S_0_t_U*Reduce('+',mapply(function(x,y){x%*%t(y)},dN_i_t_U, as.list(data.frame(t(Covari_U)))
+                                            ,SIMPLIFY=FALSE))-S_1_t_U*Reduce('+',dN_i_t_U),2,sum)/n
     #U_inf_U
     
     return(U_inf_U)
@@ -174,18 +180,18 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
     #phi_i
     
     U_pi_phi_t.z=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
-                                                          pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*Reduce('+',mapply('*',
-                                                                                                                                   dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,cumsum)/n
+      pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*
+        Reduce('+',mapply('*',dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,cumsum)/n
     #U_pi_phi_t.z
     
     U_phi_inf=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
-                                                       as.list(data.frame(t(Covari))),SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_1_t*
-                      Reduce('+',mapply('*',dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
+      as.list(data.frame(t(Covari))),SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_1_t*
+      Reduce('+',mapply('*',dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
     #U_phi_inf
     
     if(p==1){
       beta_hat_s_list=optimize(function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)},
-                               c(b-2*std,b+2*std),tol = 1e-16)
+                               c(b-2*se,b+2*se),tol = 1e-16)
       #beta_hat_s_list
       
       beta_hat_s=beta_hat_s_list$minimum
@@ -220,7 +226,7 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
     #Y_i_t_s
     
     N_d_t_s=Reduce('+',N_i_t_s)
-    #N_d_s_s_t_s
+    #N_d_t_s
     
     S_0_t_s=Reduce('+',Y_i_t_s)
     #S_0_t_s
@@ -234,10 +240,10 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
     Lambdahat_0_t_s=cumsum((J_t_s/S_0_t_s)*dN_d_t_s)
     #Lambdahat_0_t_s
     
-    F.T.=(1/sqrt(n))*U_pi_phi_t.z
-    S.T.=sqrt(n)*Reduce('+',mapply('*',mapply('+',fhat_t.z,mapply(function(x){apply(x,2,
-                                                                                    cumsum)},lapply(ghat_t.z,'*',dLambdahat_0_t),SIMPLIFY=FALSE),SIMPLIFY=FALSE),
-                                   (b-beta_hat_s),SIMPLIFY=FALSE))
+    F.T.=U_pi_phi_t.z/sqrt(n)
+    S.T.=Reduce('+',mapply('*',mapply('+',fhat_t.z,mapply(function(x){apply(x,2,
+      cumsum)},lapply(ghat_t.z,'*',dLambdahat_0_t),SIMPLIFY=FALSE),SIMPLIFY=FALSE),
+                                   (b-beta_hat_s),SIMPLIFY=FALSE))*sqrt(n)
     T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,cumsum)/sqrt(n)
     
     app_path=F.T.-S.T.-T.T.
@@ -275,28 +281,28 @@ afttest_omni=function(path,b,std,Time,Delta,Covari,tol){
   
   std.p_value=length(which((max_app_std.path>max_obs_std.path)*1==1))/path
   # std.p_value
+  p_value;std.p_value
+  result=list(path,b,se,Time,Delta,Covari,e_i_beta,std.boot,
+              app_path,app_std.path,
+              obs_path,obs_std.path,
+              p_value,std.p_value)
   
-  # result=list(Time,Delta,Covari,e_i_beta,std.boot,
-  #             app_path,app_std.path,
-  #             obs_path,obs_std.path,
-  #             p_value,std.p_value)
-  # 
-  # names(result)=c("Time","Delta","Covari","Resid","std.boot",
-  #                 "app_path","app_std.path",
-  #                 "obs_path","obs_std.path",
-  #                 "p_value","std.p_value")
+  names(result)=c("Path","Beta","SE","Time","Delta","Covari","Resid","std.boot",
+                  "app_path","app_std.path",
+                  "obs_path","obs_std.path",
+                  "p_value","std.p_value")
   
-  result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
-  result
+  # result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
+  # # result
   
   rm(list=(ls()[ls()!="result"]));gc();
   return(result)
 }
 #afttest_omni()
 
-afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
-  # path=200;b=beta_hat_ln_aft;std=std_hat_ln_aft;Time=X_ln_aft;Delta=D_ln_aft;Covari=Z_ln_aft;tol=given_tol;
-  # path=200;b=beta_hat_ln_cox;std=std_hat_ln_cox;Time=X_ln_cox;Delta=D_ln_cox;Covari=Z_ln_cox;tol=given_tol;
+afttest_form=function(path,b,se,Time,Delta,Covari,tol,form=1){ 
+  # path=200;b=beta_hat_ln_aft;se=se_hat_ln_aft;Time=X_ln_aft;Delta=D_ln_aft;Covari=Z_ln_aft;tol=given_tol;
+  # path=200;b=beta_hat_ln_cox;se=se_hat_ln_cox;Time=X_ln_cox;Delta=D_ln_cox;Covari=Z_ln_cox;tol=given_tol;
   # path=200;b=c(1.3,1.1);Covari=c(Z_ln_aft,Z_ln_aft^2-4*Z_ln_aft);
   
   n=length(Time) # the number of subjects
@@ -313,9 +319,17 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   Delta=Delta[order_resid]
   e_i_beta=e_i_beta[order_resid]
   
+  # e_i_beta_form=as.vector(Covari[,form]*b[form])
+  # order_e_i_beta_form=order(e_i_beta_form)
+  # 
+  # # weight function
+  # pi_i_z=sapply(1:n,function(j){c(rep(0,(which(order_e_i_beta_form==j)-1)),
+  #                                 rep(1,(n+1-which(order_e_i_beta_form==j))))},simplify=F)
+  
   # weight function
   order_Covari_form=order(Covari[,form])
-  pi_i_z=sapply(1:n,function(j){c(rep(0,(which(order_Covari_form==j)-1)),rep(1,(n+1-which(order_Covari_form==j))))},simplify=F)
+  pi_i_z=sapply(1:n,function(j){c(rep(0,(which(order_Covari_form==j)-1)),
+                                  rep(1,(n+1-which(order_Covari_form==j))))},simplify=F)
   
   N_i_t=sapply(1:n,function(j){(e_i_beta>=e_i_beta[j])*Delta[j]},simplify=F)
   #N_i_t
@@ -344,7 +358,7 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   
   dLambdahat_0_t=diff(c(0,Lambdahat_0_t))
   #dLambdahat_0_t 
-  
+   
   Mhat_i_t=mapply("-",N_i_t,lapply(lapply(
     Y_i_t,'*',dLambdahat_0_t),cumsum),SIMPLIFY=FALSE)
   #Mhat_i_t
@@ -366,18 +380,15 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   #-----------------------------------------------------------
   
   #-----------------------------g0----------------------------
-  Ghat_0_t=1-exp(-Lambdahat_0_t)
-  #Ghat_0_t
+  den.g=density(exp(e_i_beta))
+  #den.g
   
-  dGhat_0_t=diff(c(0,Ghat_0_t))
-  #dGhat_0_t
-  
-  ghat_0_t=(ksmooth(e_i_beta,dGhat_0_t,"normal",
-                    bandwidth = 1.06*sd(dGhat_0_t)*n^(-0.2),x.points=e_i_beta)$y)
+  ghat_0_t=predict(loess(den.g$y~den.g$x),exp(e_i_beta))
+  ghat_0_t[is.na(ghat_0_t)]=0
   #ghat_0_t
   
   ghat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Covari[,j],
-                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
+    SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
   #ghat_t.z
   
   #-----------------------------f0----------------------------
@@ -386,23 +397,23 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   
   dFhat_0_e=diff(c(0,Fhat_0_e))
   #dFhat_0_e
-  
-  Condi.Ehat=(cumsum(e_i_beta*dFhat_0_e))/(1-Fhat_0_e)
+
+  Condi.Ehat=sapply(1:n,function(j){sum(c(rep(0,j),rep(1,n-j))*e_i_beta*dFhat_0_e)/(1-Fhat_0_e[j])})
+  Condi.Ehat[is.nan(Condi.Ehat)]=0
   #Condi.Ehat
   
   rhat_i=Delta*e_i_beta+(1-Delta)*Condi.Ehat
-  rhat_i[is.nan(rhat_i)]=0
   #rhat_i
   
-  den.f=ksmooth(rhat_i,dFhat_0_e,"normal",
-                bandwidth = 1.06*sd(dFhat_0_e)*n^(-0.2),x.points=rhat_i)
+  den.f=density(exp(rhat_i))
   #den.f
   
-  fhat_0_t=predict(loess(den.f$y~den.f$x),e_i_beta)
+  fhat_0_t=predict(loess(den.f$y~den.f$x),exp(e_i_beta))
+  fhat_0_t[is.na(fhat_0_t)]=0
   #fhat_0_t
   
   fhat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Delta*Covari[,j],
-                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
+    SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},fhat_0_t*Time))/n},simplify=F)
   #fhat_t.z
   
   fhat_inf.z=lapply(fhat_t.z,function(x){x[n,]})
@@ -441,7 +452,7 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
     #dN_i_t_U
     
     U_inf_U=apply(S_0_t_U*Reduce('+',mapply(function(x,y){x%*%t(y)},dN_i_t_U,
-                                            as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))-S_1_t_U*Reduce('+',dN_i_t_U),2,sum)/n
+      as.list(data.frame(t(Covari_U))),SIMPLIFY=FALSE))-S_1_t_U*Reduce('+',dN_i_t_U),2,sum)/n
     #U_inf_U
     
     return(U_inf_U)
@@ -463,16 +474,16 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
     #   cat("Sample Path",k,"\n")
     # }
     
-    # tolerance=tol+1 #initial value
+    tolerance=tol+1 #initial value
     
-    # while (tolerance>tol){
+    while (tolerance>tol){
       
       phi_i=rnorm(n)
       #phi_i
       
       U_pi_phi_inf.z=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
-                                                              pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*Reduce('+',mapply('*',
-                                                                                                                                       dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
+        pi_i_z,SIMPLIFY=FALSE),phi_i,SIMPLIFY=FALSE))-S_pi_t.z*Reduce('+',mapply('*',
+        dMhat_i_t,phi_i,SIMPLIFY=FALSE)),2,sum)/n
       #U_pi_phi_inf.z
       
       U_phi_inf=apply(S_0_t*Reduce('+',mapply('*',mapply(function(x,y){x%*%t(y)},dMhat_i_t,
@@ -482,7 +493,7 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
       
       if(p==1){
         beta_hat_s_list=optimize(function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)},
-                                 c(b-5*std,b+5*std),tol = 1e-16)
+                                 c(b-5*se,b+5*se),tol = 1e-16)
         #beta_hat_s_list
         
         beta_hat_s=beta_hat_s_list$minimum
@@ -503,7 +514,7 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
         tolerance=beta_hat_s_list$value
         #tolerance
       }
-    # }
+    }
     
     e_i_beta_s=as.vector(log(Time)+Covari%*%beta_hat_s)
     
@@ -535,8 +546,8 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
     
     F.T.=U_pi_phi_inf.z/sqrt(n)
     S.T.=sqrt(n)*Reduce('+',mapply('*',mapply('+',fhat_inf.z,mapply(function(x){apply(x,2,sum)},
-                                                                    lapply(ghat_t.z,'*',dLambdahat_0_t),SIMPLIFY=FALSE),SIMPLIFY=FALSE),
-                                   (b-beta_hat_s),SIMPLIFY=FALSE))
+      lapply(ghat_t.z,'*',dLambdahat_0_t),SIMPLIFY=FALSE),SIMPLIFY=FALSE),
+      (b-beta_hat_s),SIMPLIFY=FALSE))
     T.T.=apply((S_pi_t.z*diff(c(0,Lambdahat_0_t-Lambdahat_0_t_s))),2,sum)/sqrt(n)
     
     app_path=F.T.-S.T.-T.T.
@@ -575,17 +586,19 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
   std.p_value=length(which((max_app_std.path>max_obs_std.path)*1==1))/path
   # std.p_value
   
-  # result=list(Time,Delta,Covari,e_i_beta,std.boot,
-  #             app_path,app_std.path,
-  #             obs_path,obs_std.path,
-  #             p_value,std.p_value)
-  # 
-  # names(result)=c("Time","Delta","Covari","Resid","std.boot",
-  #                 "app_path","app_std.path",
-  #                 "obs_path","obs_std.path",
-  #                 "p_value","std.p_value")
+  result=list(path,b,se,Time,Delta,
+              Covari,e_i_beta,std.boot,
+              app_path,app_std.path,
+              obs_path,obs_std.path,
+              p_value,std.p_value)
   
-  result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
+  names(result)=c("Path","Beta","SE","Time",
+                  "Delta","Covari","Resid","std.boot",
+                  "app_path","app_std.path",
+                  "obs_path","obs_std.path",
+                  "p_value","std.p_value")
+  
+  # result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
   # result
   
   rm(list=(ls()[ls()!="result"]));gc();
@@ -593,9 +606,9 @@ afttest_form=function(path,b,std,Time,Delta,Covari,tol,form=1){
 }
 #afttest_form()
 
-afttest_link=function(path,b,std,Time,Delta,Covari,tol){
-  # path=200;b=beta_hat_ln_aft;std=std_hat_ln_aft;Time=X_ln_aft;Delta=D_ln_aft;Covari=Z_ln_aft;tol=given_tol;
-  # path=200;b=beta_hat_ln_cox;std=std_hat_ln_cox;Time=X_ln_cox;Delta=D_ln_cox;Covari=Z_ln_cox;tol=given_tol;
+afttest_link=function(path,b,se,Time,Delta,Covari,tol){
+  # path=200;b=beta_hat_ln_aft;se=se_hat_ln_aft;Time=X_ln_aft;Delta=D_ln_aft;Covari=Z_ln_aft;tol=given_tol;
+  # path=200;b=beta_hat_ln_cox;se=se_hat_ln_cox;Time=X_ln_cox;Delta=D_ln_cox;Covari=Z_ln_cox;tol=given_tol;
   # path=200;b=c(1.3,1.1);Covari=c(Z_ln_aft,Z_ln_aft^2-4*Z_ln_aft);
   
   n=length(Time) # the number of subjects
@@ -612,8 +625,15 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
   Delta=Delta[order_resid]
   e_i_beta=e_i_beta[order_resid]
   
+  # e_i_beta_form=as.vector(Covari%*%b)
+  # order_e_i_beta_form=order(e_i_beta_form)
+  # 
+  # # weight function
+  # pi_i_z=sapply(1:n,function(j){c(rep(0,(which(order_e_i_beta_form==j)-1)),
+  #                                 rep(1,(n+1-which(order_e_i_beta_form==j))))},simplify=F)
+  
   # weight function
-  order_Covari=apply(Covari,2,function(x){order(x)}) 
+  order_Covari=apply(Covari,2,function(x){order(x)})
   pi_i_z=sapply(1:n,function(j){apply(sapply(1:p,function(i){c(rep(0,(which(
     order_Covari[,i]==j)-1)),rep(1,(n+1-which(order_Covari[,i]==j))))}),1,prod)},simplify=F)
   
@@ -666,14 +686,11 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
   #-----------------------------------------------------------
   
   #-----------------------------g0----------------------------
-  Ghat_0_t=1-exp(-Lambdahat_0_t)
-  #Ghat_0_t
+  den.g=density(exp(e_i_beta))
+  #den.g
   
-  dGhat_0_t=diff(c(0,Ghat_0_t))
-  #dGhat_0_t
-  
-  ghat_0_t=(ksmooth(e_i_beta,dGhat_0_t,"normal",
-                    bandwidth = 1.06*sd(dGhat_0_t)*n^(-0.2),x.points=e_i_beta)$y)
+  ghat_0_t=predict(loess(den.g$y~den.g$x),exp(e_i_beta))
+  ghat_0_t[is.na(ghat_0_t)]=0
   #ghat_0_t
   
   ghat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Covari[,j],
@@ -687,25 +704,26 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
   dFhat_0_e=diff(c(0,Fhat_0_e))
   #dFhat_0_e
   
-  Condi.Ehat=(cumsum(e_i_beta*dFhat_0_e))/(1-Fhat_0_e)
+  Condi.Ehat=sapply(1:n,function(j){sum(c(rep(0,j),rep(1,n-j))*e_i_beta*dFhat_0_e)/(1-Fhat_0_e[j])})
+  Condi.Ehat[is.nan(Condi.Ehat)]=0
   #Condi.Ehat
   
   rhat_i=Delta*e_i_beta+(1-Delta)*Condi.Ehat
-  rhat_i[is.nan(rhat_i)]=0
   #rhat_i
   
-  den.f=ksmooth(rhat_i,dFhat_0_e,"normal",
-                bandwidth = 1.06*sd(dFhat_0_e)*n^(-0.2),x.points=rhat_i)
+  den.f=density(exp(rhat_i))
   #den.f
   
-  fhat_0_t=predict(loess(den.f$y~den.f$x),e_i_beta)
+  fhat_0_t=predict(loess(den.f$y~den.f$x),exp(e_i_beta))
+  fhat_0_t[is.na(fhat_0_t)]=0
   #fhat_0_t
   
   fhat_t.z=sapply(1:p,function(j){Reduce('+',lapply(mapply('*',pi_i_z,Delta*Covari[,j],
-                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},ghat_0_t*Time))/n},simplify=F)
+                                                           SIMPLIFY=FALSE),function(x,y){t(x%*%t(y))},fhat_0_t*Time))/n},simplify=F)
   #fhat_t.z
   
   fhat_inf.z=lapply(fhat_t.z,function(x){x[n,]})
+  #fhat_inf.z
   
   #-----------------------------------------------------------
   #--------Find Beta_hat_star by using optimize function------
@@ -762,9 +780,9 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
     #   cat("Sample Path",k,"\n")
     # }
     
-    # tolerance=tol+1 #initial value
+    tolerance=tol+1 #initial value
     
-    # while (tolerance>tol){
+    while (tolerance>tol){
       
       phi_i=rnorm(n)
       #phi_i
@@ -781,7 +799,7 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
       
       if(p==1){
         beta_hat_s_list=optimize(function(BETA){sum((U_beta(BETA)-U_phi_inf)^2)},
-                                 c(b-2*std,b+2*std),tol = 1e-16)
+                                 c(b-2*se,b+2*se),tol = 1e-16)
         #beta_hat_s_list
         
         beta_hat_s=beta_hat_s_list$minimum
@@ -800,7 +818,7 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
         tolerance=beta_hat_s_list$value
         #tolerance
       }
-    # }
+    }
     
     e_i_beta_s=as.vector(log(Time)+Covari%*%beta_hat_s)
     
@@ -871,17 +889,17 @@ afttest_link=function(path,b,std,Time,Delta,Covari,tol){
   std.p_value=length(which((max_app_std.path>max_obs_std.path)*1==1))/path
   # std.p_value
   
-  # result=list(Time,Delta,Covari,e_i_beta,std.boot,
-  #             app_path,app_std.path,
-  #             obs_path,obs_std.path,
-  #             p_value,std.p_value)
-  # 
-  # names(result)=c("Time","Delta","Covari","Resid","std.boot",
-  #                 "app_path","app_std.path",
-  #                 "obs_path","obs_std.path",
-  #                 "p_value","std.p_value")
+  result=list(path,b,se,Time,Delta,Covari,e_i_beta,std.boot,
+              app_path,app_std.path,
+              obs_path,obs_std.path,
+              p_value,std.p_value)
   
-  result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
+  names(result)=c("Path","Beta","SE","Time","Delta","Covari","Resid","std.boot",
+                  "app_path","app_std.path",
+                  "obs_path","obs_std.path",
+                  "p_value","std.p_value")
+  
+  # result=list(p_value,std.p_value);names(result)=c("p_value","std.p_value");
   # result
   
   rm(list=(ls()[ls()!="result"]));gc();
@@ -915,16 +933,16 @@ afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1,ftn.form){
   
   aftsrr_result=aftgee::aftsrr(formula,method="nonsm")
   b=-as.vector(aftsrr_result$beta)
-  std=diag(aftsrr_result$covmat$ISMB)
+  se=diag(aftsrr_result$covmat$ISMB)
   
   if(testtype=="omni"){
-    return(c(list(testtype=testtype),afttest_omni(path,b,std,Time,Delta,Covari,tol)))
+    return(c(list(testtype=testtype),afttest_omni(path,b,se,Time,Delta,Covari,tol)))
   }
   if(testtype=="form"){
-    return(c(list(testtype=testtype),afttest_form(path,b,std,Time,Delta,Covari,tol,form)))
+    return(c(list(testtype=testtype),afttest_form(path,b,se,Time,Delta,Covari,tol,form)))
   }
   if(testtype=="link"){
-    return(c(list(testtype=testtype),afttest_link(path,b,std,Time,Delta,Covari,tol)))
+    return(c(list(testtype=testtype),afttest_link(path,b,se,Time,Delta,Covari,tol)))
   }
   # if(testtype=="aft"){
   #
@@ -935,161 +953,204 @@ afttest=function(formula,dataset,testtype="omni",path=200,tol=0.1,ftn.form){
 #-------------------------------------------------------------
 #---------------------------PLOTTING--------------------------
 #-------------------------------------------------------------
-plotting_omni=function(result,xaxix,path){
+plotting_omni=function(result,path,std){
   
   result_Time=result$Time
   result_log_Time=log(result_Time)
   n=length(result_Time)
-  if (xaxix=="rank"){xaxix=(1:n)[order(result_Time)]}
-  else if (xaxix=="real"){xaxix=result_Time}
-  else (xaxix=result_Time)
-  
-  med=ceiling(sqrt(length(result$std.boot))/2)
-  
-  dataset_What=data.frame()
-  
-  for (i in 1:path){
-    group=i
-    A=result$app_path[[i]][,med]
-    AA=data.frame(group,t_i=xaxix,What=A)
-    dataset_What=rbind(dataset_What,AA)
+  xaxix=(1:n)
+  # if (xaxix=="rank"){xaxix=(1:n)[order(result_Time)]}
+  # else if (xaxix=="real"){xaxix=result_Time}
+  # else (xaxix=result_Time)
+  if (std=="std"){
+    Figure=list(NA)
+    
+    for(k in 1:9){
+      
+      quant=round(quantile(1:n,c(0,0.1,0.25,0.4,0.5,0.6,0.75,0.9,1)))
+      
+      Q=quant[k]
+      
+      dataset_std.What=data.frame()
+      
+      for (i in 1:path){
+        group=i
+        A=result$app_std.path[[i]][,Q]
+        AA=data.frame(group,e_i=xaxix,std.What=A)
+        dataset_std.What=rbind(dataset_std.What,AA)
+      }
+      #dataset_std.What
+      
+      dataset_std.W=data.frame(group,e_i=xaxix,std.W=result$obs_std.path[,Q])
+      #dataset_std.W
+      
+      Figure_std.W=
+        ggplot()+
+        geom_step(data=dataset_std.What,aes(x=e_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+        geom_step(data=dataset_std.W,aes(x=e_i,y=std.W),colour="tomato",lwd=0.25)+
+        ylab("Test Statistic")+xlab("Time Transformed Residuals")+
+        ggtitle(paste("Quantile of z",names(quant)[k]))+theme(plot.title=element_text(hjust=0.5))
+      #Figure_W
+      Figure[[k]]=Figure_std.W
+    }
+    
+    # Figure[[1]]
+    
+    lay=rbind(c(1,1,1,1),c(1,1,1,1),c(2,3,4,5),c(6,7,8,9))
+    
+    return(grid.arrange(Figure[[5]],Figure[[1]],Figure[[2]],Figure[[3]],Figure[[4]],
+                        Figure[[6]],Figure[[7]],Figure[[8]],Figure[[9]],layout_matrix=lay))
+    }
+  else{
+    Figure=list(NA)
+    
+    for(k in 1:9){
+      
+      quant=round(quantile(1:n,c(0,0.1,0.25,0.4,0.5,0.6,0.75,0.9,1)))
+      
+      Q=quant[k]
+      
+      dataset_What=data.frame()
+      
+      for (i in 1:path){
+        group=i
+        A=result$app_path[[i]][,Q]
+        AA=data.frame(group,e_i=xaxix,What=A)
+        dataset_What=rbind(dataset_What,AA)
+      }
+      #dataset_What
+      
+      dataset_W=data.frame(group,e_i=xaxix,W=result$obs_path[,Q])
+      #dataset_W
+      
+      Figure_W=
+        ggplot()+
+        geom_step(data=dataset_What,aes(x=e_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+        geom_step(data=dataset_W,aes(x=e_i,y=W),colour="tomato",lwd=0.25)+
+        ylab("Test Statistic")+xlab("Time Transformed Residuals")+
+        ggtitle(paste("Quantile of z",names(quant)[k]))+theme(plot.title=element_text(hjust=0.5))
+      #Figure_W
+      Figure[[k]]=Figure_W
+    }
+    
+    # Figure[[1]]
+    
+    lay=rbind(c(1,1,1,1),c(1,1,1,1),c(2,3,4,5),c(6,7,8,9))
+    
+    return(grid.arrange(Figure[[5]],Figure[[1]],Figure[[2]],Figure[[3]],Figure[[4]],
+                        Figure[[6]],Figure[[7]],Figure[[8]],Figure[[9]],layout_matrix=lay))
   }
-  #dataset_What
-  
-  dataset_W=data.frame(group,t_i=xaxix,W=result$obs_path[,med])
-  #dataset_W
-  
-  Figure1_W=
-    ggplot()+
-    geom_step(data=dataset_What,aes(x=t_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_W,aes(x=t_i,y=W),colour="tomato",lwd=0.25)+
-    theme_minimal()
-  #Figure1_W
-  
-  dataset_std.What=data.frame()
-  
-  for (i in 1:path){
-    group=i
-    A=result$app_std.path[[i]][,med]
-    AA=data.frame(group,t_i=xaxix,std.What=A)
-    dataset_std.What=rbind(dataset_std.What,AA)
-  }
-  #dataset_std.What
-  
-  dataset_std.W=data.frame(group,t_i=xaxix,std.W=result$obs_std.path[,med])
-  #dataset_std.W
-  
-  Figure1_std.W=
-    ggplot()+
-    geom_step(data=dataset_std.What,aes(x=t_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_std.W,aes(x=t_i,y=std.W),colour="tomato",lwd=0.25)+
-    theme_minimal()
-  #Figure1_std.W
-  
-  return(grid.arrange(Figure1_W,Figure1_std.W,nrow=2))
 }
 
-plotting_form=function(result,xaxix,path){
+plotting_form=function(result,path){
   
-  result_Covari=result$Covari
-  n=length(result_Covari)
-  if (xaxix=="rank"){xaxix=(1:n)[order(result_Covari)]}
-  else {xaxix=result_Covari}
-  
-  dataset_What=data.frame()
-  
-  for (i in 1:path){
-    group=i
-    A=result$app_path[[i]]
-    AA=data.frame(group,z_i=xaxix,What=A)
-    dataset_What=rbind(dataset_What,AA)
-  }
-  #dataset_What
-  
-  dataset_W=data.frame(group,z_i=xaxix,W=result$obs_path)
-  #dataset_W
-  
-  Figure1_W=
-    ggplot()+
-    geom_step(data=dataset_What,aes(x=z_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_W,aes(x=z_i,y=W),colour="tomato",lwd=0.25)+
-    theme_minimal()
-  #Figure1_W
-  
-  dataset_std.What=data.frame()
-  
-  for (i in 1:path){
-    group=i
-    A=result$app_std.path[[i]]
-    AA=data.frame(group,z_i=xaxix,std.What=A)
-    dataset_std.What=rbind(dataset_std.What,AA)
-  }
-  #dataset_std.What
-  
-  dataset_std.W=data.frame(group,z_i=xaxix,std.W=result$obs_std.path)
-  #dataset_std.W
-  
-  Figure1_std.W=
-    ggplot()+
-    geom_step(data=dataset_std.What,aes(x=z_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_std.W,aes(x=z_i,y=std.W),colour="tomato",lwd=0.25)+
-    theme_minimal()
-  #Figure1_std.W
-  
-  return(grid.arrange(Figure1_W,Figure1_std.W,nrow=2))
-}
-
-plotting_link=function(result,xaxix,path){
-  
-  result_Covari=result$Covari
-  n=length(result_Covari)
-  if (xaxix=="rank"){xaxix=(1:n)[order(result_Covari)]}
-  else {xaxix=result_Covari}
+  # result_Covari=result$Covari
+  n=length(result$Covari)/length(result$Beta)
+  xaxix=(1:n)
+  # if (xaxix=="rank"){xaxix=(1:n)[order(result_Covari)]}
+  # else {xaxix=result_Covari}
   
   dataset_What=data.frame()
   
   for (i in 1:path){
     group=i
     A=result$app_path[[i]]
-    AA=data.frame(group,z_i=xaxix,What=A)
+    AA=data.frame(group,e_i=xaxix,What=A)
     dataset_What=rbind(dataset_What,AA)
   }
   #dataset_What
   
-  dataset_W=data.frame(group,z_i=xaxix,W=result$obs_path)
+  dataset_W=data.frame(group,e_i=xaxix,W=result$obs_path)
   #dataset_W
   
   Figure1_W=
     ggplot()+
-    geom_step(data=dataset_What,aes(x=z_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_W,aes(x=z_i,y=W),colour="tomato",lwd=0.25)+
+    geom_step(data=dataset_What,aes(x=e_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_W,aes(x=e_i,y=W),colour="tomato",lwd=0.25)+
+    ylab("Test Statistic")+xlab("Time Transformed Residuals")+
     theme_minimal()
   #Figure1_W
   
-  dataset_std.What=data.frame()
+  return(Figure1_W)
+  
+  # dataset_std.What=data.frame()
+  # 
+  # for (i in 1:path){
+  #   group=i
+  #   A=result$app_std.path[[i]]
+  #   AA=data.frame(group,e_i=xaxix,std.What=A)
+  #   dataset_std.What=rbind(dataset_std.What,AA)
+  # }
+  # #dataset_std.What
+  # 
+  # dataset_std.W=data.frame(group,e_i=xaxix,std.W=result$obs_std.path)
+  # #dataset_std.W
+  # 
+  # Figure1_std.W=
+  #   ggplot()+
+  #   geom_step(data=dataset_std.What,aes(x=e_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+  #   geom_step(data=dataset_std.W,aes(x=e_i,y=std.W),colour="tomato",lwd=0.25)+
+  #   theme_minimal()
+  # #Figure1_std.W
+  # 
+  # return(grid.arrange(Figure1_W,Figure1_std.W,nrow=2))
+}
+
+plotting_link=function(result,path){
+  
+  # result_Covari=result$Covari
+  n=length(result$Covari)/length(result$Beta)
+  xaxix=(1:n)
+  # if (xaxix=="rank"){xaxix=(1:n)[order(result_Covari)]}
+  # else {xaxix=result_Covari}
+  
+  dataset_What=data.frame()
   
   for (i in 1:path){
     group=i
-    A=result$app_std.path[[i]]
-    AA=data.frame(group,z_i=xaxix,std.What=A)
-    dataset_std.What=rbind(dataset_std.What,AA)
+    A=result$app_path[[i]]
+    AA=data.frame(group,e_i=xaxix,What=A)
+    dataset_What=rbind(dataset_What,AA)
   }
-  #dataset_std.What
+  #dataset_What
   
-  dataset_std.W=data.frame(group,z_i=xaxix,std.W=result$obs_std.path)
-  #dataset_std.W
+  dataset_W=data.frame(group,e_i=xaxix,W=result$obs_path)
+  #dataset_W
   
-  Figure1_std.W=
+  Figure1_W=
     ggplot()+
-    geom_step(data=dataset_std.What,aes(x=z_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
-    geom_step(data=dataset_std.W,aes(x=z_i,y=std.W),colour="tomato",lwd=0.25)+
+    geom_step(data=dataset_What,aes(x=e_i,y=What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+    geom_step(data=dataset_W,aes(x=e_i,y=W),colour="tomato",lwd=0.25)+
+    ylab("Test Statistic")+xlab("Time Transformed Residuals")+
     theme_minimal()
-  #Figure1_std.W
+  #Figure1_W
   
-  return(grid.arrange(Figure1_W,Figure1_std.W,nrow=2))
+  return(Figure1_W)
+  
+  # dataset_std.What=data.frame()
+  # 
+  # for (i in 1:path){
+  #   group=i
+  #   A=result$app_std.path[[i]]
+  #   AA=data.frame(group,e_i=xaxix,std.What=A)
+  #   dataset_std.What=rbind(dataset_std.What,AA)
+  # }
+  # #dataset_std.What
+  # 
+  # dataset_std.W=data.frame(group,e_i=xaxix,std.W=result$obs_std.path)
+  # #dataset_std.W
+  # 
+  # Figure1_std.W=
+  #   ggplot()+
+  #   geom_step(data=dataset_std.What,aes(x=e_i,y=std.What,group=group),colour=adjustcolor("#737c8c", alpha=0.8),alpha=0.5)+
+  #   geom_step(data=dataset_std.W,aes(x=e_i,y=std.W),colour="tomato",lwd=0.25)+
+  #   theme_minimal()
+  # #Figure1_std.W
+  
+  # return(grid.arrange(Figure1_W,Figure1_std.W,nrow=2))
 }
 
-afttestplot=function(result,xaxix,path=50){
+afttestplot=function(result,path=50){
   
   testtype=result$testtype
   
